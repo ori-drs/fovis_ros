@@ -225,7 +225,7 @@ void VoFeatures::writeImage(uint8_t* img_buf, int counter, int64_t utime){
   //cout << "images written to file @ " << utime_ << "\n";
   std::stringstream ss;
   char buff[10];
-  sprintf(buff,"%0.4d",counter);
+  sprintf(buff,"%.4d",counter);
   ss << buff << "_" << utime;
   Mat img = Mat::zeros( image_height_, image_width_,CV_8UC1);
   img.data = img_buf;
@@ -235,7 +235,7 @@ void VoFeatures::writeImage(uint8_t* img_buf, int counter, int64_t utime){
 void VoFeatures::writeFeatures(std::vector<ImageFeature> features, int counter, int64_t utime){
   std::stringstream ss;
   char buff[10];
-  sprintf(buff,"%0.4d",counter);
+  sprintf(buff,"%.4d",counter);
   ss << buff << "_" << utime;
 
   std::fstream feat_file;

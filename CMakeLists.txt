@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-# needed for string arrays
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-deprecated-declarations")
+project(vo_estimator)
 
 if (NOT COMMAND pods_use_pkg_config_packages)
   include(cmake/pods.cmake)
 endif()
 
-project(vo_estimator)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -17,12 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-  INCLUDE_DIRS
-    include
-  CATKIN_DEPENDS cv_bridge pronto_vis image_io_utils
-    pronto_conversions bot2_frames_cpp
+#  INCLUDE_DIRS include
+#  LIBRARIES vo_estimator
+#  CATKIN_DEPENDS bot2_frames_cpp cv_bridge image_io_utils pronto_conversions pronto_vis
+#  DEPENDS system_lib
 )
-
 
 ###########
 ## Build ##
@@ -33,47 +31,40 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-find_package(OpenCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
 ################
 set(LIBRARY_NAME voconfig)
 add_library(${LIBRARY_NAME} src/voconfig/voconfig.cpp)
-add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 pods_use_pkg_config_packages(${LIBRARY_NAME} bot2-param-client libfovis)
 
 ################
 set(LIBRARY_NAME vofeatures)
 add_library(${LIBRARY_NAME} src/vofeatures/vofeatures.cpp)
-add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
-#pods_use_pkg_config_packages(${LIBRARY_NAME} bot2-param-client libfovis)
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
 ################
 set(LIBRARY_NAME voestimator)
 add_library(${LIBRARY_NAME} src/voestimator/voestimator.cpp)
-add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
 ################
 set(LIBRARY_NAME fovision)
 add_library(${LIBRARY_NAME} src/fovision/fovision.cpp src/fovision/visualization.cpp)
-add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
-pods_use_pkg_config_packages(${LIBRARY_NAME} lcmtypes_bot2-core)# libfovis)
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
 
 
 ################
 add_executable(se-simple-fusion src/fovision_apps/fovision_fusion.cpp)
 target_link_libraries (se-simple-fusion ${catkin_LIBRARIES}
-  voconfig vofeatures voestimator fovision 
-  image_io_utils pronto_math pronto_vis jpeg_utils z boost_system ${OpenCV_LIBRARIES} )
+  voconfig vofeatures voestimator fovision)
 pods_use_pkg_config_packages(se-simple-fusion
-  bot2-frames bot2-lcmgl-client path-util)
+  bot2-frames path-util bot2-lcmgl-client)
 
 ################
 add_executable(se-simple-vo src/fovision_apps/fovision_vo.cpp)
 target_link_libraries (se-simple-vo ${catkin_LIBRARIES}
-  voconfig vofeatures voestimator fovision 
-  image_io_utils pronto_math pronto_vis jpeg_utils z boost_system ${OpenCV_LIBRARIES} )
+  voconfig vofeatures voestimator fovision)
 pods_use_pkg_config_packages(se-simple-vo
   bot2-frames bot2-lcmgl-client path-util)
 
@@ -83,35 +74,17 @@ pods_use_pkg_config_packages(se-simple-vo
 set(LIBRARY_NAME vis-loop-closure)
 add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
 target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} 
-  vofeatures voconfig bot2_frames_cpp
-  pronto_vis pronto_math image_io_utils jpeg_utils)
-add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
+  voconfig vofeatures voestimator fovision)
 pods_use_pkg_config_packages(${LIBRARY_NAME}
   estimate-pose)
 
 ################
 add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
 target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES}
-  vis-loop-closure ${OpenCV_LIBRARIES} )
+  vis-loop-closure)
 pods_use_pkg_config_packages(se-vis-loop-closure-batch
-  bot2-frames bot2-lcmgl-client path-util)
+  path-util)
 
 ################
 add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
-target_link_libraries (se-vins-writer ${catkin_LIBRARIES}
-  image_io_utils ${OpenCV_LIBRARIES} jpeg_utils)
-
-#############
-## Install ##
-#############
-
-install(TARGETS ${TARGETS}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-
-# Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+target_link_libraries (se-vins-writer ${catkin_LIBRARIES} lcm)

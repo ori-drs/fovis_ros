@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package>
   <name>vo_estimator</name>
   <version>0.0.0</version>
   <description>Description</description>
@@ -13,13 +13,17 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roslint</build_depend>
+  <build_depend>bot2_frames_cpp</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>image_io_utils</build_depend>
+  <build_depend>pronto_conversions</build_depend>
+  <build_depend>pronto_vis</build_depend>
+  <run_depend>bot2_frames_cpp</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>image_io_utils</run_depend>
+  <run_depend>pronto_conversions</run_depend>
+  <run_depend>pronto_vis</run_depend>
 
-  <depend>cv_bridge</depend>  
-  <depend>pronto_vis</depend>  
-  <depend>image_io_utils</depend>    
-  <depend>pronto_conversions</depend>
-  <depend>bot2_frames_cpp</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export />
