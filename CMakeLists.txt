@@ -13,6 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   image_io_utils
   pronto_conversions
   bot2_frames_cpp
+  pronto_lcmtypes
+  reg_lcmtypes
+  bot_core_lcmtypes
+  ori_lcmtypes
 )
 
 catkin_package(

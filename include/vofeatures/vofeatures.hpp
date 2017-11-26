@@ -22,7 +22,8 @@
 #include <pronto_vis/pronto_vis.hpp> // visualize pt clds
 #include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 
-#include <lcmtypes/motion_estimate.hpp>
+//#include <lcmtypes/reg.hpp>
+#include <lcmtypes/reg/features_t.hpp>
 #include <lcmtypes/bot_core_image_t.h>
 
 class VoFeatures
