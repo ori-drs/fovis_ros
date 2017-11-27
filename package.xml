@@ -13,7 +13,7 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>bot2_frames_cpp</build_depend>
+  <build_depend>bot_frames_cpp</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_io_utils</build_depend>
   <build_depend>pronto_conversions</build_depend>
@@ -22,7 +22,14 @@
   <build_depend>reg_lcmtypes</build_depend>  
   <build_depend>bot_core_lcmtypes</build_depend>  
   <build_depend>ori_lcmtypes</build_depend>  
-  <run_depend>bot2_frames_cpp</run_depend>
+  <build_depend>bot_param</build_depend>  
+  <build_depend>fovis</build_depend>
+  <build_depend>concise_args</build_depend>
+  <build_depend>path_util</build_depend>
+  <build_depend>fovis_lcmtypes</build_depend>
+  <build_depend>estimate_pose</build_depend>
+
+  <run_depend>bot_frames_cpp</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_io_utils</run_depend>
   <run_depend>pronto_conversions</run_depend>
@@ -31,6 +38,12 @@
   <run_depend>reg_lcmtypes</run_depend>
   <run_depend>bot_core_lcmtypes</run_depend>
   <run_depend>ori_lcmtypes</run_depend>
+  <run_depend>bot_param</run_depend>
+  <run_depend>fovis</run_depend>
+  <run_depend>concise_args</run_depend>
+  <run_depend>path_util</run_depend>
+  <run_depend>fovis_lcmtypes</run_depend>
+  <run_depend>estimate_pose</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export />
