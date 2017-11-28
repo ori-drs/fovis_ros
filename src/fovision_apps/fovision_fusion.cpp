@@ -15,7 +15,8 @@
 
 #include <lcmtypes/bot_core.hpp>
 #include <lcmtypes/pronto.hpp>
-#include <lcmtypes/ori.hpp>
+#include <lcmtypes/pronto/update_t.hpp>
+#include <lcmtypes/ori/navigationframedata_t.hpp>
 
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"

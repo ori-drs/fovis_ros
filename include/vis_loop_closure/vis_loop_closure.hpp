@@ -7,13 +7,13 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include <estimate-pose/pose_estimator.hpp>
+#include <estimate_pose/pose_estimator.hpp>
 
 #include <pronto_vis/pronto_vis.hpp>
 
 #include <bot_param/param_client.h>
 #include <bot_frames/bot_frames.h>
-#include <bot2-frames_cpp/bot_frames_cpp.hpp>
+#include <bot_frames_cpp/bot_frames_cpp.hpp>
 
 #include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 

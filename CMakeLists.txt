@@ -12,7 +12,17 @@ find_package(catkin REQUIRED COMPONENTS
   pronto_vis
   image_io_utils
   pronto_conversions
-  bot2_frames_cpp
+  bot_frames_cpp
+  pronto_lcmtypes
+  reg_lcmtypes
+  bot_core_lcmtypes
+  ori_lcmtypes
+  bot_param
+  fovis
+  concise_args
+  path_util
+  fovis_lcmtypes
+  estimate_pose
 )
 
 catkin_package(
@@ -35,7 +45,6 @@ include_directories(
 set(LIBRARY_NAME voconfig)
 add_library(${LIBRARY_NAME} src/voconfig/voconfig.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
-pods_use_pkg_config_packages(${LIBRARY_NAME} bot2-param-client libfovis)
 
 ################
 set(LIBRARY_NAME vofeatures)
@@ -58,15 +67,11 @@ target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 add_executable(se-simple-fusion src/fovision_apps/fovision_fusion.cpp)
 target_link_libraries (se-simple-fusion ${catkin_LIBRARIES}
   voconfig vofeatures voestimator fovision)
-pods_use_pkg_config_packages(se-simple-fusion
-  bot2-frames path-util bot2-lcmgl-client)
 
 ################
 add_executable(se-simple-vo src/fovision_apps/fovision_vo.cpp)
 target_link_libraries (se-simple-vo ${catkin_LIBRARIES}
   voconfig vofeatures voestimator fovision)
-pods_use_pkg_config_packages(se-simple-vo
-  bot2-frames bot2-lcmgl-client path-util)
 
 
 
@@ -75,15 +80,11 @@ set(LIBRARY_NAME vis-loop-closure)
 add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
 target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} 
   voconfig vofeatures voestimator fovision)
-pods_use_pkg_config_packages(${LIBRARY_NAME}
-  estimate-pose)
 
 ################
 add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
 target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES}
   vis-loop-closure)
-pods_use_pkg_config_packages(se-vis-loop-closure-batch
-  path-util)
 
 ################
 add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
