@@ -25,6 +25,8 @@ find_package(catkin REQUIRED COMPONENTS
   estimate_pose
 )
 
+find_package(OpenCV 3.0 QUIET)
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES vo_estimator
@@ -78,14 +80,14 @@ target_link_libraries (se-simple-vo ${catkin_LIBRARIES}
 ################
 set(LIBRARY_NAME vis-loop-closure)
 add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
-target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} 
+target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBS}
   voconfig vofeatures voestimator fovision)
 
 ################
 add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
-target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES}
+target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES} ${OpenCV_LIBS}
   vis-loop-closure)
 
 ################
 add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
-target_link_libraries (se-vins-writer ${catkin_LIBRARIES} lcm)
+target_link_libraries (se-vins-writer ${catkin_LIBRARIES} ${OpenCV_LIBS} lcm)
