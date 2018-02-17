@@ -66,9 +66,8 @@ void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isome
 void VoEstimator::publishUpdate(int64_t utime,
                                 Eigen::Isometry3d local_to_head, std::string channel, bool output_alpha_filter){
   if ((!pose_initialized_) || (!vo_initialized_)) {
-    std::cout << (int) pose_initialized_ << " pose\n";
-    std::cout << (int) vo_initialized_ << " vo\n";
-    std::cout << "pose, vo, zheight not initialized, refusing to publish POSE_HEAD nad POSE_BODY\n";
+    std::cout << (int) pose_initialized_ << " pose | " << (int) vo_initialized_ << " vo - ";
+    std::cout << "pose or vo not initialized, refusing to publish POSE_HEAD and POSE_BODY\n";
     return;
   }
 

@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   path_util
   fovis_lcmtypes
   estimate_pose
+  image_transport
+  tf_conversions
 )
 
 find_package(OpenCV 3.0 QUIET)
@@ -65,15 +67,22 @@ target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
 
 
-################
-add_executable(se-simple-fusion src/fovision_apps/fovision_fusion.cpp)
-target_link_libraries (se-simple-fusion ${catkin_LIBRARIES}
-  voconfig vofeatures voestimator fovision)
+set(LIBRARY_NAME fovision_fusion_core)
+add_library(${LIBRARY_NAME} src/fovision_apps/fovision_fusion_core.cpp)
+target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
 
-################
-add_executable(se-simple-vo src/fovision_apps/fovision_vo.cpp)
-target_link_libraries (se-simple-vo ${catkin_LIBRARIES}
-  voconfig vofeatures voestimator fovision)
+
+####### LCM Fusion #########
+add_executable(simple_fusion_lcm src/fovision_apps/fovision_fusion.cpp)
+target_link_libraries (simple_fusion_lcm ${catkin_LIBRARIES} fovision_fusion_core)
+
+####### ROS Fusion #########
+add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp)
+target_link_libraries (simple_fusion ${catkin_LIBRARIES} fovision_fusion_core)
+
+####### LCM Basic VO #######
+add_executable(simple_vo_lcm src/fovision_apps/fovision_vo.cpp)
+target_link_libraries (simple_vo_lcm ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
 
 
 
