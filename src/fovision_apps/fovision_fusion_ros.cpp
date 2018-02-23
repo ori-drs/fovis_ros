@@ -32,10 +32,13 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Imu.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/Pose.h>
 
 
 #include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 
 using namespace std;
@@ -97,7 +100,11 @@ class StereoOdom{
     ros::Subscriber imuSensorSub_;
     void imuSensorCallback(const sensor_msgs::ImuConstPtr& msg);
 
+    ros::Publisher body_pose_pub_;
 
+    int64_t utime_imu_;
+
+    bool output_imu_time_; 
 };    
 
 StereoOdom::StereoOdom(ros::NodeHandle node_in,
@@ -107,6 +114,15 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
        lcm_recv_(lcm_recv_), lcm_pub_(lcm_pub_), cl_cfg_(cl_cfg_)
 {
   vo_core_ = new FusionCore(lcm_recv_, lcm_pub_, fcfg_);
+
+  // Parameters:
+  output_imu_time_=true;
+  if (!node_.getParam("output_imu_time", output_imu_time_)) {
+    ROS_ERROR("Note: Could not read parameter `output_imu_time`. Enabled by default");
+  }
+  ROS_ERROR("output_imu_time = %d", output_imu_time_);
+
+
 
 
   std::string image_a_string, info_a_string, image_b_string, info_b_string;
@@ -134,6 +150,8 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   info_b_ros_sub_.subscribe(node_, ros::names::resolve(info_b_string), 30);
   //sync_.connectInput(image_a_ros_sub_, info_a_ros_sub_, image_b_ros_sub_, info_b_ros_sub_);
   //sync_.registerCallback(boost::bind(&App::head_stereo_cb, this, _1, _2, _3, _4));
+
+  body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/state_estimator/pose_in_odom", 10);
 
   sync_without_info_.connectInput(image_a_ros_sub_, image_b_ros_sub_);
   sync_without_info_.registerCallback(boost::bind(&StereoOdom::head_stereo_without_info_cb , this, _1, _2));
@@ -226,25 +244,37 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   vo_core_->doPostProcessing();
 
+  int64_t utime_output = utime_cur;
+  // use the IMU time stamp - so that the rest of the system sees a state estimate with timestamp with low latency
+  if (output_imu_time_)
+    utime_output = utime_imu_;
+
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_cur * 1E-6), "odom", "base_link"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "base_link"));
 
 
+  geometry_msgs::PoseWithCovarianceStamped body_pose;
+  body_pose.header.stamp = image_a_ros->header.stamp;
+  body_pose.header.frame_id = "odom";
+  geometry_msgs::Pose gpose;
+  tf::poseEigenToMsg ( vo_core_->getBodyPose(), gpose);
+  body_pose.pose.pose = gpose;
+  body_pose_pub_.publish(body_pose);
+
+
+  // This hard coded transform from base to head is because
+  // when playing back logs static broadcaster doesnt work
   tf::Transform transform2;
   Eigen::Isometry3d null = Eigen::Isometry3d::Identity();
   null.translation().x() = 0.465;
   null.translation().y() = 0.0;
   null.translation().z() = 0.558;
-
   Eigen::Quaterniond quat_pitch = euler_to_quat(0, 0.28278, 0); //about 16.2 degrees
   null.rotate( quat_pitch );
-
   tf::poseEigenToTF(null, transform2);
-  br.sendTransform(tf::StampedTransform(transform2, ros::Time().fromSec(utime_cur * 1E-6), "base_link", "multisense/head"));
-
-
+  br.sendTransform(tf::StampedTransform(transform2, ros::Time().fromSec(utime_output * 1E-6), "base_link", "multisense/head"));
 
 
   if (stereo_counter % 30 == 0)
@@ -291,10 +321,10 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
   Eigen::Quaterniond imu_orientation_from_imu(msg->orientation.w,msg->orientation.x,
                                               msg->orientation.y,msg->orientation.z);
   Eigen::Vector3d gyro = Eigen::Vector3d(0,0,0); // i have nothing for this yet
-  int64_t utime_imu = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
+  utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
 
   Eigen::Quaterniond body_orientation_from_imu = vo_core_->imuOrientationToRobotOrientation(imu_orientation_from_imu);
-  vo_core_->setBodyOrientationFromImu(body_orientation_from_imu, gyro, utime_imu);
+  vo_core_->setBodyOrientationFromImu(body_orientation_from_imu, gyro, utime_imu_);
 }
 
 
@@ -370,7 +400,7 @@ int main(int argc, char **argv){
   lcm_pub = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
 
 
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   new StereoOdom(nh, lcm_recv, lcm_pub, cl_cfg, fcfg);
   ros::spin();
   //while(0 == lcm_recv->handle());

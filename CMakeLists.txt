@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   estimate_pose
   image_transport
   tf_conversions
+  eigen_conversions
 )
 
 find_package(OpenCV 3.0 QUIET)
