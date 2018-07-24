@@ -12,7 +12,7 @@ struct FusionCoreConfig
   std::string camera_config; // which block from the cfg to read
   // 0 none, 1 at init, 2 rpy, 2 rp only
   int fusion_mode;
-  bool feature_analysis;
+  bool publish_feature_analysis;
   int feature_analysis_publish_period; // number of frames between publishing the point features 
   std::string output_extension;
   std::string output_signal;
@@ -26,6 +26,7 @@ struct FusionCoreConfig
   bool draw_lcmgl;
   bool write_feature_output;
   int which_vo_options;
+  bool extrapolate_when_vo_fails;
 };
 
 
@@ -36,6 +37,7 @@ class FusionCore{
     ~FusionCore(){
       free (left_buf_);
       free(right_buf_);
+      free(depth_buf_);
     }
 
     bool isPoseInitialized(){
@@ -53,6 +55,8 @@ class FusionCore{
     uint8_t* rgb_buf_ ;
     uint8_t* decompress_disparity_buf_;    
 
+    float* depth_buf_;    
+
 
     void doOdometryLeftRight(){
         vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
@@ -60,6 +64,10 @@ class FusionCore{
 
     void doOdometryLeftDisparity(){
         vo_->doOdometry(left_buf_,disparity_buf_.data(), utime_cur_);
+    }
+
+    void doOdometryLeftDepth(){
+        vo_->doOdometryDepthImage(left_buf_,depth_buf_, utime_cur_);
     }
 
     bool isFilterDisparityEnabled(){
@@ -75,7 +83,7 @@ class FusionCore{
     void doPostProcessing(){
         updateMotion();
 
-        if (fcfg_.feature_analysis)
+        if (fcfg_.publish_feature_analysis)
             featureAnalysis();
         if (fcfg_.output_signal_at_10Hz)
             outputSignalAt10Hz();

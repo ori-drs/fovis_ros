@@ -84,9 +84,12 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   left_buf_ref_ = (uint8_t*) malloc(3*image_size_); // used of feature output 
   rgb_buf_ = (uint8_t*) malloc(10*image_size_ * sizeof(uint8_t)); 
   decompress_disparity_buf_ = (uint8_t*) malloc( 4*image_size_*sizeof(uint8_t));  // arbitary size chosen..
+  depth_buf_ = (float*) malloc( image_size_*sizeof(float));  // byte per image
   imgutils_ = new image_io_utils( lcm_pub_, stereo_calibration_->getWidth(), 2*stereo_calibration_->getHeight()); // extra space for stereo tasks
 
   vo_ = new FoVision(lcm_pub_ , stereo_calibration_, fcfg_.draw_lcmgl, fcfg_.which_vo_options);
+  vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
+
   features_ = new VoFeatures(lcm_pub_, stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
   estimator_ = new VoEstimator(lcm_pub_ , botframes_, fcfg_.output_extension, fcfg_.camera_config );
 
@@ -186,7 +189,7 @@ void FusionCore::updateMotion(){
     //Eigen::Vector3d head_velocity_angular = estimator_->getBodyRotationRate();
     //std::cout << head_velocity_angular.transpose() << " vo angular head\n";
 
-  }else{
+  }else if ( fcfg_.extrapolate_when_vo_fails){
     double dt = (double) ((utime_cur_ - utime_prev_)*1E-6);
     std::cout << "failed VO\n";
     if (fabs(dt) > 0.2){
@@ -208,12 +211,15 @@ void FusionCore::updateMotion(){
       delta_camera.translation().z() = vo_velocity_linear_[2] * dt;
       delta_camera.rotate(extrapolated_quat);
     }
-
+  }else{
+    std::cout << "VO failed. Not extrapolating. output identity\n";
+    delta_camera.setIdentity();
   }
+
   if (fcfg_.verbose){
     std::stringstream ss2;
     print_Isometry3d(delta_camera, ss2);
-    std::cout << "camera: " << ss2.str() << " code" << (int) delta_status << "\n";
+    std::cout << "camera: " << ss2.str() << " code: " << (int) delta_status << "\n";
   }
 
   // 3. Update the motion estimation:

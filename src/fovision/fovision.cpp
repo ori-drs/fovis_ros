@@ -17,6 +17,8 @@ FoVision::FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
   // left/disparity from multisense
   stereo_disparity_= new fovis::StereoDisparity( kcal_.get());
   
+  depth_image_ = new fovis::DepthImage(kcal_->getRectifiedParameters(), 640, 480); 
+
   if (draw_lcmgl_){
     bot_lcmgl_t* lcmgl = bot_lcmgl_init(lcm_->getUnderlyingLCM(), "stereo-odometry");
     visualization_ = new Visualization(lcmgl, kcal.get());
@@ -29,6 +31,7 @@ FoVision::~FoVision()
 {
   delete stereo_depth_;
   delete stereo_disparity_;
+  delete depth_image_;
 }
 
 
@@ -52,6 +55,19 @@ void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime)
 
   stereo_disparity_->setDisparityData(disparity_buf);
   odom_.processFrame(left_buf, stereo_disparity_);
+  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+
+  if(draw_lcmgl_) { visualization_->draw(&odom_); }
+
+}
+
+// Left and Depth:
+void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime){
+  prev_timestamp_ = current_timestamp_;
+  current_timestamp_ = utime;
+
+  depth_image_->setDepthImage(depth_buf);
+  odom_.processFrame(left_buf, depth_image_);
   const fovis::MotionEstimator * me = odom_.getMotionEstimator();
 
   if(draw_lcmgl_) { visualization_->draw(&odom_); }
@@ -216,7 +232,7 @@ fovis::VisualOdometryOptions FoVision::getOptions()
     // setting very commonly used
     getOptionsCommon(vo_opts);
   }else if (which_vo_options_ == 2){
-    // modify some of the common parameters to run at framerate
+    // modify some of the common parameters to run Multisense at full framerate
     getOptionsCommon(vo_opts);
     getOptionsFaster(vo_opts);
   }else{

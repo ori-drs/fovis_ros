@@ -16,13 +16,16 @@
 
 #include <pronto_vis/pronto_vis.hpp> // visualize pt clds
 #include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
-#include <ConciseArgs>
 
 #include <path_util/path_util.h>
 
 #include <opencv/cv.h> // for disparity 
 
 /////
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+
+
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/synchronizer.h>
@@ -44,41 +47,16 @@
 using namespace std;
 using namespace cv; // for disparity ops
 
-struct CommandLineConfig
-{
-  std::string input_channel;
-  std::string imu_channel;
-};
-
-std::ofstream fovision_output_file_;
-
-
-int get_trans_with_utime(BotFrames *bot_frames,
-        const char *from_frame, const char *to_frame, int64_t utime,
-        Eigen::Isometry3d & mat){
-  int status;
-  double matx[16];
-  status = bot_frames_get_trans_mat_4x4_with_utime( bot_frames, from_frame,  to_frame, utime, matx);
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      mat(i,j) = matx[i*4+j];
-    }
-  }  
-
-  return status;
-}
-
-
 class StereoOdom{
   public:
     StereoOdom(ros::NodeHandle node_in, boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_,
-      const CommandLineConfig& cl_cfg_, const FusionCoreConfig& fcfg_);
+      FusionCoreConfig fcfg_);
     
     ~StereoOdom(){
     }
 
   private:
-    const CommandLineConfig cl_cfg_;    
+    const FusionCoreConfig fcfg_;
     boost::shared_ptr<lcm::LCM> lcm_recv_;
     boost::shared_ptr<lcm::LCM> lcm_pub_;
     FusionCore* vo_core_;
@@ -104,60 +82,78 @@ class StereoOdom{
 
     int64_t utime_imu_;
 
-    bool output_imu_time_; 
+    bool output_using_imu_time_; 
 };    
 
 StereoOdom::StereoOdom(ros::NodeHandle node_in,
        boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_,
-       const CommandLineConfig& cl_cfg_, const FusionCoreConfig& fcfg_) : 
+       FusionCoreConfig fcfg_) : 
        node_(node_in), it_(node_in), sync_(10), sync_without_info_(10),
-       lcm_recv_(lcm_recv_), lcm_pub_(lcm_pub_), cl_cfg_(cl_cfg_)
+       lcm_recv_(lcm_recv_), lcm_pub_(lcm_pub_), fcfg_(fcfg_)
 {
+
   vo_core_ = new FusionCore(lcm_recv_, lcm_pub_, fcfg_);
 
   // Parameters:
-  output_imu_time_=true;
-  if (!node_.getParam("output_imu_time", output_imu_time_)) {
-    ROS_ERROR("Note: Could not read parameter `output_imu_time`. Enabled by default");
+  output_using_imu_time_=true;
+  if (!node_.getParam("output_using_imu_time", output_using_imu_time_)) {
+    ROS_ERROR("Note: Could not read parameter `output_using_imu_time`. Enabled by default");
   }
-  ROS_ERROR("output_imu_time = %d", output_imu_time_);
+  ROS_INFO("output_using_imu_time = %d", output_using_imu_time_);
 
 
+  std::string image_a_string, image_b_string;
+  std::string image_a_transport, image_b_transport;
+  std::string info_a_string, info_b_string;
 
 
-  std::string image_a_string, info_a_string, image_b_string, info_b_string;
-  std::string head_stereo_root = "multisense";
-
-  //image_a_string = head_stereo_root + "/left/image_rect_color";
-  image_a_string = head_stereo_root + "/left/image_color";
+  if (!node_.getParam("image_a_topic", image_a_string)) {
+    ROS_ERROR("Could not read `image_a_topic`.");
+    exit(-1);
+  }
+  ROS_INFO( "%s is the image_a topic subscription [for stereo]", image_a_string.c_str());
   info_a_string = image_a_string + "/camera_info";
-
-  bool output_right_image = false; // otherwise the disparity image
-  if(output_right_image){
-    //image_b_string = head_stereo_root + "/right/image_rect";
-    image_b_string = head_stereo_root + "/right/image_mono";
-    info_b_string = image_b_string + "/camera_info";
-  }else{
-    image_b_string = head_stereo_root + "/left/disparity";
-    info_b_string = image_b_string + "/camera_info";
+  if (!node_.getParam("image_a_transport", image_a_transport)) {
+    ROS_ERROR("Could not read `image_a_transport`.");
+    exit(-1);
   }
+  ROS_INFO( "%s is the image_a_transport transport", image_a_transport.c_str());
+
+  if (!node_.getParam("image_b_topic", image_b_string)) {
+    ROS_ERROR("Could not read `image_b_string`.");
+    exit(-1);
+  }
+  ROS_INFO( "%s is the image_b topic subscription [for stereo]", image_b_string.c_str());
+  info_b_string = image_b_string + "/camera_info";
+  if (!node_.getParam("image_b_transport", image_b_transport)) {
+    ROS_ERROR("Could not read `image_b_transport`.");
+    exit(-1);
+  }
+  ROS_INFO( "%s is the image_b_transport transport", image_b_transport.c_str());
+
 
   std::cout << image_a_string << " is the image_a topic subscription [for stereo]\n";
   std::cout << image_b_string << " is the image_b topic subscription [for stereo]\n";  
-  image_a_ros_sub_.subscribe(it_, ros::names::resolve(image_a_string), 30);
-  info_a_ros_sub_.subscribe(node_, ros::names::resolve(info_a_string), 30);
-  image_b_ros_sub_.subscribe(it_, ros::names::resolve(image_b_string), 30);
-  info_b_ros_sub_.subscribe(node_, ros::names::resolve(info_b_string), 30);
+  image_a_ros_sub_.subscribe(it_, ros::names::resolve(image_a_string), 30, image_transport::TransportHints( image_a_transport ));
+  image_b_ros_sub_.subscribe(it_, ros::names::resolve(image_b_string), 30, image_transport::TransportHints( image_b_transport ));
+
+
+  //info_a_ros_sub_.subscribe(node_, ros::names::resolve(info_a_string), 30);
+  //info_b_ros_sub_.subscribe(node_, ros::names::resolve(info_b_string), 30);
   //sync_.connectInput(image_a_ros_sub_, info_a_ros_sub_, image_b_ros_sub_, info_b_ros_sub_);
   //sync_.registerCallback(boost::bind(&App::head_stereo_cb, this, _1, _2, _3, _4));
-
-  body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/state_estimator/pose_in_odom", 10);
-
   sync_without_info_.connectInput(image_a_ros_sub_, image_b_ros_sub_);
   sync_without_info_.registerCallback(boost::bind(&StereoOdom::head_stereo_without_info_cb , this, _1, _2));
 
 
-  imuSensorSub_ = node_.subscribe(std::string("/imu/data"), 100,
+  std::string output_body_pose_topic;
+  node_.getParam("output_body_pose_topic", output_body_pose_topic); 
+  body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
+
+
+  std::string imu_topic;
+  node_.getParam("imu_topic", imu_topic); 
+  imuSensorSub_ = node_.subscribe(std::string(imu_topic), 100,
                                     &StereoOdom::imuSensorCallback, this);  
 
   cout <<"StereoOdom Constructed\n";
@@ -188,6 +184,11 @@ void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
 void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
                          const sensor_msgs::ImageConstPtr& image_b_ros)
 {
+  if (stereo_counter % 30 == 0)
+  {
+    ROS_INFO("VO frame received [%d]", stereo_counter);
+  }
+
   if (!vo_core_->isPoseInitialized()){
     std::cout << "!pose_initialized. no imu input yet. will not compute VO\n";
     return;
@@ -195,28 +196,39 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   int64_t utime_cur = (int64_t)floor(image_a_ros->header.stamp.toNSec() / 1000);
   vo_core_->setCurrentTime(utime_cur);
 
-  double w = image_a_ros->width;
-  double h = image_a_ros->height;
-  double step_a = image_a_ros->step;
-  double step_b = image_b_ros->step;
+  int w = image_a_ros->width;
+  int h = image_a_ros->height;
+  int step_a = image_a_ros->step;
+  int step_b = image_b_ros->step;
 
-  if (image_a_ros->encoding != "bgr8")
-    std::cout << "first image should be bgr8 (color). something is wrong!\n";
-
-  if (image_b_ros->encoding != "mono16")
-    std::cout << "second image should be mono16 (disparity). something is wrong!\n";
-
-
-  if (image_b_ros->encoding == "mono16"){
-    // this assumes this encoding is disparity. better to have different handlers I think
+  // Left Image
+  if (image_a_ros->encoding == "bgr8"){
+    ROS_INFO_STREAM_ONCE("working ["<< image_a_ros->encoding <<"]. This mode has not been debugged");
 
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
-    void* disp_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
+    memcpy(vo_core_->left_buf_, left_data, h*step_a);
+    pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_,  step_a);
 
+  } else if (image_a_ros->encoding == "rgb8"){
+    ROS_INFO_STREAM_ONCE("working with ["<< image_a_ros->encoding <<"]");
+ 
     // TODO: use a bgr converter as it uses a different weighting of r and b
+    void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
     pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_,  step_a);
 
+  }else{ 
+    ROS_INFO_STREAM("first image encoding not supported. something is wrong! ["<< image_a_ros->encoding <<"]");
+    ROS_INFO_STREAM("Returning. not processing");
+    return;
+  }
+
+
+  // Right Image
+  ROS_INFO_STREAM_ONCE("Second Image Encoding: " << image_b_ros->encoding << " WxH: " << w << " " << h);
+  if (image_b_ros->encoding == "mono16"){
+    // this assumes this encoding is disparity.
+    void* disp_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
     memcpy(vo_core_->decompress_disparity_buf_, disp_data, h*step_b); // 2 bytes
 
     // Convert Carnegie disparity format into floating point disparity. Store in local buffer
@@ -230,15 +242,32 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
     vo_core_->doOdometryLeftDisparity();
 
-  }else{ 
-    // mono grey scale. not fully supported yet
+  }else if (image_b_ros->encoding == "16UC1"){
+    unsigned char* depth_data = const_cast<unsigned char*>(static_cast<const unsigned char*>(image_b_ros->data.data()));
+    short* depth_short = (short*) depth_data;
 
-    void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
+    cv_bridge::CvImageConstPtr depth_img_cv;
+    cv::Mat depth_mat;
+    depth_img_cv = cv_bridge::toCvShare (image_b_ros, sensor_msgs::image_encodings::TYPE_16UC1);
+    depth_img_cv->image.convertTo(depth_mat, CV_32F, 0.001); // NB conversion from MM to M
+
+    memcpy(vo_core_->depth_buf_, depth_mat.data, h*step_b); // 2 bytes
+
+    vo_core_->doOdometryLeftDepth();
+
+  }else if (image_b_ros->encoding == "mono8"){
+    // mono grey scale right. not fully supported yet
+    ROS_INFO_STREAM("mono not supported yet. Returning");
+    return;
+
     void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
-    memcpy(vo_core_->left_buf_, left_data, h*step_a);
     memcpy(vo_core_->right_buf_, right_data, h*step_b);
     vo_core_->doOdometryLeftRight();
 
+  }else{ 
+    ROS_INFO_STREAM("second image mode not supported. something is wrong! ["<< image_b_ros->encoding <<"]");
+    ROS_INFO_STREAM("Returning. not processing");
+    return;
   }
 
 
@@ -246,7 +275,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   int64_t utime_output = utime_cur;
   // use the IMU time stamp - so that the rest of the system sees a state estimate with timestamp with low latency
-  if (output_imu_time_)
+  if (output_using_imu_time_)
     utime_output = utime_imu_;
 
 
@@ -266,7 +295,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   // This hard coded transform from base to head is because
   // when playing back logs static broadcaster doesnt work
-  tf::Transform transform2;
+  /*tf::Transform transform2;
   Eigen::Isometry3d null = Eigen::Isometry3d::Identity();
   null.translation().x() = 0.465;
   null.translation().y() = 0.0;
@@ -275,44 +304,10 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   null.rotate( quat_pitch );
   tf::poseEigenToTF(null, transform2);
   br.sendTransform(tf::StampedTransform(transform2, ros::Time().fromSec(utime_output * 1E-6), "base_link", "multisense/head"));
+  */
 
-
-  if (stereo_counter % 30 == 0)
-  {
-    ROS_ERROR("VO frame received [%d]", stereo_counter);
-  }
   stereo_counter++;
 }
-
-
-
-
-/*
-void StereoOdom::filterDisparity(const  bot_core::images_t* msg, int w, int h){
-  // TODO: measure how long this takes, it can be implemented more efficiently
-
-  for(int v=0; v<h; v++) { // t2b
-    for(int u=0; u<w; u++ ) {  //l2r
-
-      if (v > filter_image_rows_above_){
-        disparity_buf_[w*v + u] = 0;
-        left_buf_[w*v + u] = 0;
-      }else{
-        float val = disparity_buf_[w*v + u];
-        if (val < filter_disparity_below_threshold_ || val > filter_disparity_above_threshold_){
-          disparity_buf_[w*v + u] = 0;
-          left_buf_[w*v + u] = 100;
-        }
-      }
-    }
-  }
-
-  if (publish_filtered_image_)
-    republishImage(msg);
-
-}
-*/
-
 
 
 
@@ -331,49 +326,36 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
 int main(int argc, char **argv){
   ros::init(argc, argv, "simple_fusion");
 
-  CommandLineConfig cl_cfg;
-  //cl_cfg.imu_channel = "IMU_MICROSTRAIN";
-  //cl_cfg.input_channel = "MULTISENSE_CAMERA";
-
   FusionCoreConfig fcfg;
   fcfg.camera_config = "MULTISENSE_CAMERA";
-  fcfg.output_signal = "POSE_BODY";
+  fcfg.output_signal = "POSE_BODY_ALT";
   fcfg.output_signal_at_10Hz = FALSE;
-  fcfg.feature_analysis = FALSE; 
+  fcfg.publish_feature_analysis = FALSE; 
   fcfg.fusion_mode = 0;
-  fcfg.verbose = false;
+  fcfg.verbose = FALSE;
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
   fcfg.feature_analysis_publish_period = 1; // 5
-  std::string param_file = ""; // actual file
+  std::string param_file = ""; // short filename
   fcfg.param_file = ""; // full path to file
   fcfg.draw_lcmgl = FALSE;  
   double processing_rate = 1; // real time
   fcfg.write_feature_output = FALSE;
   fcfg.which_vo_options = 2;
 
-  ConciseArgs parser(argc, argv, "simple-fusion");
-  parser.add(fcfg.camera_config, "c", "camera_config", "Camera Config block to use: CAMERA, stereo, stereo_with_letterbox");
-  parser.add(fcfg.output_signal, "p", "output_signal", "Output POSE_BODY and POSE_BODY_ALT signals");
-  parser.add(fcfg.output_signal_at_10Hz, "s", "output_signal_at_10Hz", "Output POSE_BODY_10HZ on the camera CB");
-  parser.add(fcfg.feature_analysis, "f", "feature_analysis", "Publish Feature Analysis Data");
-  parser.add(fcfg.feature_analysis_publish_period, "fp", "feature_analysis_publish_period", "Publish features with this period");  
-  parser.add(fcfg.fusion_mode, "m", "fusion_mode", "0 none, 1 at init, 2 rpy, 3 rp only, (both continuous)");
-  //parser.add(cl_cfg.input_channel, "i", "input_channel", "input_channel");
-  parser.add(fcfg.output_extension, "o", "output_extension", "Extension to pose channels (e.g. '_VO' ");
-  parser.add(fcfg.correction_frequency, "y", "correction_frequency", "Correct the R/P every XX IMU measurements");
-  parser.add(fcfg.verbose, "v", "verbose", "Verbose printf");
-  //parser.add(cl_cfg.imu_channel, "imu", "imu_channel", "IMU channel to listen for");
-  parser.add(fcfg.in_log_fname, "L", "in_log_fname", "Process this log file");
-  parser.add(param_file, "P", "param_file", "Pull params from this file instead of LCM");
-  parser.add(fcfg.draw_lcmgl, "g", "lcmgl", "Draw LCMGL visualization of features");
-  parser.add(processing_rate, "r", "processing_rate", "Processing Rate from a log [0=ASAP, 1=realtime]");  
-  parser.add(fcfg.write_feature_output, "fo", "write_feature_output", "Write feature poses, images to file");
-  parser.add(fcfg.which_vo_options, "n", "which_vo_options", "Which set of VO options to use [1=slow,2=fast]");
-  parser.parse();
-  cout << fcfg.fusion_mode << " is fusion_mode\n";
-  cout << fcfg.camera_config << " is camera_config\n";
-  
+
+  ros::NodeHandle nh("~");
+  nh.getParam("verbose", fcfg.verbose);
+  nh.getParam("extrapolate_when_vo_fails", fcfg.extrapolate_when_vo_fails);
+  nh.getParam("draw_lcmgl", fcfg.draw_lcmgl);
+  nh.getParam("publish_feature_analysis", fcfg.publish_feature_analysis);
+  nh.getParam("param_file", param_file); // short filename
+  nh.getParam("output_body_pose_lcm", fcfg.output_signal);
+  nh.getParam("which_vo_options", fcfg.which_vo_options);
+  nh.getParam("fusion_mode", fcfg.fusion_mode);
+
+
+
   fcfg.param_file = std::string(getConfigPath()) +'/' + std::string(param_file);
   if (param_file.empty()) { // get param from lcm
     fcfg.param_file = "";
@@ -400,8 +382,14 @@ int main(int argc, char **argv){
   lcm_pub = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
 
 
-  ros::NodeHandle nh("~");
-  new StereoOdom(nh, lcm_recv, lcm_pub, cl_cfg, fcfg);
+
+  cout << fcfg.fusion_mode << " is fusion_mode\n";
+  cout << fcfg.camera_config << " is camera_config\n";
+  cout << fcfg.param_file << " is param_file [full path]\n";
+
+
+
+  new StereoOdom(nh, lcm_recv, lcm_pub, fcfg);
   ros::spin();
   //while(0 == lcm_recv->handle());
 }

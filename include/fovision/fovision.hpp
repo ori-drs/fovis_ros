@@ -40,6 +40,8 @@ public:
     void doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime);
     void doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime);
 
+    void doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime);
+
     void send_status_msg(std::string text);
 
     fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
@@ -109,6 +111,7 @@ private:
     // Depth Sources:
     fovis::StereoDepth* stereo_depth_; // typical left/right stereo
     fovis::StereoDisparity* stereo_disparity_; // left/disparity from multisense
+    fovis::DepthImage* depth_image_; // left/depth from realsense
 
     bool publish_fovis_stats_;
     bool publish_pose_;
