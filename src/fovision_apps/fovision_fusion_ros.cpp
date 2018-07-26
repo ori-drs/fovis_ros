@@ -265,10 +265,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     vo_core_->doOdometryLeftDepth();
 
   }else if (image_b_ros->encoding == "mono8"){
-    // mono grey scale right. not fully supported yet
-    ROS_INFO_STREAM("mono not supported yet. Returning");
-    return;
-
+    // assumed to be grayscale from multisense
     void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
     memcpy(vo_core_->right_buf_, right_data, h*step_b);
     vo_core_->doOdometryLeftRight();

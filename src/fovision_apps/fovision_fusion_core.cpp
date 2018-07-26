@@ -140,7 +140,7 @@ void FusionCore::featureAnalysis(){
     if (ref_utime_ > 0){ // skip the first null image
       if(vo_->getNumMatches() > 200){ // if less than 50 features - dont bother writing
       // was:      if(featuresA.size() > 50){ // if less than 50 features - dont bother writing
-        cout << "ref frame from " << utime_prev_ << " at " << utime_cur_ <<  " with " <<vo_->getNumMatches()<<" matches\n";
+        cout << "changed ref frame from " << utime_prev_ << " at " << utime_cur_ <<  " with " <<vo_->getNumMatches()<<" matches\n";
         features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , ref_utime_);
         features_->setReferenceImage(left_buf_ref_);
         features_->setReferenceCameraPose( ref_camera_pose_ );

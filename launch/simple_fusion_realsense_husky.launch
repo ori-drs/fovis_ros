@@ -10,19 +10,19 @@
 
     <!-- Output -->
     <param name="output_using_imu_time" value="true" />
-    <param name="output_body_pose_topic" value="/pose_body" />
-    <param name="output_body_pose_lcm" value="POSE_BODY" />
+    <param name="output_body_pose_topic" value="/pose_body_alt" />
+    <param name="output_body_pose_lcm" value="POSE_BODY_ALT" />
 
     <!-- fusion_mode: 0 no fusion, 1 at initialisation, 2 rpy, 3 rp only (both continuously) -->
     <param name="fusion_mode" value="0" />
     <param name="extrapolate_when_vo_fails" value="false" />
     <param name="param_file" value="anymal/robot.cfg" />
-    <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time -->
-    <param name="which_vo_options" value="2" />
+    <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, faster and real time -->
+    <param name="which_vo_options" value="0" />
 
     <param name="verbose" value="false" />
     <param name="draw_lcmgl" value="false" />
-    <param name="publish_feature_analysis" value="false" />
+    <param name="publish_feature_analysis" value="true" />
 
   </node>
 </launch>
