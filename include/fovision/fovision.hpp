@@ -36,10 +36,10 @@ public:
     bool draw_lcmgl_;
     int which_vo_options_;
     
+    void writeRawImage(float *float_buf, int width, int height, int64_t utime);
     
     void doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime);
     void doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime);
-
     void doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime);
 
     void send_status_msg(std::string text);

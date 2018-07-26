@@ -1,5 +1,8 @@
 #include "fovision/fovision.hpp"
 #include "lcmtypes/bot_core/system_status_t.hpp"
+#include <iostream>
+#include <fstream>
+
 
 using namespace std;
 
@@ -16,8 +19,8 @@ FoVision::FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
   stereo_depth_ = new fovis::StereoDepth(kcal_.get(), vo_opts);
   // left/disparity from multisense
   stereo_disparity_= new fovis::StereoDisparity( kcal_.get());
-  
-  depth_image_ = new fovis::DepthImage(kcal_->getRectifiedParameters(), 640, 480); 
+  // left/depth from realsense
+  depth_image_ = new fovis::DepthImage(kcal_->getRectifiedParameters(), kcal_->getWidth(), kcal_->getHeight());
 
   if (draw_lcmgl_){
     bot_lcmgl_t* lcmgl = bot_lcmgl_init(lcm_->getUnderlyingLCM(), "stereo-odometry");
@@ -61,10 +64,29 @@ void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime)
 
 }
 
+
+void FoVision::writeRawImage(float *float_buf, int width, int height, int64_t utime){
+  std::stringstream ss_fname;
+  ss_fname << "/tmp/" << utime << "_raw_image_float.raw";
+
+  std::ofstream ofile ( ss_fname.str().c_str() );
+  for(int v=0; v<height; v++) { // t2b
+    std::stringstream ss;
+    for(int u=0; u<width; u++ ) {  //l2r
+      ss << float_buf[u + v*width] << ", ";
+    }
+    ofile << ss.str() << "\n";
+  }
+  ofile.close();
+}
+
+
 // Left and Depth:
 void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
+
+  //writeRawImage(depth_buf, kcal_->getWidth(), kcal_->getHeight(), utime);
 
   depth_image_->setDepthImage(depth_buf);
   odom_.processFrame(left_buf, depth_image_);

@@ -169,6 +169,14 @@ void FusionCore::updateMotion(){
   vo_->getMotion(delta_camera, delta_cov, delta_status );
   vo_->fovis_stats();
 
+  // Try to catch all NaNs output by FoVis.
+  // Currently exiting so as to identify then and why they occur
+  if (std::isnan(delta_camera.translation().x()) ){
+    std::cout << utime_cur_ << ": got nan\n";
+    delta_status = fovis::REPROJECTION_ERROR; // not success
+    exit(-1);
+  }
+
   // 2. If successful cache the rates
   //    otherwise extrapolate the previous rate
   if (delta_status == fovis::SUCCESS){

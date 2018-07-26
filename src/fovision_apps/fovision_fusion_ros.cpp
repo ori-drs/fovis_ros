@@ -132,8 +132,6 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   ROS_INFO( "%s is the image_b_transport transport", image_b_transport.c_str());
 
 
-  std::cout << image_a_string << " is the image_a topic subscription [for stereo]\n";
-  std::cout << image_b_string << " is the image_b topic subscription [for stereo]\n";  
   image_a_ros_sub_.subscribe(it_, ros::names::resolve(image_a_string), 30, image_transport::TransportHints( image_a_transport ));
   image_b_ros_sub_.subscribe(it_, ros::names::resolve(image_b_string), 30, image_transport::TransportHints( image_b_transport ));
 
@@ -156,7 +154,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   imuSensorSub_ = node_.subscribe(std::string(imu_topic), 100,
                                     &StereoOdom::imuSensorCallback, this);  
 
-  cout <<"StereoOdom Constructed\n";
+  ROS_INFO_STREAM("StereoOdom Constructed");
 }
 
 
@@ -203,19 +201,24 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   // Left Image
   if (image_a_ros->encoding == "bgr8"){
-    ROS_INFO_STREAM_ONCE("working ["<< image_a_ros->encoding <<"]. This mode has not been debugged");
+    ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]. This mode has not been debugged");
 
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
-    memcpy(vo_core_->left_buf_, left_data, h*step_a);
-    pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_,  step_a);
+    memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
+    pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
 
   } else if (image_a_ros->encoding == "rgb8"){
-    ROS_INFO_STREAM_ONCE("working with ["<< image_a_ros->encoding <<"]");
+    ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
  
     // TODO: use a bgr converter as it uses a different weighting of r and b
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
-    pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_,  step_a);
+    pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
+
+  } else if (image_a_ros->encoding == "mono8"){
+    ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
+    void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
+    memcpy(vo_core_->left_buf_, left_data, h*step_a);
 
   }else{ 
     ROS_INFO_STREAM("first image encoding not supported. something is wrong! ["<< image_a_ros->encoding <<"]");
@@ -250,6 +253,12 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     cv::Mat depth_mat;
     depth_img_cv = cv_bridge::toCvShare (image_b_ros, sensor_msgs::image_encodings::TYPE_16UC1);
     depth_img_cv->image.convertTo(depth_mat, CV_32F, 0.001); // NB conversion from MM to M
+
+    // invalid RealSense depth comes as zero (0), set to NAN here
+    // TODO: can this be done by directly OpenCV efficiently?
+    for(int i=0; i<h*w; i++)
+      if (depth_mat.data[i] == 0)
+        depth_mat.data[i] = (float) NAN;
 
     memcpy(vo_core_->depth_buf_, depth_mat.data, h*step_b); // 2 bytes
 
