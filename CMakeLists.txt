@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   tf_conversions
   eigen_conversions
+  cv_bridge
 )
 
 find_package(OpenCV 3.0 QUIET)

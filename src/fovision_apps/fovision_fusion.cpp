@@ -269,7 +269,7 @@ int main(int argc, char **argv){
   fcfg.camera_config = "MULTISENSE_CAMERA";
   fcfg.output_signal = "POSE_BODY";
   fcfg.output_signal_at_10Hz = FALSE;
-  fcfg.feature_analysis = FALSE; 
+  fcfg.publish_feature_analysis = FALSE; 
   fcfg.fusion_mode = 0;
   fcfg.verbose = false;
   fcfg.output_extension = "";
@@ -292,7 +292,7 @@ int main(int argc, char **argv){
   parser.add(fcfg.camera_config, "c", "camera_config", "Camera Config block to use: CAMERA, stereo, stereo_with_letterbox");
   parser.add(fcfg.output_signal, "p", "output_signal", "Output POSE_BODY and POSE_BODY_ALT signals");
   parser.add(fcfg.output_signal_at_10Hz, "s", "output_signal_at_10Hz", "Output POSE_BODY_10HZ on the camera CB");
-  parser.add(fcfg.feature_analysis, "f", "feature_analysis", "Publish Feature Analysis Data");
+  parser.add(fcfg.publish_feature_analysis, "f", "publish_feature_analysis", "Publish Feature Analysis Data");
   parser.add(fcfg.feature_analysis_publish_period, "fp", "feature_analysis_publish_period", "Publish features with this period");  
   parser.add(fcfg.fusion_mode, "m", "fusion_mode", "0 none, 1 at init, 2 rpy, 3 rp only, (both continuous)");
   parser.add(cl_cfg.input_channel, "i", "input_channel", "input_channel");
