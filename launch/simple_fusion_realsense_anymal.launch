@@ -19,6 +19,7 @@
     <param name="param_file" value="anymal/robot.cfg" />
     <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time -->
     <param name="which_vo_options" value="2" />
+    <param name="camera_config" value="REALSENSE_FORWARD_CAMERA" />
 
     <param name="verbose" value="false" />
     <param name="draw_lcmgl" value="false" />

@@ -359,10 +359,18 @@ int main(int argc, char **argv){
   nh.getParam("output_body_pose_lcm", fcfg.output_signal);
   nh.getParam("which_vo_options", fcfg.which_vo_options);
   nh.getParam("fusion_mode", fcfg.fusion_mode);
+  nh.getParam("camera_config", fcfg.camera_config);
 
+  char* drs_base;
+  drs_base = getenv ("DRS_BASE");
 
+  std::string configPath;
+  configPath = std::string( getenv ("DRS_BASE") ) + "/params/config";
 
-  fcfg.param_file = std::string(getConfigPath()) +'/' + std::string(param_file);
+  std::cout << configPath << "\n";
+  
+
+  fcfg.param_file = configPath +'/' + std::string(param_file);
   if (param_file.empty()) { // get param from lcm
     fcfg.param_file = "";
   }
