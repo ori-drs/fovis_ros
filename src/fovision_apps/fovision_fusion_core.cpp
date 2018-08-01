@@ -174,7 +174,8 @@ void FusionCore::updateMotion(){
   if (std::isnan(delta_camera.translation().x()) ){
     std::cout << utime_cur_ << ": got nan\n";
     delta_status = fovis::REPROJECTION_ERROR; // not success
-    exit(-1);
+    // Don't exit on NaN because sometimes they arise when using the Realsense on the ANYmal.
+    // exit(-1);
   }
 
   // 2. If successful cache the rates
