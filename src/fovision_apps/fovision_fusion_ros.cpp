@@ -287,7 +287,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "base_link"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "fovis/base_link"));
 
 
   geometry_msgs::PoseWithCovarianceStamped body_pose;
