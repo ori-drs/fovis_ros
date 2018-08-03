@@ -1,7 +1,7 @@
 <launch>
-  <node name="simple_fusion" pkg="vo_estimator" type="simple_fusion" output="screen">
-    <param name="image_a_topic" value="/realsense_d435/color/image_raw" />
-    <param name="image_b_topic" value="/realsense_d435/aligned_depth_to_color/image_raw" />
+  <node name="simple_fusion_forward" pkg="vo_estimator" type="simple_fusion" output="screen">
+    <param name="image_a_topic" value="/realsense_d435_forward/color/image_raw" />
+    <param name="image_b_topic" value="/realsense_d435_forward/aligned_depth_to_color/image_raw" />
 
     <param name="image_a_transport" value="compressed" />
     <param name="image_b_transport" value="compressedDepth" />
@@ -19,7 +19,7 @@
     <param name="param_file" value="anymal/robot.cfg" />
     <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time -->
     <param name="which_vo_options" value="2" />
-    <param name="camera_config" value="REALSENSE_CAMERA" />
+    <param name="camera_config" value="REALSENSE_FORWARD_CAMERA" />
 
     <param name="verbose" value="false" />
     <param name="draw_lcmgl" value="false" />
