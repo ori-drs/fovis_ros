@@ -260,7 +260,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
       if (depth_mat.data[i] == 0)
         depth_mat.data[i] = (float) NAN;
 
-    memcpy(vo_core_->depth_buf_, depth_mat.data, h*step_b); // 2 bytes
+    memcpy(vo_core_->depth_buf_, depth_mat.data, h*w*4); // 4 bytes per float
 
     vo_core_->doOdometryLeftDepth();
 
@@ -287,7 +287,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "base_link"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "fovis/base_link"));
 
 
   geometry_msgs::PoseWithCovarianceStamped body_pose;
