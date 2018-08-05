@@ -260,7 +260,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
       if (depth_mat.data[i] == 0)
         depth_mat.data[i] = (float) NAN;
 
-    memcpy(vo_core_->depth_buf_, depth_mat.data, h*step_b); // 2 bytes
+    memcpy(vo_core_->depth_buf_, depth_mat.data, h*w*4); // 4 bytes per float
 
     vo_core_->doOdometryLeftDepth();
 
