@@ -10,17 +10,19 @@
 struct FusionCoreConfig
 {
   std::string camera_config; // which block from the cfg to read
-  // 0 none, 1 at init, 2 rpy, 2 rp only
-  int fusion_mode;
+  // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
+  int orientation_fusion_mode;
+
+  // how should we set the initial pose? 0 using the config file, 1 using imu, 2 using a pose source
+  int pose_initialization_mode; 
+
   bool publish_feature_analysis;
   int feature_analysis_publish_period; // number of frames between publishing the point features 
   std::string output_extension;
   std::string output_signal;
   bool output_signal_at_10Hz;
-  std::string input_channel;
   bool verbose;
   int correction_frequency;
-  std::string imu_channel;
   std::string in_log_fname;
   std::string param_file;
   bool draw_lcmgl;
@@ -110,6 +112,11 @@ class FusionCore{
         return estimator_->getBodyPose();
     }
 
+    void initializePose(Eigen::Isometry3d init_pose){
+        estimator_->setBodyPose(init_pose);
+        pose_initialized_ = true;
+        std::cout << "Initialised pose\n";
+    }
 
   private:
     const FusionCoreConfig fcfg_;    

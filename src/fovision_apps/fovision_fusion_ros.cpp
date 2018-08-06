@@ -74,9 +74,11 @@ class StereoOdom{
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
     tf::TransformBroadcaster br;
 
-
     ros::Subscriber imuSensorSub_;
     void imuSensorCallback(const sensor_msgs::ImuConstPtr& msg);
+    ros::Subscriber poseOdomSub_;
+    void poseOdomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg);
+
 
     ros::Publisher body_pose_pub_;
 
@@ -149,10 +151,16 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
 
 
-  std::string imu_topic;
-  node_.getParam("imu_topic", imu_topic); 
-  imuSensorSub_ = node_.subscribe(std::string(imu_topic), 100,
-                                    &StereoOdom::imuSensorCallback, this);  
+  std::string input_imu_topic;
+  node_.getParam("input_imu_topic", input_imu_topic);
+  imuSensorSub_ = node_.subscribe(std::string(input_imu_topic), 100,
+                                    &StereoOdom::imuSensorCallback, this);
+
+  std::string input_body_pose_topic;
+  node_.getParam("input_body_pose_topic", input_body_pose_topic);
+  poseOdomSub_ = node_.subscribe(std::string(input_body_pose_topic), 100,
+                                    &StereoOdom::poseOdomCallback, this);
+
 
   ROS_INFO_STREAM("StereoOdom Constructed");
 }
@@ -188,7 +196,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   }
 
   if (!vo_core_->isPoseInitialized()){
-    std::cout << "!pose_initialized. no imu input yet. will not compute VO\n";
+    std::cout << "pose not initialized. Will not compute VO\n";
     return;
   }
   int64_t utime_cur = (int64_t)floor(image_a_ros->header.stamp.toNSec() / 1000);
@@ -277,6 +285,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   }
 
 
+  // This is where inertial data is fused
   vo_core_->doPostProcessing();
 
   int64_t utime_output = utime_cur;
@@ -325,7 +334,47 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
   utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
 
   Eigen::Quaterniond body_orientation_from_imu = vo_core_->imuOrientationToRobotOrientation(imu_orientation_from_imu);
-  vo_core_->setBodyOrientationFromImu(body_orientation_from_imu, gyro, utime_imu_);
+
+  if ((fcfg_.orientation_fusion_mode==1) ||  (fcfg_.orientation_fusion_mode == 2) ){
+    vo_core_->setBodyOrientationFromImu(body_orientation_from_imu, gyro, utime_imu_);
+  }
+
+
+  if ( (!vo_core_->isPoseInitialized()) &&  (fcfg_.pose_initialization_mode == 1) ){
+    std::cout << "IMU callback: initializing pose using IMU (roll and pitch)\n";
+    Eigen::Isometry3d init_pose;
+    init_pose.setIdentity();
+    init_pose.translation() << 0,0,0;
+
+    double rpy_imu[3];
+    quat_to_euler(  body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
+    init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) ); // not using yaw
+    //init_pose.rotate(body_orientation_from_imu);
+    vo_core_->initializePose(init_pose);
+  }
+}
+
+
+void StereoOdom::poseOdomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg)
+{
+
+  Eigen::Quaterniond body_orientation_from_odom(msg->pose.pose.orientation.w,msg->pose.pose.orientation.x,
+                                              msg->pose.pose.orientation.y,msg->pose.pose.orientation.z);
+  Eigen::Vector3d gyro = Eigen::Vector3d(0,0,0); // i have nothing for this yet
+  utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
+
+  if ((fcfg_.orientation_fusion_mode==3) ||  (fcfg_.orientation_fusion_mode ==4)  ){
+    vo_core_->setBodyOrientationFromImu(body_orientation_from_odom, gyro, utime_imu_);
+  }
+
+
+
+  if (!vo_core_->isPoseInitialized()){
+    std::cout << "Pose Odom callback: initializing pose using IMU\n";
+    Eigen::Isometry3d init_pose = Eigen::Isometry3d::Identity();
+    tf::poseMsgToEigen(msg->pose.pose, init_pose);
+    vo_core_->initializePose(init_pose);
+  }
 }
 
 
@@ -337,7 +386,8 @@ int main(int argc, char **argv){
   fcfg.output_signal = "POSE_BODY_ALT";
   fcfg.output_signal_at_10Hz = FALSE;
   fcfg.publish_feature_analysis = FALSE; 
-  fcfg.fusion_mode = 0;
+  fcfg.orientation_fusion_mode = 0;
+  fcfg.pose_initialization_mode = 0;
   fcfg.verbose = FALSE;
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
@@ -358,7 +408,8 @@ int main(int argc, char **argv){
   nh.getParam("param_file", param_file); // short filename
   nh.getParam("output_body_pose_lcm", fcfg.output_signal);
   nh.getParam("which_vo_options", fcfg.which_vo_options);
-  nh.getParam("fusion_mode", fcfg.fusion_mode);
+  nh.getParam("orientation_fusion_mode", fcfg.orientation_fusion_mode);
+  nh.getParam("pose_initialization_mode", fcfg.pose_initialization_mode);
   nh.getParam("camera_config", fcfg.camera_config);
 
   char* drs_base;
@@ -397,7 +448,8 @@ int main(int argc, char **argv){
 
 
 
-  cout << fcfg.fusion_mode << " is fusion_mode\n";
+  cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
+  cout << fcfg.pose_initialization_mode << " is pose_initialization_mode\n";
   cout << fcfg.camera_config << " is camera_config\n";
   cout << fcfg.param_file << " is param_file [full path]\n";
 
