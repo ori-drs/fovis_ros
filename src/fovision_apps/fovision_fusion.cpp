@@ -270,7 +270,7 @@ int main(int argc, char **argv){
   fcfg.output_signal = "POSE_BODY";
   fcfg.output_signal_at_10Hz = FALSE;
   fcfg.publish_feature_analysis = FALSE; 
-  fcfg.fusion_mode = 0;
+  fcfg.orientation_fusion_mode = 0;
   fcfg.verbose = false;
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
@@ -294,7 +294,7 @@ int main(int argc, char **argv){
   parser.add(fcfg.output_signal_at_10Hz, "s", "output_signal_at_10Hz", "Output POSE_BODY_10HZ on the camera CB");
   parser.add(fcfg.publish_feature_analysis, "f", "publish_feature_analysis", "Publish Feature Analysis Data");
   parser.add(fcfg.feature_analysis_publish_period, "fp", "feature_analysis_publish_period", "Publish features with this period");  
-  parser.add(fcfg.fusion_mode, "m", "fusion_mode", "0 none, 1 at init, 2 rpy, 3 rp only, (both continuous)");
+  parser.add(fcfg.orientation_fusion_mode, "m", "orientation_fusion_mode", "0 none, 1 at init, 2 rpy, 3 rp only, (both continuous)");
   parser.add(cl_cfg.input_channel, "i", "input_channel", "input_channel");
   parser.add(fcfg.output_extension, "o", "output_extension", "Extension to pose channels (e.g. '_VO' ");
   parser.add(fcfg.correction_frequency, "y", "correction_frequency", "Correct the R/P every XX IMU measurements");
@@ -307,7 +307,7 @@ int main(int argc, char **argv){
   parser.add(fcfg.write_feature_output, "fo", "write_feature_output", "Write feature poses, images to file");
   parser.add(fcfg.which_vo_options, "n", "which_vo_options", "Which set of VO options to use [1=slow,2=fast]");
   parser.parse();
-  cout << fcfg.fusion_mode << " is fusion_mode\n";
+  cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
   cout << fcfg.camera_config << " is camera_config\n";
   
   fcfg.param_file = std::string(getConfigPath()) +'/' + std::string(param_file);

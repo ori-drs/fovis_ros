@@ -93,19 +93,20 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   features_ = new VoFeatures(lcm_pub_, stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
   estimator_ = new VoEstimator(lcm_pub_ , botframes_, fcfg_.output_extension, fcfg_.camera_config );
 
-  Eigen::Isometry3d body_to_local_initial;
-  get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
-  estimator_->setBodyPose(body_to_local_initial);
+
+  pose_initialized_=false;
+  // if not using imu or pose, initialise with robot model
+  if (fcfg_.pose_initialization_mode == 0){
+    std::cout << "Pose initialized using cfg\n";
+    Eigen::Isometry3d body_to_local_initial;
+    get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
+    estimator_->setBodyPose(body_to_local_initial);  
+    pose_initialized_=true;
+  }
+
 
   // IMU:
-  pose_initialized_=false;
   imu_counter_=0;
-
-  // if not using imu, initialise with
-  if (fcfg_.fusion_mode ==0 )
-    pose_initialized_=true;
-
-
   // This assumes the imu to body frame is fixed, need to update if the neck is actuated
   get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
   get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
@@ -336,41 +337,15 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaternio
 }
 
 
+
+
+
 void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime){
 
-  if (fcfg_.fusion_mode==0){ // Got IMU measurement - not incorporating them.
-    // Publish the Position of the floating head:
+  if (fcfg_.orientation_fusion_mode==0){ // Ignore any imu or pose orientation measurements
+    // Publish the pose
     estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
-    return;
-  }
-
-  
-  if (!pose_initialized_){
-    std::vector<int> init_modes = {1,2,3};
-    if(std::find(init_modes.begin(), init_modes.end(), fcfg_.fusion_mode) != init_modes.end()) {
-    //if((fcfg_.fusion_mode ==1) ||(fcfg_.fusion_mode ==2)  ){
-      Eigen::Isometry3d init_pose;
-      init_pose.setIdentity();
-      init_pose.translation() << 0,0,0;
-
-      // Take the RPY from the IMU and only use the roll+pitch with zero yaw to init the estimator
-      double rpy_imu[3];
-      quat_to_euler(  local_to_body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
-      init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) );
-      estimator_->setBodyPose(init_pose);
-      pose_initialized_ = true;
-      cout << "got first IMU measurement\n";
-      return;
-    }
-  }
-
-
-  if(fcfg_.fusion_mode ==1){
-    estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
-  }
-
-
-  if((fcfg_.fusion_mode ==2) ||(fcfg_.fusion_mode ==3) ){
+  }else{
     if (imu_counter_== fcfg_.correction_frequency){
       // Every X frames: replace the pitch and roll with that from the IMU
       // convert the camera pose to head frame
@@ -402,7 +377,7 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       
       // 3. Merge the two orientation estimates:
       Eigen::Quaterniond revised_local_to_body_quat;
-      if (fcfg_.fusion_mode==2){ // rpy:
+      if ( (fcfg_.orientation_fusion_mode==1) || (fcfg_.orientation_fusion_mode==3)){
         revised_local_to_body_quat = local_to_body_orientation_from_imu;
       }else{  // pitch and roll from IMU, yaw from VO:
         revised_local_to_body_quat = euler_to_quat( rpy_imu[0], rpy_imu[1], rpy[2]);
@@ -426,10 +401,10 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
     if (imu_counter_ > fcfg_.correction_frequency) { imu_counter_ =0; }
     imu_counter_++;
 
-    // Publish the Position of the floating head:
+    // Publish the pose
     estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
-
   }
+
 }
 
 
@@ -455,8 +430,6 @@ void FusionCore::outputSignalAt10Hz(){
 void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime){
   local_to_body_orientation_from_imu_ = local_to_body_orientation_from_imu;
 
-  pose_initialized_ = true;
-
   // Transform rotation Rates into body frame:
   double camera_ang_vel_from_imu_[3];
   Eigen::Quaterniond imu_to_camera_quat = Eigen::Quaterniond( imu_to_camera_.rotation() );
@@ -473,8 +446,8 @@ void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orie
   camera_linear_velocity_from_imu_  = Eigen::Vector3d(0,0,0);
 
   // experimentally correct for sensor timing offset:
-  int64_t temp_utime = imu_utime;// + 120000;
-  estimator_->publishPose(temp_utime, "POSE_IMU_RATES", Eigen::Isometry3d::Identity(), camera_linear_velocity_from_imu_, camera_angular_velocity_from_imu_);
+  //int64_t temp_utime = imu_utime;// + 120000;
+  //estimator_->publishPose(temp_utime, "POSE_IMU_RATES", Eigen::Isometry3d::Identity(), camera_linear_velocity_from_imu_, camera_angular_velocity_from_imu_);
   // estimator_->publishPose(temp_utime, "POSE_IMU_RATES", Eigen::Isometry3d::Identity(), camera_linear_velocity_from_imu_, camera_angular_velocity_from_imu_alpha_);
 
 }
