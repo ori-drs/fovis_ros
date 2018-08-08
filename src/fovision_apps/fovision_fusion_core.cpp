@@ -74,6 +74,14 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   std::cout << "Disparity Filter is " << (filter_disparity_ ? "ENABLED" : "DISABLED")  << "\n";
   filter_disparity_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_below_threshold");
   filter_disparity_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_above_threshold");
+
+  // Depth Filtering
+  filter_depth_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.filter_depth_enabled");
+  std::cout << "Depth Filter is " << (filter_depth_ ? "ENABLED" : "DISABLED")  << "\n";
+  filter_depth_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_below_threshold");
+  filter_depth_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_above_threshold");
+
+
   filter_image_rows_above_ = bot_param_get_int_or_fail(botparam_, "visual_odometry.filter.filter_image_rows_above");
   publish_filtered_image_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.publish_filtered_image");
 
@@ -220,7 +228,7 @@ void FusionCore::updateMotion(){
       delta_camera.rotate(extrapolated_quat);
     }
   }else{
-    std::cout << "VO failed. Not extrapolating. output identity\n";
+    //std::cout << "VO failed. Not extrapolating. output identity "<< utime_cur_ <<"\n";
     delta_camera.setIdentity();
   }
 
@@ -253,69 +261,18 @@ void FusionCore::filterDisparity(int w, int h){
       }
     }
   }
-
-  //if (publish_filtered_image_)
-  //  republishImage(msg);
-
 }
 
+void FusionCore::filterDepth(int w, int h){
 
-// disabled for now
-/*
-void FusionCore::republishImage(const  bot_core::images_t* msg){
-  int width = msg->images[0].width;
-  int height = msg->images[0].height;
+  for(int i=0; i<h*w; i++){
+    if (depth_buf_[i] < filter_depth_below_threshold_)
+      depth_buf_[i] = NAN;
+    if (depth_buf_[i] > filter_depth_above_threshold_)
+      depth_buf_[i] = NAN;
+  }
 
-  bot_core::image_t msgout_image;
-  msgout_image.utime = msg->utime;
-  msgout_image.width = width;
-  msgout_image.height = height;
-  msgout_image.row_stride = width;
-  msgout_image.size = width*height;
-  msgout_image.pixelformat = bot_core::image_t::PIXEL_FORMAT_GRAY;
-  msgout_image.data.resize( width*height );
-  memcpy(msgout_image.data.data(), left_buf_, width*height );
-  msgout_image.nmetadata =0;
-  lcm_pub_->publish("MULTISENSE_CAMERA_LEFT_FILTERED", &msgout_image);
-
-  bot_core::image_t msgout_depth;
-  msgout_depth.utime = msg->utime;
-  msgout_depth.width = width;
-  msgout_depth.height = height;
-  msgout_depth.row_stride = 2*width;
-  msgout_depth.size = 2*width*height;
-  msgout_depth.pixelformat = bot_core::image_t::PIXEL_FORMAT_GRAY; // false, no info
-  msgout_depth.data.resize( 2*width*height );
-  memcpy(msgout_depth.data.data(), decompress_disparity_buf_, 2*width*height );
-  msgout_depth.nmetadata =0;
-
-  bot_core::images_t msgo;
-  msgo.utime = msg->utime;
-  msgo.n_images = 2;
-  msgo.images.resize(2);
-  msgo.image_types.resize(2);
-  msgo.image_types[0] = bot_core::images_t::LEFT;
-  msgo.image_types[1] = bot_core::images_t::DISPARITY;
-  msgo.images[0] = msgout_image;
-  msgo.images[1] = msgout_depth;
-  lcm_pub_->publish( "MULTISENSE_CAMERA_FILTERED" , &msgo);
-
-  //ofstream myfile;
-  //myfile.open ("example.txt");
-  //for(int v=0; v<h; v++) { // t2b
-  //  std::stringstream ss;
-  //  for(int u=0; u<w; u++ ) {  //l2r
-  //    ss << (float) disparity_buf_[w*v + u] << " ";
-  //    // cout <<j2 << " " << v << " " << u << " | " <<  points(v,u)[0] << " " <<  points(v,u)[1] << " " <<  points(v,u)[1] << "\n";
-  //    // std::cout <<  << " " << v << " " << u << "\n";
-  //  }
-  //  myfile << ss.str() << "\n";
-  //}
-  //myfile.close();
-  //std::cout << "writing\n";
-  
 }
-*/
 
 
 // Transform the Microstrain IMU orientation into the body frame:

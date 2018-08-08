@@ -190,7 +190,7 @@ void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
 void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
                          const sensor_msgs::ImageConstPtr& image_b_ros)
 {
-  if (stereo_counter % 30 == 0)
+  if (stereo_counter % 120 == 0)
   {
     ROS_INFO("VO frame received [%d]", stereo_counter);
   }
@@ -251,6 +251,12 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     cv::Mat_<float> disparity(h, w, &(vo_core_->disparity_buf_[0]));
     disparity = disparity_orig / 16.0;
 
+    // Currently disabled but worked previously (in LCM)
+    //if ( vo_core_->isFilterDisparityEnabled() ){
+    //  // Filter the data to remove far away depth and the crash bar (from hyq)
+    //  vo_core_->filterDisparity(w, h);
+    //}
+
     vo_core_->doOdometryLeftDisparity();
 
   }else if (image_b_ros->encoding == "16UC1"){
@@ -262,13 +268,14 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     depth_img_cv = cv_bridge::toCvShare (image_b_ros, sensor_msgs::image_encodings::TYPE_16UC1);
     depth_img_cv->image.convertTo(depth_mat, CV_32F, 0.001); // NB conversion from MM to M
 
-    // invalid RealSense depth comes as zero (0), set to NAN here
-    // TODO: can this be done by directly OpenCV efficiently?
-    for(int i=0; i<h*w; i++)
-      if (depth_mat.data[i] == 0)
-        depth_mat.data[i] = (float) NAN;
-
     memcpy(vo_core_->depth_buf_, depth_mat.data, h*w*4); // 4 bytes per float
+
+    // invalid RealSense depth comes as zero (0), set to NAN here
+    // TODO: can this be done more efficiently?
+    if ( vo_core_->isFilterDepthEnabled() ){
+      // Filter the data to remove far away depth and the crash bar (from hyq)
+      vo_core_->filterDepth(w, h);
+    }
 
     vo_core_->doOdometryLeftDepth();
 

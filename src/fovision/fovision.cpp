@@ -1,5 +1,4 @@
 #include "fovision/fovision.hpp"
-#include "lcmtypes/bot_core/system_status_t.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -96,15 +95,7 @@ void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t 
 
 }
 
-void FoVision::send_status_msg(std::string text){
-  bot_core::system_status_t status_msg;
-  status_msg.utime =  current_timestamp_;
-  status_msg.system = bot_core::system_status_t::MOTION_ESTIMATION;// use enums!!
-  status_msg.importance = bot_core::system_status_t::VERY_IMPORTANT;// use enums!!
-  status_msg.frequency = bot_core::system_status_t::MEDIUM_FREQUENCY;// use enums!!
-  status_msg.value = text;
-  lcm_->publish("SYSTEM_STATUS", &status_msg);
-}
+
 
 fovis::update_t FoVision::get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
     Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp){
@@ -134,6 +125,11 @@ fovis::update_t FoVision::get_delta_translation_msg(Eigen::Isometry3d motion_est
   
   switch(estim_status) {
     case fovis::NO_DATA:
+      if (verbose){
+        // occurs for first frame and can occur for blank depth images
+        // when there are no valid keypoint
+        printf("VO Failed: No valid data or keypoints\n");
+      }
       break;
     case fovis::SUCCESS:
       update_msg.estimate_status = fovis::update_t::ESTIMATE_VALID;
@@ -149,24 +145,19 @@ fovis::update_t FoVision::get_delta_translation_msg(Eigen::Isometry3d motion_est
     case fovis::INSUFFICIENT_INLIERS:
       update_msg.estimate_status = fovis::update_t::ESTIMATE_INSUFFICIENT_FEATURES;
       if (verbose){
-        send_status_msg("Insufficient inliers");
-        printf("Insufficient inliers\n");
+        printf("VO Failed: Insufficient inliers\n");
       }
       break;
     case fovis::OPTIMIZATION_FAILURE:
       update_msg.estimate_status = fovis::update_t::ESTIMATE_DEGENERATE;
       if (verbose){
-        send_status_msg("Unable to solve for rigid body transform");
-        printf("Unable to solve for rigid body transform\n");
+        printf("VO Failed: Unable to solve for rigid body transform\n");
       }
       break;
     case fovis::REPROJECTION_ERROR:
       update_msg.estimate_status = fovis::update_t::ESTIMATE_REPROJECTION_ERROR;
       if (verbose){
-        std::stringstream ss;
-        ss << "Excessive reprojection error: " << me->getMeanInlierReprojectionError();
-        send_status_msg(ss.str());
-        printf("Excessive reprojection error (%f).\n", me->getMeanInlierReprojectionError());
+        printf("VO Failed: Excessive reprojection error (%f).\n", me->getMeanInlierReprojectionError());
       }
       break;
     default:

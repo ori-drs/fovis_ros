@@ -77,9 +77,13 @@ class FusionCore{
     }
     // Filter the disparity image
     void filterDisparity(int w, int h);
-    // Republish image to LCM. Used to examine the disparity filtering
-    //void republishImage(const  bot_core::images_t* msg);
 
+
+    bool isFilterDepthEnabled(){
+        return filter_depth_;
+    }
+    // Filter the depth image
+    void filterDepth(int w, int h);
 
 
     void doPostProcessing(){
@@ -162,6 +166,11 @@ class FusionCore{
     bool filter_disparity_;
     double filter_disparity_below_threshold_;
     double filter_disparity_above_threshold_;
+
+    bool filter_depth_;
+    double filter_depth_below_threshold_;
+    double filter_depth_above_threshold_;
+
     int filter_image_rows_above_;
     bool publish_filtered_image_;
 
