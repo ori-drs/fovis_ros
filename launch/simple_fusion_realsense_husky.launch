@@ -1,24 +1,35 @@
 <launch>
   <node name="simple_fusion" pkg="vo_estimator" type="simple_fusion" output="screen">
-    <param name="image_a_topic" value="/realsense_d435/color/image_raw" />
-    <param name="image_b_topic" value="/realsense_d435/aligned_depth_to_color/image_raw" />
+    <param name="image_a_topic" value="/camera/color/image_raw" />
+    <param name="image_b_topic" value="/camera/aligned_depth_to_color/image_raw" />
 
     <param name="image_a_transport" value="compressed" />
     <param name="image_b_transport" value="compressedDepth" />
 
-    <param name="imu_topic" value="/imu/data" />
+    <!-- Auxiliary Inputs -->
+    <param name="input_imu_topic" value="/imu/data" />
+    <param name="input_body_pose_topic" value="/state_estimator/pose_in_odom" />
 
     <!-- Output -->
-    <param name="output_using_imu_time" value="true" />
-    <param name="output_body_pose_topic" value="/pose_body_alt" />
-    <param name="output_body_pose_lcm" value="POSE_BODY_ALT" />
+    <param name="output_using_imu_time" value="false" />
+    <param name="output_body_pose_topic" value="/pose_body" />
+    <param name="output_body_pose_lcm" value="POSE_BODY" />
+    <param name="output_tf_frame" value="base_link" />
 
-    <!-- fusion_mode: 0 no fusion, 1 at initialisation, 2 rpy, 3 rp only (both continuously) -->
-    <param name="fusion_mode" value="0" />
+    <!-- orientation_fusion_mode -->
+    <!-- 0 no fusion -->
+    <!-- 1 rpy from imu, 2 r & p only from imu -->
+    <!-- 3 rpy from body_pose_topic, 4 r & p only from body_pose_topic -->
+    <param name="orientation_fusion_mode" value="0" />
+
+    <!-- pose_initialization_mode: 0 cfg file. 1 IMU r & p. 2 using a pose topic -->
+    <param name="pose_initialization_mode" value="0" />
+
     <param name="extrapolate_when_vo_fails" value="false" />
-    <param name="param_file" value="anymal/robot.cfg" />
+    <param name="param_file" value="husky/robot.cfg" />
     <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, faster and real time -->
     <param name="which_vo_options" value="0" />
+    <param name="camera_config" value="REALSENSE_CAMERA" />
 
     <param name="verbose" value="false" />
     <param name="draw_lcmgl" value="false" />

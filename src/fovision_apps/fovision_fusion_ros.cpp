@@ -303,7 +303,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", "fovis/base_link"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", fcfg_.output_tf_frame));
 
 
   geometry_msgs::PoseWithCovarianceStamped body_pose;
@@ -390,6 +390,7 @@ int main(int argc, char **argv){
 
   FusionCoreConfig fcfg;
   fcfg.camera_config = "MULTISENSE_CAMERA";
+  fcfg.output_tf_frame = "fovis/base_link";
   fcfg.output_signal = "POSE_BODY_ALT";
   fcfg.output_signal_at_10Hz = FALSE;
   fcfg.publish_feature_analysis = FALSE; 
@@ -414,6 +415,7 @@ int main(int argc, char **argv){
   nh.getParam("publish_feature_analysis", fcfg.publish_feature_analysis);
   nh.getParam("param_file", param_file); // short filename
   nh.getParam("output_body_pose_lcm", fcfg.output_signal);
+  nh.getParam("output_tf_frame", fcfg.output_tf_frame);
   nh.getParam("which_vo_options", fcfg.which_vo_options);
   nh.getParam("orientation_fusion_mode", fcfg.orientation_fusion_mode);
   nh.getParam("pose_initialization_mode", fcfg.pose_initialization_mode);
@@ -423,7 +425,7 @@ int main(int argc, char **argv){
   drs_base = getenv ("DRS_BASE");
 
   std::string configPath;
-  configPath = std::string( getenv ("DRS_BASE") ) + "/params/config";
+  configPath = std::string( getenv ("DRS_BASE") ) + "/config";
 
   std::cout << configPath << "\n";
   
@@ -458,6 +460,7 @@ int main(int argc, char **argv){
   cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
   cout << fcfg.pose_initialization_mode << " is pose_initialization_mode\n";
   cout << fcfg.camera_config << " is camera_config\n";
+  cout << "output_tf_frame: publish odom to "<< fcfg.output_tf_frame << "\n";
   cout << fcfg.param_file << " is param_file [full path]\n";
 
 

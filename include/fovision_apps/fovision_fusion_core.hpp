@@ -10,6 +10,7 @@
 struct FusionCoreConfig
 {
   std::string camera_config; // which block from the cfg to read
+  std::string output_tf_frame;
   // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
   int orientation_fusion_mode;
 
