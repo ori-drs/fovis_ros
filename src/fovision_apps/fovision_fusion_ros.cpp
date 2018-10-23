@@ -228,6 +228,12 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->left_buf_, left_data, h*step_a);
 
+  } else if (image_a_ros->encoding == "8UC1"){ 
+    // assumed to be grey scale
+    ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
+    void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
+    memcpy(vo_core_->left_buf_, left_data, h*step_a);
+
   }else{ 
     ROS_INFO_STREAM("first image encoding not supported. something is wrong! ["<< image_a_ros->encoding <<"]");
     ROS_INFO_STREAM("Returning. not processing");
@@ -281,6 +287,12 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   }else if (image_b_ros->encoding == "mono8"){
     // assumed to be grayscale from multisense
+    void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
+    memcpy(vo_core_->right_buf_, right_data, h*step_b);
+    vo_core_->doOdometryLeftRight();
+
+  }else if (image_b_ros->encoding == "8UC1"){
+    // assumed to be grayscale
     void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
     memcpy(vo_core_->right_buf_, right_data, h*step_b);
     vo_core_->doOdometryLeftRight();
