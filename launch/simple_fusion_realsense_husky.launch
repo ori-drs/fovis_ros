@@ -33,7 +33,8 @@
 
     <param name="verbose" value="false" />
     <param name="draw_lcmgl" value="false" />
-    <param name="publish_feature_analysis" value="true" />
+    <param name="publish_feature_analysis" value="false" />
+    <param name="write_pose_to_file" value="false" />
 
   </node>
 </launch>
