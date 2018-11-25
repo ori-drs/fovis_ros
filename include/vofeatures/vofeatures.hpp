@@ -78,7 +78,7 @@ private:
   
   void writeImage(uint8_t* img_buf, int counter, int64_t utime);
   void writeFeatures(std::vector<ImageFeature> features, int counter, int64_t utime);
-  void writePose(Eigen::Isometry3d pose, int counter, int64_t utime);
+  void writePose(Eigen::Isometry3d pose, int64_t utime);
   void sendFeatures(std::vector<ImageFeature> features, 
                     std::vector<int> features_indices, std::string channel,
                     Eigen::Isometry3d pose,

@@ -21,7 +21,7 @@ struct FusionCoreConfig
   int feature_analysis_publish_period; // number of frames between publishing the point features 
   std::string output_extension;
   std::string output_signal;
-  bool output_signal_at_10Hz;
+  bool write_pose_to_file;
   bool verbose;
   int correction_frequency;
   std::string in_log_fname;
@@ -92,15 +92,13 @@ class FusionCore{
 
         if (fcfg_.publish_feature_analysis)
             featureAnalysis();
-        if (fcfg_.output_signal_at_10Hz)
-            outputSignalAt10Hz();
 
         fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
     }
 
     void updateMotion();
     void featureAnalysis();
-    void outputSignalAt10Hz();
+    void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
     void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
 
     void updatePosition(Eigen::Isometry3d delta_camera){

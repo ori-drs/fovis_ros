@@ -119,12 +119,6 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
   get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
 
-  if( fcfg_.output_signal_at_10Hz ){
-    std::cout << "Opened fovision_pose_body.txt\n";
-    fovision_output_file_.open("fovision_pose_body.txt");
-    fovision_output_file_ << "# utime x y z qw qx qy qz roll pitch yaw\n";
-  }
-
   cout <<"FusionCore Constructed\n";
 }
 
@@ -365,22 +359,30 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
 }
 
 
+void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 
-void FusionCore::outputSignalAt10Hz(){
+  if(!fovision_output_file_.is_open()){
+    std::cout << "pose_body_trajectory.txt file not open, opening it\n";
+    fovision_output_file_.open(  "pose_body_trajectory.txt" , std::fstream::out);
+    fovision_output_file_ << "# utime x y z qw qx qy qz roll pitch yaw\n";
+    fovision_output_file_.flush();
+  }
+
   // Publish the current estimate
-  Eigen::Isometry3d local_to_body = estimator_->getBodyPose();
-  estimator_->publishUpdate(utime_cur_, local_to_body, "POSE_BODY_10HZ", false);
-  //lcm_pub_->publish("CAMERA_REPUBLISH", msg);
 
   double current_rpy[3];
-  Eigen::Quaterniond current_quat = Eigen::Quaterniond( local_to_body.rotation() );
+  Eigen::Quaterniond current_quat = Eigen::Quaterniond( pose.rotation() );
   quat_to_euler( current_quat, current_rpy[0], current_rpy[1], current_rpy[2]);
-  //# utime, x, y, z, qw, qx, qy, qz, roll, pitch, yaw
-  fovision_output_file_ << utime_cur_  << " "
-                  << local_to_body.translation().x() << " " << local_to_body.translation().y() << " " << local_to_body.translation().z() << " "
-                  << current_quat.w() << " " << current_quat.x() << " " << current_quat.y() << " " << current_quat.z() << " "
-                  << current_rpy[0] << " " << current_rpy[1] << " " << current_rpy[2] << "\n";
-  fovision_output_file_.flush();
+
+  if(fovision_output_file_.is_open()){
+    fovision_output_file_ << utime  << ","
+                  << pose.translation().x() << "," << pose.translation().y() << "," << pose.translation().z() << ","
+                  << current_quat.w() << "," << current_quat.x() << "," << current_quat.y() << "," << current_quat.z() << ","
+                  << current_rpy[0] << "," << current_rpy[1] << "," << current_rpy[2] << "\n";
+    fovision_output_file_.flush();
+  }else{
+    std::cout << "pose_body_trajectory.txt not open still\n";
+  }
 }
 
 

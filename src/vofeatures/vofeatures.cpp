@@ -144,12 +144,12 @@ void VoFeatures::doFeatureProcessing(bool useCurrent, bool writeOutput){
     //  std::cout << "write reference features\n";
     //  writeImage(left_ref_buf_, output_counter_, utime_);
     //  writeFeatures(features_ref_, output_counter_, utime_);
-    //  writePose(ref_camera_pose_, output_counter_, utime_);
+    //  writePose(ref_camera_pose_, utime_);
     }else{
       std::cout << "write current features\n";
       writeImage(left_cur_buf_, output_counter_, utime_);
       writeFeatures(features_cur_, output_counter_, utime_);
-      writePose(cur_camera_pose_, output_counter_, utime_);
+      writePose(cur_camera_pose_, utime_);
     }
   }
 
@@ -260,11 +260,11 @@ void VoFeatures::writeFeatures(std::vector<ImageFeature> features, int counter, 
 }
 
 
-void VoFeatures::writePose(Eigen::Isometry3d pose, int counter, int64_t utime){
+void VoFeatures::writePose(Eigen::Isometry3d pose, int64_t utime){
 
   if(!output_pose_file_.is_open()){
-    std::cout << "pose_trajectory.txt file not open, opening it\n";
-    output_pose_file_.open(  "pose_trajectory.txt" , std::fstream::out);
+    std::cout << "camera_trajectory.txt file not open, opening it\n";
+    output_pose_file_.open(  "camera_trajectory.txt" , std::fstream::out);
     output_pose_file_ << "# utime x y z qw qx qy qz roll pitch yaw\n";
     output_pose_file_.flush();
   }
@@ -274,10 +274,10 @@ void VoFeatures::writePose(Eigen::Isometry3d pose, int counter, int64_t utime){
   quat_to_euler( pose_quat, pose_rpy[0], pose_rpy[1], pose_rpy[2]);
 
   if(output_pose_file_.is_open()){
-    output_pose_file_ << utime  << " "
-                    << pose.translation().x() << " " << pose.translation().y() << " " << pose.translation().z() << " "
-                    << pose_quat.w() << " " << pose_quat.x() << " " << pose_quat.y() << " " << pose_quat.z() << " "
-                    << pose_rpy[0] << " " << pose_rpy[1] << " " << pose_rpy[2] << "\n";
+    output_pose_file_ << utime  << ","
+                    << pose.translation().x() << "," << pose.translation().y() << "," << pose.translation().z() << ","
+                    << pose_quat.w() << "," << pose_quat.x() << "," << pose_quat.y() << "," << pose_quat.z() << ","
+                    << pose_rpy[0] << "," << pose_rpy[1] << "," << pose_rpy[2] << "\n";
     output_pose_file_.flush();                   
   }else{
     std::cout << "file not open still\n";
