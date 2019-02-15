@@ -268,7 +268,7 @@ int main(int argc, char **argv){
   FusionCoreConfig fcfg;
   fcfg.camera_config = "MULTISENSE_CAMERA";
   fcfg.output_signal = "POSE_BODY";
-  fcfg.output_signal_at_10Hz = FALSE;
+  fcfg.write_pose_to_file = FALSE;
   fcfg.publish_feature_analysis = FALSE; 
   fcfg.orientation_fusion_mode = 0;
   fcfg.verbose = false;
@@ -291,7 +291,7 @@ int main(int argc, char **argv){
   ConciseArgs parser(argc, argv, "simple-fusion");
   parser.add(fcfg.camera_config, "c", "camera_config", "Camera Config block to use: CAMERA, stereo, stereo_with_letterbox");
   parser.add(fcfg.output_signal, "p", "output_signal", "Output POSE_BODY and POSE_BODY_ALT signals");
-  parser.add(fcfg.output_signal_at_10Hz, "s", "output_signal_at_10Hz", "Output POSE_BODY_10HZ on the camera CB");
+  parser.add(fcfg.write_pose_to_file, "s", "write_pose_to_file", "write_pose_to_file");
   parser.add(fcfg.publish_feature_analysis, "f", "publish_feature_analysis", "Publish Feature Analysis Data");
   parser.add(fcfg.feature_analysis_publish_period, "fp", "feature_analysis_publish_period", "Publish features with this period");  
   parser.add(fcfg.orientation_fusion_mode, "m", "orientation_fusion_mode", "0 none, 1 at init, 2 rpy, 3 rp only, (both continuous)");

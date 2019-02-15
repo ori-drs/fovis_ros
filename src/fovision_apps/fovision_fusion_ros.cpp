@@ -326,6 +326,8 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   body_pose.pose.pose = gpose;
   body_pose_pub_.publish(body_pose);
 
+  if (fcfg_.write_pose_to_file)
+    vo_core_->writePoseToFile(vo_core_->getBodyPose(), utime_output);
 
   // This hard coded transform from base to head is because
   // when playing back logs static broadcaster doesnt work
@@ -401,23 +403,25 @@ int main(int argc, char **argv){
   ros::init(argc, argv, "simple_fusion");
 
   FusionCoreConfig fcfg;
-  fcfg.camera_config = "MULTISENSE_CAMERA";
-  fcfg.output_tf_frame = "fovis/base_link";
-  fcfg.output_signal = "POSE_BODY_ALT";
-  fcfg.output_signal_at_10Hz = FALSE;
-  fcfg.publish_feature_analysis = FALSE; 
-  fcfg.orientation_fusion_mode = 0;
-  fcfg.pose_initialization_mode = 0;
-  fcfg.verbose = FALSE;
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
   fcfg.feature_analysis_publish_period = 1; // 5
   std::string param_file = ""; // short filename
-  fcfg.param_file = ""; // full path to file
-  fcfg.draw_lcmgl = FALSE;  
   double processing_rate = 1; // real time
   fcfg.write_feature_output = FALSE;
+
+  fcfg.verbose = FALSE;
+  fcfg.extrapolate_when_vo_fails = FALSE;
+  fcfg.draw_lcmgl = FALSE;  
+  fcfg.publish_feature_analysis = FALSE; 
+  fcfg.param_file = ""; // full path to file
+  fcfg.output_signal = "POSE_BODY_ALT";
+  fcfg.output_tf_frame = "fovis/base_link";
   fcfg.which_vo_options = 2;
+  fcfg.orientation_fusion_mode = 0;
+  fcfg.pose_initialization_mode = 0;
+  fcfg.camera_config = "MULTISENSE_CAMERA";
+  fcfg.write_pose_to_file = FALSE;
 
 
   ros::NodeHandle nh("~");
@@ -432,6 +436,7 @@ int main(int argc, char **argv){
   nh.getParam("orientation_fusion_mode", fcfg.orientation_fusion_mode);
   nh.getParam("pose_initialization_mode", fcfg.pose_initialization_mode);
   nh.getParam("camera_config", fcfg.camera_config);
+  nh.getParam("write_pose_to_file", fcfg.write_pose_to_file);
 
   char* drs_base;
   drs_base = getenv ("DRS_BASE");
