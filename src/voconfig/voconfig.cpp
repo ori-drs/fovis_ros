@@ -289,15 +289,7 @@ KmclConfiguration::load_stereo_calibration() const {
   double rotation[9], translation[3];
 
   double quat[4];
-
   quat[0] = 1;
-
-
-  rotation[0] = 1;
-  rotation[4] = 1;
-  rotation[8] = 1;
-
-
   translation[0] = -0.05;
   /*
   bot_param_get_double_array_or_fail(bot_param_,

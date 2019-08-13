@@ -63,7 +63,6 @@ class FusionCore{
 
 
     void doOdometryLeftRight(){
-        std::cout << "doOdometryLeftRight\n";
         vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
     }
 

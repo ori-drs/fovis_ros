@@ -33,11 +33,58 @@ int get_trans_with_utime(BotFrames *bot_frames,
 }
 */
 
+Eigen::Quaterniond euler_to_quat(double roll, double pitch, double yaw) {
+
+  // This conversion function introduces a NaN in Eigen Rotations when:
+  // roll == pi , pitch,yaw =0    ... or other combinations.
+  // cos(pi) ~=0 but not exactly 0
+  if ( ((roll==M_PI) && (pitch ==0)) && (yaw ==0)){
+    return  Eigen::Quaterniond(0,1,0,0);
+  }else if( ((pitch==M_PI) && (roll ==0)) && (yaw ==0)){
+    return  Eigen::Quaterniond(0,0,1,0);
+  }else if( ((yaw==M_PI) && (roll ==0)) && (pitch ==0)){
+    return  Eigen::Quaterniond(0,0,0,1);
+  }
+
+  double sy = sin(yaw*0.5);
+  double cy = cos(yaw*0.5);
+  double sp = sin(pitch*0.5);
+  double cp = cos(pitch*0.5);
+  double sr = sin(roll*0.5);
+  double cr = cos(roll*0.5);
+  double w = cr*cp*cy + sr*sp*sy;
+  double x = sr*cp*cy - cr*sp*sy;
+  double y = cr*sp*cy + sr*cp*sy;
+  double z = cr*cp*sy - sr*sp*cy;
+  return Eigen::Quaterniond(w,x,y,z);
+}
+
+void quat_to_euler(const Eigen::Quaterniond& q, double& roll, double& pitch, double& yaw) {
+  const double q0 = q.w();
+  const double q1 = q.x();
+  const double q2 = q.y();
+  const double q3 = q.z();
+  roll = atan2(2.0*(q0*q1+q2*q3), 1.0-2.0*(q1*q1+q2*q2));
+  pitch = asin(2.0*(q0*q2-q3*q1));
+  yaw = atan2(2.0*(q0*q3+q1*q2), 1.0-2.0*(q2*q2+q3*q3));
+}
+
 void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera){
 
   // 0. Assume head to camera is rigid:
   camera_to_body_.setIdentity();
+
+  // rosrun tf tf_echo base realsense_d435_front_forward_depth_optical_frame .... in sim - the only optical frame in sim
+  // however: realsense_d435_front_forward_infra1_optical_frame is the actual frame in the data
+  // TODO: update when robot is running live
+  camera_to_body_.translation().x() = 0.386;
+  camera_to_body_.translation().y() = 0.015;
+  camera_to_body_.translation().z() = 0.160;
+  Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
+  camera_to_body_.rotate( quat );
+  camera_to_body_ = camera_to_body_.inverse(); //NB
   //REPLACE get_trans_with_utime( botframes_ ,  "body", std::string(camera_config_ + "_LEFT").c_str(), utime, camera_to_body_);
+
 
   // 1. Update the Position of the head frame:
   Eigen::Isometry3d delta_body = camera_to_body_.inverse()*delta_camera*camera_to_body_;
@@ -54,7 +101,7 @@ void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isome
     //Eigen::Isometry3d delta_body =  local_to_body_prev_.inverse() * local_to_body_;
     head_lin_rate_ = delta_body.translation()/delta_time;
     Eigen::Vector3d delta_body_rpy;
-// REPLACE    quat_to_euler(  Eigen::Quaterniond(delta_body.rotation()) , delta_body_rpy(0), delta_body_rpy(1), delta_body_rpy(2));
+    quat_to_euler(  Eigen::Quaterniond(delta_body.rotation()) , delta_body_rpy(0), delta_body_rpy(1), delta_body_rpy(2));
     head_rot_rate_ = delta_body_rpy/delta_time; // rotation rate
   }    
   

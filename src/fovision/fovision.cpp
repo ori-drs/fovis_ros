@@ -48,13 +48,11 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
   const fovis::MotionEstimator * me = odom_.getMotionEstimator();
 
 
-
-  std::cout << "doOdometry (core)\n";
-  fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
-  std::cout << (int) estim_status << " status\n";
-  
-  Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
-  std::cout << motion_estimate.translation().transpose() << "\n";
+  //std::cout << "doOdometry (core)\n";
+  //fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
+  //std::cout << (int) estim_status << " status\n";
+  //Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
+  //std::cout << motion_estimate.translation().transpose() << "\n";
 
 
   //if(draw_lcmgl_) { visualization_->draw(&odom_); }

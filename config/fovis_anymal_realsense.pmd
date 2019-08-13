@@ -1,0 +1,29 @@
+group "0.core" {
+    cmd "core" {
+        exec = "roscore";
+        host = "localhost";
+    }
+}
+
+group "1.progs" {
+    cmd "rosbag" {
+        exec = "rosbag play anymal_2019-05-10-10-38-35.bag --pause -s 175";
+        host = "localhost";
+    }
+    cmd "image_view" {
+        exec = "rosrun rqt_image_view rqt_image_view";
+        host = "localhost";
+    }
+    cmd "fovis_ros" {
+        exec = "roslaunch vo_estimator simple_fusion_realsense_forward_anymal.launch";
+        host = "localhost";
+    }
+    cmd "traj_server" {
+        exec = "roslaunch vo_estimator trajectory_server.launch";
+        host = "localhost";
+    }
+    cmd "rviz" {
+        exec = "roslaunch vo_estimator  view_fovis.launch";
+        host = "localhost";
+    }
+}

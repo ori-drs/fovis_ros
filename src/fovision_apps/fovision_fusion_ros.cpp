@@ -433,7 +433,7 @@ int main(int argc, char **argv){
   fcfg.publish_feature_analysis = false; 
   fcfg.param_file = ""; // full path to file
   fcfg.output_signal = "POSE_BODY_ALT";
-  fcfg.output_tf_frame = "fovis/base_link";
+  fcfg.output_tf_frame = "/fovis/pose_in_odom";
   fcfg.which_vo_options = 2;
   fcfg.orientation_fusion_mode = 0;
   fcfg.pose_initialization_mode = 0;

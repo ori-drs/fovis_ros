@@ -12,7 +12,7 @@
 
     <!-- Output -->
     <param name="output_using_imu_time" value="true" />
-    <param name="output_body_pose_topic" value="/pose_body" />
+    <param name="output_body_pose_topic" value="/fovis/pose_in_odom" />
     <param name="output_body_pose_lcm" value="POSE_BODY" />
 
     <!-- orientation_fusion_mode -->
@@ -22,7 +22,7 @@
     <param name="orientation_fusion_mode" value="0" />
 
     <!-- pose_initialization_mode: 0 cfg file. 1 IMU r & p. 2 using a pose topic -->
-    <param name="pose_initialization_mode" value="0" />
+    <param name="pose_initialization_mode" value="2" />
 
     <param name="extrapolate_when_vo_fails" value="false" />
     <param name="param_file" value="anymal/robot.cfg" />
