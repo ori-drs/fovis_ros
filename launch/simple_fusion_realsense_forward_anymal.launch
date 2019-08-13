@@ -1,10 +1,10 @@
 <launch>
   <node name="simple_fusion" pkg="vo_estimator" type="simple_fusion" output="screen">
-    <param name="image_a_topic" value="/realsense_d435_forward/color/image_raw" />
-    <param name="image_b_topic" value="/realsense_d435_forward/aligned_depth_to_color/image_raw" />
+    <param name="image_a_topic" value="/realsense_d435_front_forward/infra1/image_rect_raw" />
+    <param name="image_b_topic" value="/realsense_d435_front_forward/infra2/image_rect_raw" />
 
     <param name="image_a_transport" value="compressed" />
-    <param name="image_b_transport" value="compressedDepth" />
+    <param name="image_b_transport" value="compressed" />
 
     <!-- Auxiliary Inputs -->
     <param name="input_imu_topic" value="/state_estimator/imu" />

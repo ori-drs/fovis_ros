@@ -11,12 +11,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-#include <lcm/lcm-cpp.hpp>
-#include <bot_frames/bot_frames.h>
-//#include <bot_frames_cpp/bot_frames_cpp.hpp>
-#include <lcmtypes/bot_core.hpp>
+//#include <lcm/lcm-cpp.hpp>
+//#include <bot_frames/bot_frames.h>
+////#include <bot_frames_cpp/bot_frames_cpp.hpp>
+//#include <lcmtypes/bot_core.hpp>
 
-#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
+//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
 
 
 // A simple class which maintains an estimate of a head position
@@ -24,8 +24,8 @@
 class VoEstimator
 {
 public:
-  VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_, 
-              std::string channel_extension_ = "", std::string camera_config_ = "CAMERA");
+  //VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_, 
+  VoEstimator(std::string channel_extension_ = "", std::string camera_config_ = "CAMERA");
   ~VoEstimator();
 
   void updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera);
@@ -45,15 +45,14 @@ public:
   void publishUpdate(int64_t utime, Eigen::Isometry3d local_to_head, std::string channel, bool output_alpha_filter);
 
 private:
-  boost::shared_ptr<lcm::LCM> lcm_;
-  pronto_vis* pc_vis_;
+  //boost::shared_ptr<lcm::LCM> lcm_;
+  //pronto_vis* pc_vis_;
   
   // have we received the first pose estimate:?
   bool pose_initialized_;
   bool vo_initialized_;
 
-  BotFrames* botframes_;
-  //bot::frames* botframes_cpp_;
+  //BotFrames* botframes_;
 
   std::string channel_extension_;
   std::string camera_config_;

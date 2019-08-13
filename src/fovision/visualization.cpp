@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <GL/gl.h>
-#include <bot_lcmgl_client/lcmgl.h>
+//#include <bot_lcmgl_client/lcmgl.h>
 
 #include <fovis/fovis.hpp>
 
@@ -47,9 +47,9 @@ Visualization::colormap(float z, float rgb[3])
   rgb[2] = ORANGE_TO_BLUE_RGB[row][2]*w + ORANGE_TO_BLUE_RGB[row+1][2]*(1.-w);
 }
 
-Visualization::Visualization(bot_lcmgl_t* lcmgl, const StereoCalibration* calib)
-  : _lcmgl(lcmgl),
-    _calibration(calib)
+//Visualization::Visualization(bot_lcmgl_t* lcmgl, const StereoCalibration* calib)
+Visualization::Visualization(const StereoCalibration* calib)
+  : _calibration(calib)
 {
   // take the  Z corresponding to disparity 5 px as 'max Z'
   Eigen::Matrix4d uvdtoxyz = calib->getUvdToXyz();
@@ -64,12 +64,13 @@ Visualization::Visualization(bot_lcmgl_t* lcmgl, const StereoCalibration* calib)
 }
 
 Visualization::~Visualization() {
-  bot_lcmgl_destroy(_lcmgl);
+  //bot_lcmgl_destroy(_lcmgl);
 }
 
 void
 Visualization::draw(const VisualOdometry* odom)
 {
+  /*
   const OdometryFrame* target_frame = odom->getTargetFrame();
   int num_levels = target_frame->getNumLevels();
   int base_width = target_frame->getLevel(0)->getWidth();
@@ -100,11 +101,13 @@ Visualization::draw(const VisualOdometry* odom)
   bot_lcmgl_pop_matrix(_lcmgl);
 
   bot_lcmgl_switch_buffer(_lcmgl);
+  */
 }
 
 void
 Visualization::draw_pyramid_level_flow(const VisualOdometry* odom, int level_num)
 {
+  /*
   const OdometryFrame* ref_frame = odom->getReferenceFrame();
   const OdometryFrame* target_frame = odom->getTargetFrame();
   const PyramidLevel* ref_level = ref_frame->getLevel(level_num);
@@ -386,7 +389,7 @@ Visualization::draw_pyramid_level_matches(const VisualOdometry* odom, int level_
     }
     bot_lcmgl_end(_lcmgl);
   }
-
+*/
 }
 
 //}

@@ -2,9 +2,9 @@
 
 
 #include <zlib.h>
-#include <lcm/lcm-cpp.hpp>
-#include <bot_param/param_client.h>
-#include <bot_frames/bot_frames.h>
+//#include <lcm/lcm-cpp.hpp>
+//#include <bot_param/param_client.h>
+//#include <bot_frames/bot_frames.h>
 
 
 #include "voconfig/voconfig.hpp"
@@ -12,14 +12,14 @@
 #include "voestimator/voestimator.hpp"
 #include "fovision/fovision.hpp"
 
-#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
+//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
+//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 
 #include <fovision_apps/fovision_fusion_core.hpp>
 
-#include <ConciseArgs>
+//#include <ConciseArgs>
 
-#include <path_util/path_util.h>
+//#include <path_util/path_util.h>
 
 #include <opencv/cv.h> // for disparity 
 
@@ -29,7 +29,7 @@ using namespace cv; // for disparity ops
 
 std::ofstream fovision_output_file_;
 
-
+/*
 int get_trans_with_utime(BotFrames *bot_frames,
         const char *from_frame, const char *to_frame, int64_t utime,
         Eigen::Isometry3d & mat){
@@ -44,15 +44,16 @@ int get_trans_with_utime(BotFrames *bot_frames,
 
   return status;
 }
+*/
 
 
-
-FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_) : 
-       lcm_recv_(lcm_recv_), lcm_pub_(lcm_pub_), fcfg_(fcfg_), utime_cur_(0), utime_prev_(0), 
+//FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_) : 
+FusionCore::FusionCore(const FusionCoreConfig& fcfg_) : 
+       fcfg_(fcfg_), utime_cur_(0), utime_prev_(0), 
        ref_utime_(0), changed_ref_frames_(false)
 {
   // Set up frames and config:
-  if (fcfg_.param_file.empty()) {
+  /*if (fcfg_.param_file.empty()) {
     std::cout << "Get param from LCM\n";
     botparam_ = bot_param_get_global(lcm_recv_->getUnderlyingLCM(), 0);
   } else {
@@ -64,26 +65,27 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   }
   botframes_= bot_frames_get_global(lcm_recv_->getUnderlyingLCM(), botparam_);
   //botframes_cpp_ = new bot::frames(botframes_);
+  */
 
-  config_ = new voconfig::KmclConfiguration(botparam_, fcfg_.camera_config);
+  config_ = new voconfig::KmclConfiguration(fcfg_.camera_config);
   boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
   stereo_calibration_ = boost::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
 
   // Disparity filtering
-  filter_disparity_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.enabled");
+  //filter_disparity_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.enabled");
   std::cout << "Disparity Filter is " << (filter_disparity_ ? "ENABLED" : "DISABLED")  << "\n";
-  filter_disparity_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_below_threshold");
-  filter_disparity_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_above_threshold");
+  //filter_disparity_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_below_threshold");
+  //filter_disparity_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_disparity_above_threshold");
 
   // Depth Filtering
-  filter_depth_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.filter_depth_enabled");
+  //filter_depth_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.filter_depth_enabled");
   std::cout << "Depth Filter is " << (filter_depth_ ? "ENABLED" : "DISABLED")  << "\n";
-  filter_depth_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_below_threshold");
-  filter_depth_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_above_threshold");
+  //filter_depth_below_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_below_threshold");
+  //filter_depth_above_threshold_ = bot_param_get_double_or_fail(botparam_, "visual_odometry.filter.filter_depth_above_threshold");
 
 
-  filter_image_rows_above_ = bot_param_get_int_or_fail(botparam_, "visual_odometry.filter.filter_image_rows_above");
-  publish_filtered_image_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.publish_filtered_image");
+  //filter_image_rows_above_ = bot_param_get_int_or_fail(botparam_, "visual_odometry.filter.filter_image_rows_above");
+  //publish_filtered_image_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.publish_filtered_image");
 
   // Allocate various buffers:
   image_size_ = stereo_calibration_->getWidth() * stereo_calibration_->getHeight();
@@ -93,21 +95,21 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
   rgb_buf_ = (uint8_t*) malloc(10*image_size_ * sizeof(uint8_t)); 
   decompress_disparity_buf_ = (uint8_t*) malloc( 4*image_size_*sizeof(uint8_t));  // arbitary size chosen..
   depth_buf_ = (float*) malloc( image_size_*sizeof(float));  // byte per image
-  imgutils_ = new image_io_utils( lcm_pub_, stereo_calibration_->getWidth(), 2*stereo_calibration_->getHeight()); // extra space for stereo tasks
+  // REPLACE imgutils_ = new image_io_utils( lcm_pub_, stereo_calibration_->getWidth(), 2*stereo_calibration_->getHeight()); // extra space for stereo tasks
 
-  vo_ = new FoVision(lcm_pub_ , stereo_calibration_, fcfg_.draw_lcmgl, fcfg_.which_vo_options);
+  vo_ = new FoVision(stereo_calibration_, fcfg_.draw_lcmgl, fcfg_.which_vo_options);
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
 
-  features_ = new VoFeatures(lcm_pub_, stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
-  estimator_ = new VoEstimator(lcm_pub_ , botframes_, fcfg_.output_extension, fcfg_.camera_config );
+  features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
+  estimator_ = new VoEstimator(fcfg_.output_extension, fcfg_.camera_config );
 
 
   pose_initialized_=false;
   // if not using imu or pose, initialise with robot model
   if (fcfg_.pose_initialization_mode == 0){
     std::cout << "Pose initialized using cfg\n";
-    Eigen::Isometry3d body_to_local_initial;
-    get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
+    Eigen::Isometry3d body_to_local_initial = Eigen::Isometry3d::Identity();
+    //get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
     estimator_->setBodyPose(body_to_local_initial);  
     pose_initialized_=true;
   }
@@ -115,9 +117,13 @@ FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr
 
   // IMU:
   imu_counter_=0;
+
+  body_to_imu_ = Eigen::Isometry3d::Identity();
+  imu_to_camera_ = Eigen::Isometry3d::Identity();
+
   // This assumes the imu to body frame is fixed, need to update if the neck is actuated
-  get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
-  get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
+  //get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
+  //get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
 
   cout <<"FusionCore Constructed\n";
 }
@@ -188,7 +194,7 @@ void FusionCore::updateMotion(){
                                            delta_camera.translation().y() / dt ,
                                            delta_camera.translation().z() / dt);
     double rpy[3];
-    quat_to_euler(  Eigen::Quaterniond(delta_camera.rotation()) , rpy[0], rpy[1], rpy[2]);
+    // REPLACE quat_to_euler(  Eigen::Quaterniond(delta_camera.rotation()) , rpy[0], rpy[1], rpy[2]);
     vo_velocity_angular_ = Eigen::Vector3d( rpy[0]/dt , rpy[1]/dt , rpy[2]/dt);
 
     ////std::cout << vo_velocity_linear_.transpose() << " vo linear\n";
@@ -213,7 +219,8 @@ void FusionCore::updateMotion(){
                 << camera_angular_velocity_from_imu_.transpose() << " r/s to be extrapolated\n";
 
       // Use IMU rot_rates to extrapolate rotation: This is mathematically incorrect:
-      Eigen::Quaterniond extrapolated_quat = euler_to_quat( camera_angular_velocity_from_imu_[0]*dt, camera_angular_velocity_from_imu_[1]*dt, camera_angular_velocity_from_imu_[2]*dt);
+      Eigen::Quaterniond extrapolated_quat;
+      //REPLACE extrapolated_quat = euler_to_quat( camera_angular_velocity_from_imu_[0]*dt, camera_angular_velocity_from_imu_[1]*dt, camera_angular_velocity_from_imu_[2]*dt);
 
       delta_camera.setIdentity();
       delta_camera.translation().x() = vo_velocity_linear_[0] * dt;
@@ -228,7 +235,7 @@ void FusionCore::updateMotion(){
 
   if (fcfg_.verbose){
     std::stringstream ss2;
-    print_Isometry3d(delta_camera, ss2);
+    //print_Isometry3d(delta_camera, ss2);
     std::cout << "camera: " << ss2.str() << " code: " << (int) delta_status << "\n";
   }
 
@@ -307,9 +314,9 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       // 1. Get the currently estimated head pose and its rpy
       Eigen::Isometry3d local_to_body = estimator_->getBodyPose();
       std::stringstream ss2;
-      print_Isometry3d(local_to_body, ss2);
+      //print_Isometry3d(local_to_body, ss2);
       double rpy[3];
-      quat_to_euler(  Eigen::Quaterniond(local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
+      // REPLACE quat_to_euler(  Eigen::Quaterniond(local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
       if (fcfg_.verbose){
         std::cout << "local_to_body: " << ss2.str() << " | "<< 
           rpy[0]*180/M_PI << " " << rpy[1]*180/M_PI << " " << rpy[2]*180/M_PI << "\n";        
@@ -317,8 +324,8 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
         
       // 2. Get the IMU orientated RPY:
       double rpy_imu[3];
-      quat_to_euler( local_to_body_orientation_from_imu , 
-                      rpy_imu[0], rpy_imu[1], rpy_imu[2]);
+      // REPLACE quat_to_euler( local_to_body_orientation_from_imu , 
+      //                rpy_imu[0], rpy_imu[1], rpy_imu[2]);
       if (fcfg_.verbose){
         std::cout <<  rpy_imu[0]*180/M_PI << " " << rpy_imu[1]*180/M_PI << " " << rpy_imu[2]*180/M_PI << " rpy_imu\n";        
         cout << "IMU correction | roll pitch | was: "
@@ -331,7 +338,7 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       if ( (fcfg_.orientation_fusion_mode==1) || (fcfg_.orientation_fusion_mode==3)){
         revised_local_to_body_quat = local_to_body_orientation_from_imu;
       }else{  // pitch and roll from IMU, yaw from VO:
-        revised_local_to_body_quat = euler_to_quat( rpy_imu[0], rpy_imu[1], rpy[2]);
+        // REPLACE revised_local_to_body_quat = euler_to_quat( rpy_imu[0], rpy_imu[1], rpy[2]);
       }
       ///////////////////////////////////////
       Eigen::Isometry3d revised_local_to_body;
@@ -342,8 +349,8 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       // 4. Set the Head pose using the merged orientation:
       if (fcfg_.verbose){
         std::stringstream ss4;
-        print_Isometry3d(revised_local_to_body, ss4);
-        quat_to_euler(  Eigen::Quaterniond(revised_local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
+        //print_Isometry3d(revised_local_to_body, ss4);
+        //REPLACE quat_to_euler(  Eigen::Quaterniond(revised_local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
         std::cout << "local_revhead: " << ss4.str() << " | "<< 
           rpy[0]*180/M_PI << " " << rpy[1]*180/M_PI << " " << rpy[2]*180/M_PI << "\n";        
       }
@@ -372,7 +379,7 @@ void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 
   double current_rpy[3];
   Eigen::Quaterniond current_quat = Eigen::Quaterniond( pose.rotation() );
-  quat_to_euler( current_quat, current_rpy[0], current_rpy[1], current_rpy[2]);
+  // REPLACE quat_to_euler( current_quat, current_rpy[0], current_rpy[1], current_rpy[2]);
 
   if(fovision_output_file_.is_open()){
     fovision_output_file_ << utime  << ","
@@ -397,7 +404,7 @@ void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orie
   imu_to_camera_quat_array[2] =imu_to_camera_quat.y(); imu_to_camera_quat_array[3] =imu_to_camera_quat.z();
   double gyro_array[3];
   gyro_array[0] = gyro[0]; gyro_array[1] = gyro[1]; gyro_array[2] = gyro[2];
-  bot_quat_rotate_to( imu_to_camera_quat_array, gyro_array, camera_ang_vel_from_imu_);
+  //REPLACE bot_quat_rotate_to( imu_to_camera_quat_array, gyro_array, camera_ang_vel_from_imu_);
   camera_angular_velocity_from_imu_ = Eigen::Vector3d(camera_ang_vel_from_imu_[0], camera_ang_vel_from_imu_[1], camera_ang_vel_from_imu_[2]);
   // Didn't find this necessary - for smooth motion
   //camera_angular_velocity_from_imu_alpha_ = 0.8*camera_angular_velocity_from_imu_alpha_ + 0.2*camera_angular_velocity_from_imu_;

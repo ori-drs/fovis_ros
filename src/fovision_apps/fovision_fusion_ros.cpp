@@ -8,16 +8,16 @@
 
 
 #include <zlib.h>
-#include <lcm/lcm-cpp.hpp>
+//#include <lcm/lcm-cpp.hpp>
 
 
 #include <fovision_apps/fovision_fusion_core.hpp>
 
 
-#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
+//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
+//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 
-#include <path_util/path_util.h>
+//#include <path_util/path_util.h>
 
 #include <opencv/cv.h> // for disparity 
 
@@ -49,7 +49,7 @@ using namespace cv; // for disparity ops
 
 class StereoOdom{
   public:
-    StereoOdom(ros::NodeHandle node_in, boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_,
+    StereoOdom(ros::NodeHandle node_in,
       FusionCoreConfig fcfg_);
     
     ~StereoOdom(){
@@ -88,13 +88,12 @@ class StereoOdom{
 };    
 
 StereoOdom::StereoOdom(ros::NodeHandle node_in,
-       boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_,
        FusionCoreConfig fcfg_) : 
        node_(node_in), it_(node_in), sync_(10), sync_without_info_(10),
-       lcm_recv_(lcm_recv_), lcm_pub_(lcm_pub_), fcfg_(fcfg_)
+       fcfg_(fcfg_)
 {
 
-  vo_core_ = new FusionCore(lcm_recv_, lcm_pub_, fcfg_);
+  vo_core_ = new FusionCore(fcfg_);
 
   // Parameters:
   output_using_imu_time_=true;
@@ -184,6 +183,23 @@ void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
   }
   stereo_counter++;
 */
+}
+
+
+int pixel_convert_8u_rgb_to_8u_gray (uint8_t *dest, int dstride, int width,
+        int height, const uint8_t *src, int sstride)
+{
+  int i, j;
+  for (i=0; i<height; i++) {
+    uint8_t *drow = dest + i * dstride;
+    const uint8_t *srow = src + i * sstride;
+    for (j=0; j<width; j++) {
+      drow[j] = 0.2125 * srow[j*3+0] +
+        0.7154 * srow[j*3+1] +
+        0.0721 * srow[j*3+2];
+    }
+  }
+  return 0;
 }
 
 
@@ -287,6 +303,7 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   }else if (image_b_ros->encoding == "mono8"){
     // assumed to be grayscale from multisense
+    // this works with realsense d435 ir also
     void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
     memcpy(vo_core_->right_buf_, right_data, h*step_b);
     vo_core_->doOdometryLeftRight();
@@ -368,8 +385,8 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
     init_pose.translation() << 0,0,0;
 
     double rpy_imu[3];
-    quat_to_euler(  body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
-    init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) ); // not using yaw
+    //REPLACE quat_to_euler(  body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
+    //REPLACE init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) ); // not using yaw
     //init_pose.rotate(body_orientation_from_imu);
     vo_core_->initializePose(init_pose);
   }
@@ -408,12 +425,12 @@ int main(int argc, char **argv){
   fcfg.feature_analysis_publish_period = 1; // 5
   std::string param_file = ""; // short filename
   double processing_rate = 1; // real time
-  fcfg.write_feature_output = FALSE;
+  fcfg.write_feature_output = false;
 
-  fcfg.verbose = FALSE;
-  fcfg.extrapolate_when_vo_fails = FALSE;
-  fcfg.draw_lcmgl = FALSE;  
-  fcfg.publish_feature_analysis = FALSE; 
+  fcfg.verbose = false;
+  fcfg.extrapolate_when_vo_fails = false;
+  fcfg.draw_lcmgl = false;  
+  fcfg.publish_feature_analysis = false; 
   fcfg.param_file = ""; // full path to file
   fcfg.output_signal = "POSE_BODY_ALT";
   fcfg.output_tf_frame = "fovis/base_link";
@@ -421,7 +438,7 @@ int main(int argc, char **argv){
   fcfg.orientation_fusion_mode = 0;
   fcfg.pose_initialization_mode = 0;
   fcfg.camera_config = "MULTISENSE_CAMERA";
-  fcfg.write_pose_to_file = FALSE;
+  fcfg.write_pose_to_file = false;
 
 
   ros::NodeHandle nh("~");
@@ -446,7 +463,7 @@ int main(int argc, char **argv){
 
   std::cout << configPath << "\n";
   
-
+  /*
   fcfg.param_file = configPath +'/' + std::string(param_file);
   if (param_file.empty()) { // get param from lcm
     fcfg.param_file = "";
@@ -471,7 +488,7 @@ int main(int argc, char **argv){
     lcm_recv = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
   }
   lcm_pub = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
-
+  */
 
 
   cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
@@ -479,10 +496,11 @@ int main(int argc, char **argv){
   cout << fcfg.camera_config << " is camera_config\n";
   cout << "output_tf_frame: publish odom to "<< fcfg.output_tf_frame << "\n";
   cout << fcfg.param_file << " is param_file [full path]\n";
+  cout << fcfg.which_vo_options << " is which_vo_options\n";
 
 
 
-  new StereoOdom(nh, lcm_recv, lcm_pub, fcfg);
+  new StereoOdom(nh, fcfg);
   ros::spin();
   //while(0 == lcm_recv->handle());
 }

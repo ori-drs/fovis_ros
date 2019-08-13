@@ -11,23 +11,25 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-#include <lcm/lcm-cpp.hpp>
+//#include <lcm/lcm-cpp.hpp>
 
 #include <fovis/fovis.hpp>
 
-#include <lcmtypes/bot_core/pose_t.hpp>
-#include <lcmtypes/fovis/stats_t.hpp>
-#include <lcmtypes/fovis/update_t.hpp>
+//#include <lcmtypes/bot_core/pose_t.hpp>
+//#include <lcmtypes/fovis/stats_t.hpp>
+//#include <lcmtypes/fovis/update_t.hpp>
 
-#include <bot_lcmgl_client/lcmgl.h>
+//#include <bot_lcmgl_client/lcmgl.h>
 #include "visualization.hpp"
 
 
 class FoVision
 {
 public:
-    FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
-             boost::shared_ptr<fovis::StereoCalibration> kcal,
+    //FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
+    //         boost::shared_ptr<fovis::StereoCalibration> kcal,
+    //         bool draw_lcmgl_, int which_vo_options_);
+    FoVision(boost::shared_ptr<fovis::StereoCalibration> kcal,
              bool draw_lcmgl_, int which_vo_options_);
     
     
@@ -42,8 +44,8 @@ public:
     void doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime);
     void doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime);
 
-    fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
-      Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp);
+    //fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
+    //  Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp);
     
     void send_delta_translation_msg(Eigen::Isometry3d motion_estimate,
       Eigen::MatrixXd motion_cov, std::string channel_name);
@@ -102,7 +104,7 @@ public:
     void setPublishFovisStats(bool publish_fovis_stats_in){ publish_fovis_stats_ = publish_fovis_stats_in; }
 
 private:
-    boost::shared_ptr<lcm::LCM> lcm_;
+    //boost::shared_ptr<lcm::LCM> lcm_;
     boost::shared_ptr<fovis::StereoCalibration> kcal_;
     fovis::VisualOdometry odom_;
     

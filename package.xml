@@ -17,7 +17,10 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_io_utils</build_depend>
   <build_depend>pronto_conversions</build_depend>
+<!--
   <build_depend>pronto_vis</build_depend>
+  <build_depend>fovis_lcmtypes</build_depend>
+-->
   <build_depend>pronto_lcmtypes</build_depend>
   <build_depend>reg_lcmtypes</build_depend>  
   <build_depend>bot_core_lcmtypes</build_depend>  
@@ -26,7 +29,6 @@
   <build_depend>fovis</build_depend>
   <build_depend>concise_args</build_depend>
   <build_depend>path_util</build_depend>
-  <build_depend>fovis_lcmtypes</build_depend>
   <build_depend>estimate_pose</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>eigen_conversions</build_depend>
@@ -36,7 +38,10 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_io_utils</run_depend>
   <run_depend>pronto_conversions</run_depend>
-  <run_depend>pronto_vis</run_depend>
+<!--  
+  <run_depend>pronto_vis</run_depend> 
+  <run_depend>fovis_lcmtypes</run_depend>
+-->
   <run_depend>pronto_lcmtypes</run_depend>
   <run_depend>reg_lcmtypes</run_depend>
   <run_depend>bot_core_lcmtypes</run_depend>
@@ -45,7 +50,6 @@
   <run_depend>fovis</run_depend>
   <run_depend>concise_args</run_depend>
   <run_depend>path_util</run_depend>
-  <run_depend>fovis_lcmtypes</run_depend>
   <run_depend>estimate_pose</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>eigen_conversions</run_depend>

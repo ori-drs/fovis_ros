@@ -9,19 +9,19 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  pronto_vis
-  image_io_utils
-  pronto_conversions
-  bot_frames_cpp
-  pronto_lcmtypes
-  reg_lcmtypes
-  bot_core_lcmtypes
-  ori_lcmtypes
-  bot_param
+#  pronto_vis
+#  image_io_utils
+#  pronto_conversions
+#  bot_frames_cpp
+#  pronto_lcmtypes
+#  reg_lcmtypes
+#  bot_core_lcmtypes
+#  ori_lcmtypes
+#  bot_param
   fovis
-  concise_args
-  path_util
-  fovis_lcmtypes
+#  concise_args
+#  path_util
+#  fovis_lcmtypes
   estimate_pose
   image_transport
   tf_conversions
@@ -75,30 +75,30 @@ target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} voconfig vofeatures vo
 
 
 ####### LCM Fusion #########
-add_executable(simple_fusion_lcm src/fovision_apps/fovision_fusion.cpp)
-target_link_libraries (simple_fusion_lcm ${catkin_LIBRARIES} fovision_fusion_core)
+#add_executable(simple_fusion_lcm src/fovision_apps/fovision_fusion.cpp)
+#target_link_libraries (simple_fusion_lcm ${catkin_LIBRARIES} fovision_fusion_core)
 
 ####### ROS Fusion #########
 add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp)
 target_link_libraries (simple_fusion ${catkin_LIBRARIES} fovision_fusion_core)
 
 ####### LCM Basic VO #######
-add_executable(simple_vo_lcm src/fovision_apps/fovision_vo.cpp)
-target_link_libraries (simple_vo_lcm ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
+#add_executable(simple_vo_lcm src/fovision_apps/fovision_vo.cpp)
+#target_link_libraries (simple_vo_lcm ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
 
 
 
 ################
-set(LIBRARY_NAME vis-loop-closure)
-add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
-target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBS}
-  voconfig vofeatures voestimator fovision)
+#set(LIBRARY_NAME vis-loop-closure)
+#add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
+#target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBS}
+#  voconfig vofeatures voestimator fovision)
 
 ################
-add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
-target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES} ${OpenCV_LIBS}
-  vis-loop-closure)
+#add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
+#target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES} ${OpenCV_LIBS}
+#  vis-loop-closure)
 
 ################
-add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
-target_link_libraries (se-vins-writer ${catkin_LIBRARIES} ${OpenCV_LIBS} lcm)
+#add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
+#target_link_libraries (se-vins-writer ${catkin_LIBRARIES} ${OpenCV_LIBS} lcm)

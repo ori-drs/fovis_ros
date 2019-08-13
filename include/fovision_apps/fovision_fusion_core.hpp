@@ -1,6 +1,6 @@
 #include <Eigen/Dense>
-#include <bot_param/param_client.h>
-#include <bot_frames/bot_frames.h>
+//#include <bot_param/param_client.h>
+//#include <bot_frames/bot_frames.h>
 
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
@@ -35,7 +35,8 @@ struct FusionCoreConfig
 
 class FusionCore{
   public:
-    FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_);
+    FusionCore(const FusionCoreConfig& fcfg_);
+    //FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_);
     
     ~FusionCore(){
       free (left_buf_);
@@ -62,6 +63,7 @@ class FusionCore{
 
 
     void doOdometryLeftRight(){
+        std::cout << "doOdometryLeftRight\n";
         vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
     }
 
@@ -125,14 +127,14 @@ class FusionCore{
     const FusionCoreConfig fcfg_;    
     
     int image_size_; // just the resolution of the image
-    image_io_utils*  imgutils_;    
+    //REPLACE image_io_utils*  imgutils_;    
     
     int64_t utime_cur_, utime_prev_;
 
-    boost::shared_ptr<lcm::LCM> lcm_recv_;
-    boost::shared_ptr<lcm::LCM> lcm_pub_;
-    BotParam* botparam_;
-    BotFrames* botframes_;
+    //boost::shared_ptr<lcm::LCM> lcm_recv_;
+    //boost::shared_ptr<lcm::LCM> lcm_pub_;
+    //BotParam* botparam_;
+    //BotFrames* botframes_;
     //bot::frames* botframes_cpp_;
     voconfig::KmclConfiguration* config_;
 
