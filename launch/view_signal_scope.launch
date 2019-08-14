@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <node name="signal_scope" pkg="signal_scope" type="signal_scope" args="$(find vo_estimator)/signal_scope/plot_fovis.py"  />
+
+</launch>

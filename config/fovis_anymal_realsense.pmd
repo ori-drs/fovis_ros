@@ -6,10 +6,6 @@ group "0.core" {
 }
 
 group "1.progs" {
-    cmd "rosbag" {
-        exec = "rosbag play anymal_2019-05-10-10-38-35.bag --pause -s 175";
-        host = "localhost";
-    }
     cmd "image_view" {
         exec = "rosrun rqt_image_view rqt_image_view";
         host = "localhost";
@@ -22,8 +18,23 @@ group "1.progs" {
         exec = "roslaunch vo_estimator trajectory_server.launch";
         host = "localhost";
     }
+    cmd "signal_scope" {
+        exec = "roslaunch vo_estimator view_signal_scope.launch";
+        host = "localhost";
+    }
     cmd "rviz" {
         exec = "roslaunch vo_estimator  view_fovis.launch";
+        host = "localhost";
+    }
+    cmd "fake_imu" {
+        exec = "rosrun vo_estimator fake_imu.py";
+        host = "localhost";
+    }
+}
+
+group "2.bag" {
+    cmd "rosbag" {
+        exec = "rosbag play anymal_2019-05-10-10-38-35.bag --pause -s 175";
         host = "localhost";
     }
 }

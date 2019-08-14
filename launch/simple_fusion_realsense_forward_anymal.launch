@@ -7,7 +7,7 @@
     <param name="image_b_transport" value="compressed" />
 
     <!-- Auxiliary Inputs -->
-    <param name="input_imu_topic" value="/state_estimator/imu" />
+    <param name="input_imu_topic" value="/state_estimator/fake_imu" />
     <param name="input_body_pose_topic" value="/state_estimator/pose_in_odom" />
 
     <!-- Output -->

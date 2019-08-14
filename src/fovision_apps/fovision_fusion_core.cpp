@@ -121,6 +121,12 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   body_to_imu_ = Eigen::Isometry3d::Identity();
   imu_to_camera_ = Eigen::Isometry3d::Identity();
 
+  imu_to_camera_.translation().x() = 0.386;
+  imu_to_camera_.translation().y() = 0.015;
+  imu_to_camera_.translation().z() = 0.160;
+  Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
+  imu_to_camera_.rotate( quat );
+
   // This assumes the imu to body frame is fixed, need to update if the neck is actuated
   //get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
   //get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
@@ -194,7 +200,7 @@ void FusionCore::updateMotion(){
                                            delta_camera.translation().y() / dt ,
                                            delta_camera.translation().z() / dt);
     double rpy[3];
-    // REPLACE quat_to_euler(  Eigen::Quaterniond(delta_camera.rotation()) , rpy[0], rpy[1], rpy[2]);
+    quat_to_euler(  Eigen::Quaterniond(delta_camera.rotation()) , rpy[0], rpy[1], rpy[2]);
     vo_velocity_angular_ = Eigen::Vector3d( rpy[0]/dt , rpy[1]/dt , rpy[2]/dt);
 
     ////std::cout << vo_velocity_linear_.transpose() << " vo linear\n";
@@ -220,7 +226,7 @@ void FusionCore::updateMotion(){
 
       // Use IMU rot_rates to extrapolate rotation: This is mathematically incorrect:
       Eigen::Quaterniond extrapolated_quat;
-      //REPLACE extrapolated_quat = euler_to_quat( camera_angular_velocity_from_imu_[0]*dt, camera_angular_velocity_from_imu_[1]*dt, camera_angular_velocity_from_imu_[2]*dt);
+      extrapolated_quat = euler_to_quat( camera_angular_velocity_from_imu_[0]*dt, camera_angular_velocity_from_imu_[1]*dt, camera_angular_velocity_from_imu_[2]*dt);
 
       delta_camera.setIdentity();
       delta_camera.translation().x() = vo_velocity_linear_[0] * dt;
@@ -316,7 +322,7 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       std::stringstream ss2;
       //print_Isometry3d(local_to_body, ss2);
       double rpy[3];
-      // REPLACE quat_to_euler(  Eigen::Quaterniond(local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
+      quat_to_euler(  Eigen::Quaterniond(local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
       if (fcfg_.verbose){
         std::cout << "local_to_body: " << ss2.str() << " | "<< 
           rpy[0]*180/M_PI << " " << rpy[1]*180/M_PI << " " << rpy[2]*180/M_PI << "\n";        
@@ -324,8 +330,8 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
         
       // 2. Get the IMU orientated RPY:
       double rpy_imu[3];
-      // REPLACE quat_to_euler( local_to_body_orientation_from_imu , 
-      //                rpy_imu[0], rpy_imu[1], rpy_imu[2]);
+      quat_to_euler( local_to_body_orientation_from_imu , 
+                      rpy_imu[0], rpy_imu[1], rpy_imu[2]);
       if (fcfg_.verbose){
         std::cout <<  rpy_imu[0]*180/M_PI << " " << rpy_imu[1]*180/M_PI << " " << rpy_imu[2]*180/M_PI << " rpy_imu\n";        
         cout << "IMU correction | roll pitch | was: "
@@ -338,7 +344,7 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       if ( (fcfg_.orientation_fusion_mode==1) || (fcfg_.orientation_fusion_mode==3)){
         revised_local_to_body_quat = local_to_body_orientation_from_imu;
       }else{  // pitch and roll from IMU, yaw from VO:
-        // REPLACE revised_local_to_body_quat = euler_to_quat( rpy_imu[0], rpy_imu[1], rpy[2]);
+        revised_local_to_body_quat = euler_to_quat( rpy_imu[0], rpy_imu[1], rpy[2]);
       }
       ///////////////////////////////////////
       Eigen::Isometry3d revised_local_to_body;
@@ -350,7 +356,7 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
       if (fcfg_.verbose){
         std::stringstream ss4;
         //print_Isometry3d(revised_local_to_body, ss4);
-        //REPLACE quat_to_euler(  Eigen::Quaterniond(revised_local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
+        quat_to_euler(  Eigen::Quaterniond(revised_local_to_body.rotation()) , rpy[0], rpy[1], rpy[2]);
         std::cout << "local_revhead: " << ss4.str() << " | "<< 
           rpy[0]*180/M_PI << " " << rpy[1]*180/M_PI << " " << rpy[2]*180/M_PI << "\n";        
       }
@@ -379,7 +385,7 @@ void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 
   double current_rpy[3];
   Eigen::Quaterniond current_quat = Eigen::Quaterniond( pose.rotation() );
-  // REPLACE quat_to_euler( current_quat, current_rpy[0], current_rpy[1], current_rpy[2]);
+  quat_to_euler( current_quat, current_rpy[0], current_rpy[1], current_rpy[2]);
 
   if(fovision_output_file_.is_open()){
     fovision_output_file_ << utime  << ","
@@ -404,7 +410,7 @@ void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orie
   imu_to_camera_quat_array[2] =imu_to_camera_quat.y(); imu_to_camera_quat_array[3] =imu_to_camera_quat.z();
   double gyro_array[3];
   gyro_array[0] = gyro[0]; gyro_array[1] = gyro[1]; gyro_array[2] = gyro[2];
-  //REPLACE bot_quat_rotate_to( imu_to_camera_quat_array, gyro_array, camera_ang_vel_from_imu_);
+  quat_rotate_to( imu_to_camera_quat_array, gyro_array, camera_ang_vel_from_imu_);
   camera_angular_velocity_from_imu_ = Eigen::Vector3d(camera_ang_vel_from_imu_[0], camera_ang_vel_from_imu_[1], camera_ang_vel_from_imu_[2]);
   // Didn't find this necessary - for smooth motion
   //camera_angular_velocity_from_imu_alpha_ = 0.8*camera_angular_velocity_from_imu_alpha_ + 0.2*camera_angular_velocity_from_imu_;

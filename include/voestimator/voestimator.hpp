@@ -11,6 +11,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
+#include <fovision/common.hpp>
+
 //#include <lcm/lcm-cpp.hpp>
 //#include <bot_frames/bot_frames.h>
 ////#include <bot_frames_cpp/bot_frames_cpp.hpp>
