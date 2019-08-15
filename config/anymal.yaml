@@ -16,7 +16,7 @@
 
 #####
 ##### Camera Parameters
-#####
+##### works with anymal_2019-05-10-10-38-35.bag
 cameras:
     - {
       image_dimensions: [848,480],
@@ -32,7 +32,7 @@ cameras:
       stereo_baseline: 0.05, # positive, as for David. internally fovis used -0.05
 
       B_r_BC: [0.386, 0.015, 0.160], # my values
-      B_q_BC: [0.549529, -0.445107, 0.445016, -0.549417], # x y z w
+      B_q_BC: [0.549529, -0.445107, 0.445016, -0.549417] # x y z w
 
       #B_r_BC: [0.383, 0.015, 0.143], # David's values
       #B_q_BC: [0.546, -0.546, 0.449, -0.449], # David's values
