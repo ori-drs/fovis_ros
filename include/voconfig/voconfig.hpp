@@ -134,6 +134,9 @@ public:
   int min_inliers() { return min_inliers_; }
   int max_num_proposals() { return max_num_proposals_; }
 
+  Eigen::Isometry3d B_t_BC() const { return B_t_BC_; }
+
+
 private:
   void init(const std::string & depth_source_name);
 
@@ -164,6 +167,11 @@ private:
   int max_num_proposals_;
 
   DepthSourceTypeCode depth_source_type_;
+
+  // transformation between base and camera
+  // same as rosrun tf tf_echo base camera (in that order)
+  Eigen::Isometry3d B_t_BC_;
+
 };
 
 }

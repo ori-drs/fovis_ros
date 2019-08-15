@@ -11,7 +11,22 @@
 #include <boost/lexical_cast.hpp>
 #include <Eigen/Dense>
 
+#include <opencv2/core.hpp>
+
+
 //#include <path_util/path_util.h>
+
+
+/// \brief Parse the contents of a 3 element vector.
+Eigen::Vector3d parseVector3d(const cv::FileNode& node) {
+  if (node.size()!=3) {
+    //std::cerr << "Using defalt value for vector.." << std::endl;
+    return Eigen::Vector3d{0,0,0};
+  }
+  return Eigen::Vector3d{static_cast<double>(node[0]),
+                         static_cast<double>(node[1]),
+                         static_cast<double>(node[2])};
+}
 
 namespace voconfig
 {
@@ -118,6 +133,44 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
   // new
   depth_source_type_ = STEREO;
 
+  std::string filename = std::string("/home/mfallon/git/vo_estimator/config/anymal.yaml");
+
+  cv::FileStorage file(filename, cv::FileStorage::READ);
+  if (!file.isOpened()) {
+    std::cout << "could not read the yaml config file\n";
+    exit(-1);
+    //return false;
+  }
+
+
+  double stereo_baseline = static_cast<double>(file["cameras"][0]["stereo_baseline"]); // actual value should be negative e.g. -0.05
+  std::cout << stereo_baseline << " \n";
+
+  Eigen::Vector3d B_r_BC = parseVector3d(file["cameras"][0]["B_r_BC"]);
+
+  Eigen::Quaterniond B_q_BC = Eigen::Quaterniond {
+      static_cast<double>(file["cameras"][0]["B_q_BC"][3]),
+      static_cast<double>(file["cameras"][0]["B_q_BC"][0]),
+      static_cast<double>(file["cameras"][0]["B_q_BC"][1]),
+      static_cast<double>(file["cameras"][0]["B_q_BC"][2])
+    };
+  // Eigen:Quaternion is WXYZ | yaml is XYZW
+
+  B_t_BC_ = Eigen::Isometry3d::Identity();
+  B_t_BC_.translation() = B_r_BC;
+  B_t_BC_.rotate( B_q_BC );
+
+  std::cout << B_r_BC << " [B_r_BC]\n";
+  std::cout << B_q_BC.x() << " " << B_q_BC.y() << " " << B_q_BC.z() << " " << B_q_BC.w() << " B_q_BC [xyzw]\n";
+
+
+  Eigen::Quaterniond B_q_BC2 = Eigen::Quaterniond(B_t_BC_.rotation());
+  std::cout << B_q_BC2.x() << " " << B_q_BC2.y() << " " << B_q_BC2.z() << " " << B_q_BC2.w() << " B_q_BC [xyzw]\n";
+
+
+  // Eigen::Vector3d B_r_BC = 
+
+
   
   // cameras
   /*
@@ -215,51 +268,64 @@ KmclConfiguration::load_primesense_calibration() const {
   return boost::shared_ptr<fovis::PrimeSenseCalibration>(new fovis::PrimeSenseCalibration(kparams));
 }
 
+
+
+bool parseBoolean(const std::string &str) {
+  if (str.compare("true") == 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+
 boost::shared_ptr<fovis::StereoCalibration>
 KmclConfiguration::load_stereo_calibration() const {
   assert (depth_source_type_==STEREO);
+
+
+  std::string filename = std::string("/home/mfallon/git/vo_estimator/config/anymal.yaml");
+
+  cv::FileStorage file(filename, cv::FileStorage::READ);
+  if (!file.isOpened()) {
+    std::cout << "could not read the yaml config file\n";
+    exit(-1);
+    //return false;
+  }
 
   if (depth_source_type_ != STEREO) {
     return boost::shared_ptr<fovis::StereoCalibration>();
   }
   fovis::StereoCalibrationParameters stereo_params;
-  std::string key_prefix_str;
   fovis::CameraIntrinsicsParameters* params;
 
   for (int i=0; i < 2; ++i) {
     if (i == 0) {
-      key_prefix_str = std::string(key_prefix_) + "_LEFT"; // change mfallon april 2014 was .left
       params = &(stereo_params.left_parameters);
     } else {
-      key_prefix_str = std::string(key_prefix_) + "_RIGHT"; // change mfallon april 2014 was .left
       params = &(stereo_params.right_parameters);
     }
 
     std::cout << "load stereo" << i << "\n";
-    if (i==0){ // infra1
-      params->width = 848;
-      params->height = 480;
 
-      params->fx = 424.2955627441406;
-      params->fy = 424.2955627441406;
-      params->cx = 422.3912658691406;
-      params->cy = 234.9972381591797;
+    double focal_length_x = static_cast<double>(file["cameras"][i]["focal_length"][0]);
+    std::cout << focal_length_x << " focal_length_x\n";
 
-    }else{
-      params->width = 848;
-      params->height = 480;      
+    params->width = static_cast<double>(file["cameras"][i]["image_dimensions"][0]);
+    params->height = static_cast<double>(file["cameras"][i]["image_dimensions"][1]);
 
-      params->fx = 424.2955627441406;
-      params->fy = 424.2955627441406;
-      params->cx = 422.3912658691406;
-      params->cy = 234.9972381591797;
-    }
+    params->fx = static_cast<double>(file["cameras"][i]["focal_length"][0]);
+    params->fy = static_cast<double>(file["cameras"][i]["focal_length"][1]);
+    params->cx = static_cast<double>(file["cameras"][i]["focal_point"][0]);
+    params->cy = static_cast<double>(file["cameras"][i]["focal_point"][1]);
 
-    params->k1 = 0;
-    params->k2 = 0;
-    params->k3 = 0;
-    params->p1 = 0;
-    params->p2 = 0;
+
+    params->k1 = static_cast<double>(file["cameras"][i]["distortion_k1"]);
+    params->k2 = static_cast<double>(file["cameras"][i]["distortion_k2"]);
+    params->k3 = static_cast<double>(file["cameras"][i]["distortion_k3"]);
+    params->p1 = static_cast<double>(file["cameras"][i]["distortion_p1"]);
+    params->p2 = static_cast<double>(file["cameras"][i]["distortion_p2"]);
 
     /*
     params->width = bot_param_get_int_or_fail(bot_param_, (key_prefix_str+".intrinsic_cal.width").c_str());
@@ -290,7 +356,13 @@ KmclConfiguration::load_stereo_calibration() const {
 
   double quat[4];
   quat[0] = 1;
-  translation[0] = -0.05;
+  quat[1] = 0;
+  quat[2] = 0;
+  quat[3] = 0;
+
+  translation[0] = -1 * static_cast<double>(file["cameras"][0]["stereo_baseline"]); // actual value should be negative e.g. -0.05
+  translation[1] = 0;
+  translation[2] = 0;
   /*
   bot_param_get_double_array_or_fail(bot_param_,
                                      (main_key_prefix_str+".rotation").c_str(),
@@ -306,8 +378,6 @@ KmclConfiguration::load_stereo_calibration() const {
 
 
   std::copy(quat, quat+4, stereo_params.right_to_left_rotation);
-  
-
   std::copy(translation, translation+3, stereo_params.right_to_left_translation);
 
   return boost::shared_ptr<fovis::StereoCalibration>(new fovis::StereoCalibration(stereo_params));

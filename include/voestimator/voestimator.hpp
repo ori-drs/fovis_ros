@@ -46,6 +46,10 @@ public:
                    Eigen::Vector3d vel_lin, Eigen::Vector3d vel_ang);
   void publishUpdate(int64_t utime, Eigen::Isometry3d local_to_head, std::string channel, bool output_alpha_filter);
 
+
+  void setCameraToBody(Eigen::Isometry3d camera_to_body_in){ camera_to_body_ = camera_to_body_in; }
+
+
 private:
   //boost::shared_ptr<lcm::LCM> lcm_;
   //pronto_vis* pc_vis_;

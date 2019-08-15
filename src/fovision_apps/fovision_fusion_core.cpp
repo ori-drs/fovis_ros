@@ -103,6 +103,9 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
   estimator_ = new VoEstimator(fcfg_.output_extension, fcfg_.camera_config );
 
+  Eigen::Isometry3d body_to_camera_ = config_->B_t_BC();
+  estimator_->setCameraToBody( body_to_camera_.inverse() );
+
 
   pose_initialized_=false;
   // if not using imu or pose, initialise with robot model
@@ -121,11 +124,17 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   body_to_imu_ = Eigen::Isometry3d::Identity();
   imu_to_camera_ = Eigen::Isometry3d::Identity();
 
-  imu_to_camera_.translation().x() = 0.386;
-  imu_to_camera_.translation().y() = 0.015;
-  imu_to_camera_.translation().z() = 0.160;
-  Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
-  imu_to_camera_.rotate( quat );
+  //imu_to_camera_.translation().x() = 0.386;
+  //imu_to_camera_.translation().y() = 0.015;
+  //imu_to_camera_.translation().z() = 0.160;
+  //Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates // xyzw: 0.549529 -0.445107 0.445016 -0.549417 
+  //imu_to_camera_.rotate( quat );
+  //std::cout << quat.x() << " " << quat.y() << " " << quat.z() << " " << quat.w() << "\n";
+
+  //Eigen::Isometry3d B_t_BC = config_->B_t_BC();
+  //Eigen::Quaterniond B_q_BC = Eigen::Quaterniond(B_t_BC.rotation());
+  //std::cout << B_q_BC.x() << " " << B_q_BC.y() << " " << B_q_BC.z() << " " << B_q_BC.w() << " B_q_BC [xyzw]\n";
+  imu_to_camera_ = config_->B_t_BC();
 
   // This assumes the imu to body frame is fixed, need to update if the neck is actuated
   //get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);

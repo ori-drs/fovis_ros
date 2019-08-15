@@ -8,6 +8,7 @@ VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_conf
   channel_extension_(channel_extension_), camera_config_(camera_config_),
   pose_initialized_(false), vo_initialized_(false){
   local_to_body_.setIdentity();
+  camera_to_body_.setIdentity();
 
   
   // Vis Config:
@@ -36,17 +37,17 @@ int get_trans_with_utime(BotFrames *bot_frames,
 void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera){
 
   // 0. Assume head to camera is rigid:
-  camera_to_body_.setIdentity();
+  //camera_to_body_.setIdentity();
 
   // rosrun tf tf_echo base realsense_d435_front_forward_depth_optical_frame .... in sim - the only optical frame in sim
   // however: realsense_d435_front_forward_infra1_optical_frame is the actual frame in the data
   // TODO: update when robot is running live
-  camera_to_body_.translation().x() = 0.386;
-  camera_to_body_.translation().y() = 0.015;
-  camera_to_body_.translation().z() = 0.160;
-  Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
-  camera_to_body_.rotate( quat );
-  camera_to_body_ = camera_to_body_.inverse(); //NB
+  //camera_to_body_.translation().x() = 0.386;
+  //camera_to_body_.translation().y() = 0.015;
+  //camera_to_body_.translation().z() = 0.160;
+  //Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
+  //camera_to_body_.rotate( quat );
+  //camera_to_body_ = camera_to_body_.inverse(); //NB
   //REPLACE get_trans_with_utime( botframes_ ,  "body", std::string(camera_config_ + "_LEFT").c_str(), utime, camera_to_body_);
 
 
