@@ -1,0 +1,60 @@
+group "0a.core" {
+    cmd "core" {
+        exec = "roscore";
+        host = "localhost";
+    }
+}
+
+
+group "0b.static_tf" {
+    cmd "sim_time_do_first" {
+        exec = "rosparam set  use_sim_time true";
+        host = "localhost";
+    }
+    cmd "static_tf" {
+        exec = "rosrun tf static_transform_publisher 0.0 0 0.1  3.142 0 0.0  base os1_lidar  10";
+        host = "localhost";
+    }
+    cmd "static_tf_alt" {
+        exec = "rosrun vo_estimator static_transform_publisher_using_message_time.py";
+        host = "localhost";
+    }
+    cmd "lidar_time_fake" {
+        exec = "rosrun vo_estimator lidar_time_fake.py";
+        host = "localhost";
+    }
+}
+
+group "1.progs" {
+    cmd "image_view" {
+        exec = "rosrun rqt_image_view rqt_image_view";
+        host = "localhost";
+    }
+    cmd "fovis_ros" {
+        exec = "roslaunch vo_estimator simple_fusion_realsense_rooster.launch";
+        host = "localhost";
+    }
+    cmd "traj_server" {
+        exec = "roslaunch vo_estimator trajectory_server.launch";
+        host = "localhost";
+    }
+    cmd "signal_scope" {
+        exec = "roslaunch vo_estimator view_signal_scope.launch";
+        host = "localhost";
+    }
+    cmd "rviz" {
+        exec = "roslaunch vo_estimator  view_fovis.launch";
+        host = "localhost";
+    }
+    cmd "fake_imu" {
+        exec = "rosrun vo_estimator fake_imu.py";
+        host = "localhost";
+    }
+}
+
+group "2.bag" {
+    cmd "rosbag" {
+        exec = "rosbag play /home/mfallon/logs/rooster/rooster_2019-07-26-16-42-31.bag --pause --clock -s 55 ";
+        host = "localhost";
+    }
+}

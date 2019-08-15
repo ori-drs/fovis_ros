@@ -67,7 +67,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   //botframes_cpp_ = new bot::frames(botframes_);
   */
 
-  config_ = new voconfig::KmclConfiguration(fcfg_.camera_config);
+  config_ = new voconfig::KmclConfiguration(fcfg_.camera_config, fcfg_.config_filename);
   boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
   stereo_calibration_ = boost::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
 
@@ -95,7 +95,6 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   rgb_buf_ = (uint8_t*) malloc(10*image_size_ * sizeof(uint8_t)); 
   decompress_disparity_buf_ = (uint8_t*) malloc( 4*image_size_*sizeof(uint8_t));  // arbitary size chosen..
   depth_buf_ = (float*) malloc( image_size_*sizeof(float));  // byte per image
-  // REPLACE imgutils_ = new image_io_utils( lcm_pub_, stereo_calibration_->getWidth(), 2*stereo_calibration_->getHeight()); // extra space for stereo tasks
 
   vo_ = new FoVision(stereo_calibration_, fcfg_.draw_lcmgl, fcfg_.which_vo_options);
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);

@@ -8,7 +8,6 @@
 
 
 #include <zlib.h>
-//#include <lcm/lcm-cpp.hpp>
 
 
 #include <fovision_apps/fovision_fusion_core.hpp>
@@ -385,9 +384,9 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
     init_pose.translation() << 0,0,0;
 
     double rpy_imu[3];
-    //REPLACE quat_to_euler(  body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
-    //REPLACE init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) ); // not using yaw
-    //init_pose.rotate(body_orientation_from_imu);
+    quat_to_euler(  body_orientation_from_imu , rpy_imu[0], rpy_imu[1], rpy_imu[2]);
+    init_pose.rotate( euler_to_quat( rpy_imu[0], rpy_imu[1], 0) ); // not using yaw
+    init_pose.rotate(body_orientation_from_imu);
     vo_core_->initializePose(init_pose);
   }
 }
@@ -423,7 +422,6 @@ int main(int argc, char **argv){
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
   fcfg.feature_analysis_publish_period = 1; // 5
-  std::string param_file = ""; // short filename
   double processing_rate = 1; // real time
   fcfg.write_feature_output = false;
 
@@ -431,13 +429,13 @@ int main(int argc, char **argv){
   fcfg.extrapolate_when_vo_fails = false;
   fcfg.draw_lcmgl = false;  
   fcfg.publish_feature_analysis = false; 
-  fcfg.param_file = ""; // full path to file
   fcfg.output_signal = "POSE_BODY_ALT";
-  fcfg.output_tf_frame = "/fovis/pose_in_odom";
+  fcfg.output_tf_frame = "/fovis/base";
   fcfg.which_vo_options = 2;
   fcfg.orientation_fusion_mode = 0;
   fcfg.pose_initialization_mode = 0;
   fcfg.camera_config = "MULTISENSE_CAMERA";
+  fcfg.config_filename = "anymal.yaml";
   fcfg.write_pose_to_file = false;
 
 
@@ -446,13 +444,13 @@ int main(int argc, char **argv){
   nh.getParam("extrapolate_when_vo_fails", fcfg.extrapolate_when_vo_fails);
   nh.getParam("draw_lcmgl", fcfg.draw_lcmgl);
   nh.getParam("publish_feature_analysis", fcfg.publish_feature_analysis);
-  nh.getParam("param_file", param_file); // short filename
   nh.getParam("output_body_pose_lcm", fcfg.output_signal);
   nh.getParam("output_tf_frame", fcfg.output_tf_frame);
   nh.getParam("which_vo_options", fcfg.which_vo_options);
   nh.getParam("orientation_fusion_mode", fcfg.orientation_fusion_mode);
   nh.getParam("pose_initialization_mode", fcfg.pose_initialization_mode);
   nh.getParam("camera_config", fcfg.camera_config);
+  nh.getParam("config_filename", fcfg.config_filename);
   nh.getParam("write_pose_to_file", fcfg.write_pose_to_file);
 
   char* drs_base;
@@ -463,39 +461,13 @@ int main(int argc, char **argv){
 
   std::cout << configPath << "\n";
   
-  /*
-  fcfg.param_file = configPath +'/' + std::string(param_file);
-  if (param_file.empty()) { // get param from lcm
-    fcfg.param_file = "";
-  }
-
-  //
-  bool running_from_log = !fcfg.in_log_fname.empty();
-  boost::shared_ptr<lcm::LCM> lcm_recv;
-  boost::shared_ptr<lcm::LCM> lcm_pub;
-  if (running_from_log) {
-    printf("running from log file: %s\n", fcfg.in_log_fname.c_str());
-    //std::string lcmurl = "file://" + in_log_fname + "?speed=0";
-    std::stringstream lcmurl;
-    lcmurl << "file://" << fcfg.in_log_fname << "?speed=" << processing_rate;
-    lcm_recv = boost::shared_ptr<lcm::LCM>(new lcm::LCM(lcmurl.str()));
-    if (!lcm_recv->good()) {
-      fprintf(stderr, "Error couldn't load log file %s\n", lcmurl.str().c_str());
-      exit(1);
-    }
-  }
-  else {
-    lcm_recv = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
-  }
-  lcm_pub = boost::shared_ptr<lcm::LCM>(new lcm::LCM);
-  */
 
 
   cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
   cout << fcfg.pose_initialization_mode << " is pose_initialization_mode\n";
   cout << fcfg.camera_config << " is camera_config\n";
   cout << "output_tf_frame: publish odom to "<< fcfg.output_tf_frame << "\n";
-  cout << fcfg.param_file << " is param_file [full path]\n";
+  cout << fcfg.config_filename << " is config_filename [full path]\n";
   cout << fcfg.which_vo_options << " is which_vo_options\n";
 
 

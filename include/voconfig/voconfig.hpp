@@ -74,7 +74,7 @@ public:
     OPENNI
   };
 
-  KmclConfiguration(const std::string & depth_source_name);
+  KmclConfiguration(const std::string & depth_source_name, const std::string & config_filename);
 
   ~KmclConfiguration();
 
@@ -171,6 +171,8 @@ private:
   // transformation between base and camera
   // same as rosrun tf tf_echo base camera (in that order)
   Eigen::Isometry3d B_t_BC_;
+
+  std::string config_filename_;
 
 };
 

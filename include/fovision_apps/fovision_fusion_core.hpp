@@ -1,6 +1,4 @@
 #include <Eigen/Dense>
-//#include <bot_param/param_client.h>
-//#include <bot_frames/bot_frames.h>
 
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
@@ -10,6 +8,8 @@
 struct FusionCoreConfig
 {
   std::string camera_config; // which block from the cfg to read
+  std::string config_filename; // yaml file to be read
+
   std::string output_tf_frame;
   // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
   int orientation_fusion_mode;
@@ -25,7 +25,6 @@ struct FusionCoreConfig
   bool verbose;
   int correction_frequency;
   std::string in_log_fname;
-  std::string param_file;
   bool draw_lcmgl;
   bool write_feature_output;
   int which_vo_options;
@@ -126,15 +125,9 @@ class FusionCore{
     const FusionCoreConfig fcfg_;    
     
     int image_size_; // just the resolution of the image
-    //REPLACE image_io_utils*  imgutils_;    
     
     int64_t utime_cur_, utime_prev_;
 
-    //boost::shared_ptr<lcm::LCM> lcm_recv_;
-    //boost::shared_ptr<lcm::LCM> lcm_pub_;
-    //BotParam* botparam_;
-    //BotFrames* botframes_;
-    //bot::frames* botframes_cpp_;
     voconfig::KmclConfiguration* config_;
 
     // Vision and Estimation

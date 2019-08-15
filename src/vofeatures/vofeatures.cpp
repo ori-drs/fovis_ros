@@ -1,6 +1,7 @@
 #include "vofeatures/vofeatures.hpp"
 #include <string>
 #include <iostream>
+#include <fovision/common.hpp>
 
 using namespace cv;
 
@@ -275,7 +276,7 @@ void VoFeatures::writePose(Eigen::Isometry3d pose, int64_t utime){
 
   double pose_rpy[3];
   Eigen::Quaterniond pose_quat = Eigen::Quaterniond( pose.rotation() );
-// REPLACE ME  //quat_to_euler( pose_quat, pose_rpy[0], pose_rpy[1], pose_rpy[2]);
+  quat_to_euler( pose_quat, pose_rpy[0], pose_rpy[1], pose_rpy[2]);
 
   if(output_pose_file_.is_open()){
     output_pose_file_ << utime  << ","

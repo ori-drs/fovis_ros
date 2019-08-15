@@ -77,8 +77,8 @@ std::string BotParamConfiguration::get(const std::string & key, const std::strin
 
 KmclConfiguration::KmclConfiguration(
 //KmclConfiguration::KmclConfiguration(BotParam* botparam,
-                            const std::string & depth_source_name)
-    : depth_source_type_(UNKNOWN)
+                            const std::string & depth_source_name, const std::string & config_filename)
+    : depth_source_type_(UNKNOWN), config_filename_(config_filename)
 {
   init(depth_source_name);
 }
@@ -128,14 +128,10 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
   min_inliers_ = bot_param_get_int_or_fail(bot_param_, "vision_slam.loop_closure.min_inliers");
   */
   
-
-
   // new
   depth_source_type_ = STEREO;
 
-  std::string filename = std::string("/home/mfallon/git/vo_estimator/config/anymal.yaml");
-
-  cv::FileStorage file(filename, cv::FileStorage::READ);
+  cv::FileStorage file(config_filename_, cv::FileStorage::READ);
   if (!file.isOpened()) {
     std::cout << "could not read the yaml config file\n";
     exit(-1);
@@ -285,9 +281,7 @@ KmclConfiguration::load_stereo_calibration() const {
   assert (depth_source_type_==STEREO);
 
 
-  std::string filename = std::string("/home/mfallon/git/vo_estimator/config/anymal.yaml");
-
-  cv::FileStorage file(filename, cv::FileStorage::READ);
+  cv::FileStorage file(config_filename_, cv::FileStorage::READ);
   if (!file.isOpened()) {
     std::cout << "could not read the yaml config file\n";
     exit(-1);
