@@ -11,9 +11,11 @@
     <param name="input_body_pose_topic" value="/state_estimator/pose_in_odom" />
 
     <!-- Output -->
-    <param name="output_using_imu_time" value="true" />
+    <param name="output_using_imu_time" value="false" />
     <param name="output_body_pose_topic" value="/fovis/pose_in_odom" />
     <param name="output_body_pose_lcm" value="POSE_BODY" />
+
+    <param name="output_tf_frame" value="/fovis/base" />
 
     <!-- orientation_fusion_mode -->
     <!-- 0 no fusion -->
@@ -25,7 +27,7 @@
     <param name="pose_initialization_mode" value="2" />
 
     <param name="extrapolate_when_vo_fails" value="false" />
-    <param name="param_file" value="anymal/robot.cfg" />
+    <param name="config_filename" value="$(find vo_estimator)/config/anymal.yaml" />
     <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time -->
     <param name="which_vo_options" value="2" />
     <param name="camera_config" value="REALSENSE_FORWARD_CAMERA" />
