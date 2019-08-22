@@ -10,9 +10,9 @@ FoVision::FoVision(
   boost::shared_ptr<fovis::StereoCalibration> kcal, bool draw_lcmgl_,
   int which_vo_options_):
   kcal_(kcal), draw_lcmgl_(draw_lcmgl_), which_vo_options_(which_vo_options_),
-  odom_(kcal_->getLeftRectification(), FoVision::getOptions() ),
   pose_(Eigen::Isometry3d::Identity()), publish_fovis_stats_(false), publish_pose_(false)
 {
+  odom_ = new fovis::VisualOdometry(kcal_->getLeftRectification(), FoVision::getOptions());
 
   fovis::VisualOdometryOptions vo_opts = getOptions();
   // typical left/right stereo
@@ -44,17 +44,14 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
   stereo_depth_->setRightImage(right_buf);
-  odom_.processFrame(left_buf, stereo_depth_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+  odom_->processFrame(left_buf, stereo_depth_);
 
-
+  //const fovis::MotionEstimator * me = odom_->getMotionEstimator();
   //std::cout << "doOdometry (core)\n";
   //fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
   //std::cout << (int) estim_status << " status\n";
   //Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
   //std::cout << motion_estimate.translation().transpose() << "\n";
-
-
   //if(draw_lcmgl_) { visualization_->draw(&odom_); }
 
 }
@@ -63,15 +60,11 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
 void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
-
   stereo_disparity_->setDisparityData(disparity_buf);
-  odom_.processFrame(left_buf, stereo_disparity_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+  odom_->processFrame(left_buf, stereo_disparity_);
 
-
-
+  //  const fovis::MotionEstimator * me = odom_->getMotionEstimator();
   //if(draw_lcmgl_) { visualization_->draw(&odom_); }
-
 }
 
 
@@ -95,15 +88,12 @@ void FoVision::writeRawImage(float *float_buf, int width, int height, int64_t ut
 void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
+  depth_image_->setDepthImage(depth_buf);
+  odom_->processFrame(left_buf, depth_image_);
 
   //writeRawImage(depth_buf, kcal_->getWidth(), kcal_->getHeight(), utime);
-
-  depth_image_->setDepthImage(depth_buf);
-  odom_.processFrame(left_buf, depth_image_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
-
-  if(draw_lcmgl_) { visualization_->draw(&odom_); }
-
+  //const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+  //if(draw_lcmgl_) { visualization_->draw(&odom_); }
 }
 
 

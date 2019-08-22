@@ -98,6 +98,11 @@ class FusionCore{
 
     void updateMotion();
     void featureAnalysis();
+    uint8_t* getFeatureImage(){ 
+      return features_->getFeatureImage();
+    }
+
+
     void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
     void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
 
@@ -119,6 +124,10 @@ class FusionCore{
         estimator_->setBodyPose(init_pose);
         pose_initialized_ = true;
         std::cout << "Initialised pose\n";
+    }
+
+    const fovis::VisualOdometry* getVisualOdometry() const {
+      return vo_->getVisualOdometry();
     }
 
   private:

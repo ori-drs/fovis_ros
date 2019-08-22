@@ -53,7 +53,7 @@ public:
     void fovis_stats();
     
     Eigen::Isometry3d getMotionEstimate(){ 
-      Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
+      Eigen::Isometry3d motion_estimate = odom_->getMotionEstimate();
       
       // rotate coordinate frame so that look vector is +X, and up is +Z
       Eigen::Matrix3d M;
@@ -74,7 +74,7 @@ public:
     }
       
     fovis::MotionEstimateStatusCode getEstimateStatus(){
-      fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
+      fovis::MotionEstimateStatusCode estim_status = odom_->getMotionEstimateStatus();
       /*std::cout << estim_status << "is status\n";
       if (estim_status == fovis::SUCCESS){
         std::cout << estim_status << "is valid status\n";
@@ -85,28 +85,32 @@ public:
       return estim_status;
     }
     
-    const fovis::FeatureMatch* getMatches(){ return odom_.getMotionEstimator()->getMatches(); }
-    int getNumMatches(){ return odom_.getMotionEstimator()->getNumMatches(); }
-    int getNumInliers(){ return odom_.getMotionEstimator()->getNumInliers(); }
+    const fovis::FeatureMatch* getMatches(){ return odom_->getMotionEstimator()->getMatches(); }
+    int getNumMatches(){ return odom_->getMotionEstimator()->getNumMatches(); }
+    int getNumInliers(){ return odom_->getMotionEstimator()->getNumInliers(); }
 
-    bool getChangeReferenceFrames(){ return odom_.getChangeReferenceFrames(); }
+    bool getChangeReferenceFrames(){ return odom_->getChangeReferenceFrames(); }
 
     void getMotion(Eigen::Isometry3d &delta, Eigen::MatrixXd &delta_cov, fovis::MotionEstimateStatusCode& delta_status ){
-      delta=       odom_.getMotionEstimate();
-      delta_cov =  odom_.getMotionEstimateCov();
-      delta_status = odom_.getMotionEstimateStatus();
+      delta=       odom_->getMotionEstimate();
+      delta_cov =  odom_->getMotionEstimateCov();
+      delta_status = odom_->getMotionEstimateStatus();
     }
 
     Eigen::Isometry3d getPose(){
-      return odom_.getPose();
+      return odom_->getPose();
     }
 
     void setPublishFovisStats(bool publish_fovis_stats_in){ publish_fovis_stats_ = publish_fovis_stats_in; }
 
+    const fovis::VisualOdometry* getVisualOdometry() const {
+      return odom_;
+    }
+
 private:
     //boost::shared_ptr<lcm::LCM> lcm_;
     boost::shared_ptr<fovis::StereoCalibration> kcal_;
-    fovis::VisualOdometry odom_;
+    fovis::VisualOdometry* odom_;
     
     // Depth Sources:
     fovis::StereoDepth* stereo_depth_; // typical left/right stereo

@@ -209,23 +209,6 @@ void VoFeatures::sendImage(std::string channel, uint8_t* img_buf, std::vector<Im
   //REPLACE imgutils_->sendImageJpeg(img.data, 0, img.cols, img.rows, 94, channel, 1);
 }
 
-void VoFeatures::publishImage(std::string channel, cv::Mat img, int n_colors){
-  /*
-  bot_core_image_t image;
-  image.utime =0;
-  image.width = img.cols;
-  image.height= img.rows;
-  image.row_stride =n_colors*img.cols;
-  image.pixelformat =BOT_CORE_IMAGE_T_PIXEL_FORMAT_GRAY;
-  image.size =n_colors*img.cols*img.rows;
-  image.data = img.data;
-  image.nmetadata =0;
-  image.metadata = NULL;
-  bot_core_image_t_publish( lcm_->getUnderlyingLCM() , channel.c_str(), &image);    
-  */
-}
-
-
 void VoFeatures::writeImage(uint8_t* img_buf, int counter, int64_t utime){
   //cout << "images written to file @ " << utime_ << "\n";
   std::stringstream ss;

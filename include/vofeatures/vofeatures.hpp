@@ -70,6 +70,8 @@ public:
                                 std::vector<int> features_indices,
                                 int vs_id);
 
+  uint8_t* getFeatureImage(){ return left_cur_buf_; }
+
 private:
   //boost::shared_ptr<lcm::LCM> lcm_;
   //pronto_vis* pc_vis_;
@@ -85,10 +87,6 @@ private:
                     Eigen::Isometry3d pose,
                     int64_t utime);
 
-
-
-  void publishImage(std::string channel, cv::Mat img, int n_colors);
-  
   void drawFeaturesOnImage(cv::Mat &img, std::vector<ImageFeature> &features,
                            std::vector<int> &feature_indices);
 

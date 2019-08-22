@@ -36,6 +36,7 @@
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <fovis_msgs/Stats.h>
 
 
 #include <tf/transform_broadcaster.h>
@@ -78,8 +79,9 @@ class StereoOdom{
     ros::Subscriber poseOdomSub_;
     void poseOdomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg);
 
+    void publishFovisStats(int sec, int nsec);
 
-    ros::Publisher body_pose_pub_;
+    ros::Publisher body_pose_pub_, fovis_stats_pub_, fovis_image_pub_;
 
     int64_t utime_imu_;
 
@@ -159,6 +161,9 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   poseOdomSub_ = node_.subscribe(std::string(input_body_pose_topic), 100,
                                     &StereoOdom::poseOdomCallback, this);
 
+  fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
+  if (fcfg_.publish_feature_analysis)
+    fovis_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
 
   ROS_INFO_STREAM("StereoOdom Constructed");
 }
@@ -199,6 +204,29 @@ int pixel_convert_8u_rgb_to_8u_gray (uint8_t *dest, int dstride, int width,
     }
   }
   return 0;
+}
+
+
+void StereoOdom::publishFovisStats(int sec, int nsec){
+  const fovis::VisualOdometry* odom = vo_core_->getVisualOdometry();
+  const fovis::MotionEstimator* me = odom->getMotionEstimator();
+  fovis_msgs::Stats stats;
+  stats.header.stamp.sec = sec;
+  stats.header.stamp.nsec = nsec;
+  stats.num_matches = me->getNumMatches();
+  stats.num_inliers = me->getNumInliers();
+  stats.mean_reprojection_error = me->getMeanInlierReprojectionError();
+  stats.num_reprojection_failures = me->getNumReprojectionFailures();
+
+  const fovis::OdometryFrame * tf(odom->getTargetFrame());
+  stats.num_detected_keypoints = tf->getNumDetectedKeypoints();
+  stats.num_keypoints = tf->getNumKeypoints();
+  stats.fast_threshold = odom->getFastThreshold();
+
+  fovis::MotionEstimateStatusCode estim_status = odom->getMotionEstimateStatus();
+  stats.status = (int) estim_status;
+
+  fovis_stats_pub_.publish(stats);
 }
 
 
@@ -322,6 +350,16 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   // This is where inertial data is fused
   vo_core_->doPostProcessing();
+
+  publishFovisStats(image_a_ros->header.stamp.sec, image_a_ros->header.stamp.nsec);
+
+  if (fcfg_.publish_feature_analysis){
+    uint8_t* feature_image_ = vo_core_->getFeatureImage();
+    cv::Mat A(h,w,CV_8UC1);
+    A.data = feature_image_;
+    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", A).toImageMsg();
+    fovis_image_pub_.publish(msg);
+  }
 
   int64_t utime_output = utime_cur;
   // use the IMU time stamp - so that the rest of the system sees a state estimate with timestamp with low latency
