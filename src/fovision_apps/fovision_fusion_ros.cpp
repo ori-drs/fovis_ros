@@ -465,7 +465,6 @@ int main(int argc, char **argv){
 
   fcfg.verbose = false;
   fcfg.extrapolate_when_vo_fails = false;
-  fcfg.draw_lcmgl = false;  
   fcfg.publish_feature_analysis = false; 
   fcfg.output_signal = "POSE_BODY_ALT";
   fcfg.output_tf_frame = "/fovis/base";
@@ -480,7 +479,6 @@ int main(int argc, char **argv){
   ros::NodeHandle nh("~");
   nh.getParam("verbose", fcfg.verbose);
   nh.getParam("extrapolate_when_vo_fails", fcfg.extrapolate_when_vo_fails);
-  nh.getParam("draw_lcmgl", fcfg.draw_lcmgl);
   nh.getParam("publish_feature_analysis", fcfg.publish_feature_analysis);
   nh.getParam("output_body_pose_lcm", fcfg.output_signal);
   nh.getParam("output_tf_frame", fcfg.output_tf_frame);

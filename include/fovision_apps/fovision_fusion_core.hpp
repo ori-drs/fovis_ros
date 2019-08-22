@@ -25,7 +25,6 @@ struct FusionCoreConfig
   bool verbose;
   int correction_frequency;
   std::string in_log_fname;
-  bool draw_lcmgl;
   bool write_feature_output;
   int which_vo_options;
   bool extrapolate_when_vo_fails;

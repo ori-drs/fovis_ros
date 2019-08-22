@@ -11,31 +11,19 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-//#include <lcm/lcm-cpp.hpp>
-
 #include <fovis/fovis.hpp>
 
-//#include <lcmtypes/bot_core/pose_t.hpp>
-//#include <lcmtypes/fovis/stats_t.hpp>
-//#include <lcmtypes/fovis/update_t.hpp>
-
-//#include <bot_lcmgl_client/lcmgl.h>
 #include "visualization.hpp"
-
 
 class FoVision
 {
 public:
-    //FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
-    //         boost::shared_ptr<fovis::StereoCalibration> kcal,
-    //         bool draw_lcmgl_, int which_vo_options_);
     FoVision(boost::shared_ptr<fovis::StereoCalibration> kcal,
-             bool draw_lcmgl_, int which_vo_options_);
+             int which_vo_options_);
     
     
     ~FoVision();
 
-    bool draw_lcmgl_;
     int which_vo_options_;
     
     void writeRawImage(float *float_buf, int width, int height, int64_t utime);
@@ -108,7 +96,6 @@ public:
     }
 
 private:
-    //boost::shared_ptr<lcm::LCM> lcm_;
     boost::shared_ptr<fovis::StereoCalibration> kcal_;
     fovis::VisualOdometry* odom_;
     
@@ -132,8 +119,7 @@ private:
     void getOptionsCommon(fovis::VisualOdometryOptions &vo_opts);
     void getOptionsFaster(fovis::VisualOdometryOptions &vo_opts);
 
-
-    int64_t current_timestamp_,prev_timestamp_;
+    int64_t current_timestamp_, prev_timestamp_;
 
     Visualization* visualization_;    
 };

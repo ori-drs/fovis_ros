@@ -96,7 +96,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   decompress_disparity_buf_ = (uint8_t*) malloc( 4*image_size_*sizeof(uint8_t));  // arbitary size chosen..
   depth_buf_ = (float*) malloc( image_size_*sizeof(float));  // byte per image
 
-  vo_ = new FoVision(stereo_calibration_, fcfg_.draw_lcmgl, fcfg_.which_vo_options);
+  vo_ = new FoVision(stereo_calibration_, fcfg_.which_vo_options);
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
 
   features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );

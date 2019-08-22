@@ -33,7 +33,6 @@
     <param name="camera_config" value="REALSENSE_FORWARD_CAMERA" />
 
     <param name="verbose" value="false" />
-    <param name="draw_lcmgl" value="false" />
     <param name="publish_feature_analysis" value="false" />
     <param name="write_pose_to_file" value="false" />
 

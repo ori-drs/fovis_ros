@@ -5,11 +5,10 @@
 
 using namespace std;
 
-//FoVision::FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
 FoVision::FoVision(
-  boost::shared_ptr<fovis::StereoCalibration> kcal, bool draw_lcmgl_,
+  boost::shared_ptr<fovis::StereoCalibration> kcal, 
   int which_vo_options_):
-  kcal_(kcal), draw_lcmgl_(draw_lcmgl_), which_vo_options_(which_vo_options_),
+  kcal_(kcal), which_vo_options_(which_vo_options_),
   pose_(Eigen::Isometry3d::Identity()), publish_fovis_stats_(false), publish_pose_(false)
 {
   odom_ = new fovis::VisualOdometry(kcal_->getLeftRectification(), FoVision::getOptions());
@@ -21,12 +20,6 @@ FoVision::FoVision(
   stereo_disparity_= new fovis::StereoDisparity( kcal_.get());
   // left/depth from realsense
   depth_image_ = new fovis::DepthImage(kcal_->getRectifiedParameters(), kcal_->getWidth(), kcal_->getHeight());
-
-  //if (draw_lcmgl_){
-  //  bot_lcmgl_t* lcmgl = bot_lcmgl_init(lcm_->getUnderlyingLCM(), "stereo-odometry");
-  //  visualization_ = new Visualization(lcmgl, kcal.get());
-  //}
-
 }
 
 
@@ -52,7 +45,6 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
   //std::cout << (int) estim_status << " status\n";
   //Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
   //std::cout << motion_estimate.translation().transpose() << "\n";
-  //if(draw_lcmgl_) { visualization_->draw(&odom_); }
 
 }
 
@@ -64,7 +56,6 @@ void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime)
   odom_->processFrame(left_buf, stereo_disparity_);
 
   //  const fovis::MotionEstimator * me = odom_->getMotionEstimator();
-  //if(draw_lcmgl_) { visualization_->draw(&odom_); }
 }
 
 
@@ -93,7 +84,6 @@ void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t 
 
   //writeRawImage(depth_buf, kcal_->getWidth(), kcal_->getHeight(), utime);
   //const fovis::MotionEstimator * me = odom_.getMotionEstimator();
-  //if(draw_lcmgl_) { visualization_->draw(&odom_); }
 }
 
 
