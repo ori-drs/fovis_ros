@@ -93,7 +93,10 @@ class FusionCore{
         if (fcfg_.publish_feature_analysis)
             featureAnalysis();
 
-        fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+        // only use imu after its been initialized
+        if (local_to_body_orientation_from_imu_initialized_){
+          fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+        }
     }
 
     void updateMotion();
@@ -152,6 +155,8 @@ class FusionCore{
     bool pose_initialized_; // initalized from VO
     int imu_counter_;
     Eigen::Isometry3d body_to_imu_, imu_to_camera_;
+
+    bool local_to_body_orientation_from_imu_initialized_; // has an imu measurement been received
     
     // previous successful vo estimates as rates:
     Eigen::Vector3d vo_velocity_linear_;

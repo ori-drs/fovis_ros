@@ -118,6 +118,8 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
 
 
   // IMU:
+  local_to_body_orientation_from_imu_initialized_ = false;
+  local_to_body_orientation_from_imu_ = Eigen::Quaterniond(1,0,0,0);
   imu_counter_=0;
 
   body_to_imu_ = Eigen::Isometry3d::Identity();
@@ -409,6 +411,7 @@ void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 
 void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime){
   local_to_body_orientation_from_imu_ = local_to_body_orientation_from_imu;
+  local_to_body_orientation_from_imu_initialized_ = true;
 
   // Transform rotation Rates into body frame:
   double camera_ang_vel_from_imu_[3];
