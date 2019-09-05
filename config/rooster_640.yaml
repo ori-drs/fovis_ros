@@ -19,10 +19,9 @@
 ##### works with anymal_2019-05-10-10-38-35.bag
 cameras:
     - {
-      image_dimensions: [848,480],
-      focal_length:     [427.33, 426.79],
-      focal_point:      [427.82, 238.32],
-
+      image_dimensions: [640,480],
+      focal_length:     [385.529541015625, 385.529541015625], # default from camera info, David uses different
+      focal_point:      [321.4463806152344, 237.48886108398438],
       # distortion_s:    0, # used by David but not used here
       distortion_k1:   0.0,
       distortion_k2:   0.0,

@@ -7,7 +7,8 @@
     <param name="image_b_transport" value="compressed" />
 
     <!-- Auxiliary Inputs -->
-    <param name="input_imu_topic" value="/os1_cloud_node/imu_fixed_with_orientation" />
+    <!--<param name="input_imu_topic" value="/os1_cloud_node/imu_fixed_with_orientation" /> -->
+    <param name="input_imu_topic" value="/camera/imu_fixed_with_orientation_in_base" />
     <param name="input_body_pose_topic" value="/state_estimator/pose_in_odom" />
 
     <!-- Output -->
@@ -21,7 +22,7 @@
     <!-- 0 no fusion -->
     <!-- 1 rpy from imu, 2 r & p only from imu -->
     <!-- 3 rpy from body_pose_topic, 4 r & p only from body_pose_topic -->
-    <param name="orientation_fusion_mode" value="2" />
+    <param name="orientation_fusion_mode" value="0" />
 
     <!-- pose_initialization_mode: 0 cfg file. 1 IMU r & p. 2 using a pose topic -->
     <param name="pose_initialization_mode" value="0" />

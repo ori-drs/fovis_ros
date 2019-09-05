@@ -32,8 +32,12 @@ group "1.progs" {
 }
 
 group "2.time_and_imu_fixing" {
-    cmd "imu_orientation" {
+    cmd "imu_orientation_ouster" {
         exec = "roslaunch imu_filter_madgwick rooster_ouster.launch";
+        host = "localhost";
+    }
+    cmd "imu_orientation_realsense" {
+        exec = "roslaunch imu_filter_madgwick rooster_realsense.launch";
         host = "localhost";
     }
     cmd "fake_ouster_imu_time" {
@@ -65,6 +69,14 @@ group "3.aicp" {
 group "4.bag" {
     cmd "rosbag" {
         exec = "rosbag play /home/mfallon/logs/rooster/rooster_2019-07-26-16-42-31.bag --pause --clock -s 55 ";
+        host = "localhost";
+    }
+    cmd "rosbag2" {
+        exec = "rosbag play /home/mfallon/logs/rooster/2019-08-23-around-maths/rooster_2019-08-23-12-04-32.bag --pause --clock -s 245 /tf:=/tf_new  /os1_cloud_node/points_fixed:=/null";
+        host = "localhost";
+    }
+    cmd "rosbag2" {
+        exec = "rosbag play /home/mfallon/logs/rooster/2019-09-02-fire-college/rooster_2019-09-02-15-42-56.bag --pause --clock -s 45 /tf:=/tf_new  /os1_cloud_node/points_fixed:=/null";
         host = "localhost";
     }
 }
