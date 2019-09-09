@@ -13,10 +13,6 @@
 
 #include <opencv2/core.hpp>
 
-
-//#include <path_util/path_util.h>
-
-
 /// \brief Parse the contents of a 3 element vector.
 Eigen::Vector3d parseVector3d(const cv::FileNode& node) {
   if (node.size()!=3) {
@@ -31,8 +27,6 @@ Eigen::Vector3d parseVector3d(const cv::FileNode& node) {
 namespace voconfig
 {
 
-//BotParamConfiguration ::BotParamConfiguration(lcm_t* bot_param_lcm,
-//  BotParam* bot_param,
 BotParamConfiguration::BotParamConfiguration(const std::string & key_prefix) : key_prefix_(key_prefix)
 {
 }
@@ -41,92 +35,41 @@ BotParamConfiguration::~BotParamConfiguration() {}
 
 bool BotParamConfiguration::has_key(const std::string & key)
 {
-  return false;// bot_param_has_key(bot_param_, (key_prefix_+"."+key).c_str());
+  return false;
 }
 
 bool BotParamConfiguration::get(const std::string & key, bool default_value)
 {
   int bval;
-  //if (bot_param_get_boolean(bot_param_, (key_prefix_+"."+key).c_str(), &bval) != 0) bval = default_value;
   return bval;
 }
 
 int BotParamConfiguration::get(const std::string & key, int default_value)
 {
   int ival;
-  //if (bot_param_get_int(bot_param_, (key_prefix_+"."+key).c_str(), &ival) != 0) ival = default_value;
   return ival;
 }
 
 double BotParamConfiguration::get(const std::string & key, double default_value)
 {
   double dval;
-  //if (bot_param_get_double(bot_param_, (key_prefix_+"."+key).c_str(), &dval) != 0) dval = default_value;
   return dval;
 }
 
 std::string BotParamConfiguration::get(const std::string & key, const std::string & default_value)
 {
   std::string val;
-  //char * sval = NULL;
-  //if (bot_param_get_str(bot_param_, (key_prefix_+"."+key).c_str(), &sval) == 0) val = std::string(sval);
-  //else val = default_value;
-  //if (sval) free(sval);
   return val;
 }
 
 KmclConfiguration::KmclConfiguration(
-//KmclConfiguration::KmclConfiguration(BotParam* botparam,
                             const std::string & depth_source_name, const std::string & config_filename)
     : depth_source_type_(UNKNOWN), config_filename_(config_filename)
 {
   init(depth_source_name);
 }
 
-//Configuration::Ptr KmclConfiguration::get_section(const std::string & key_prefix) const
-//{
-//  return BotParamConfiguration::Ptr(new BotParamConfiguration(bot_param_lcm_, bot_param_, key_prefix));
-//}
-
-//void KmclConfiguration::init(BotParam* bot_param,
-//                            const std::string & depth_source_name) {
 void KmclConfiguration::init(const std::string & depth_source_name) {
-//  bot_param_lcm_ = lcm_create(NULL);
-
-////  bot_param_ = bot_param_new_from_file(config_name.c_str());
-//  bot_param_ = bot_param;
-//  if (bot_param_ == NULL) {
- //   std::cerr << "Couldn't get bot param" << std::endl;
- //   exit(-1);
-//  }
-
-  /*
-  // proposal
-  char * loop_proposal_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.loop_proposal.loop_proposal");
-  char * vocabulary_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.loop_proposal.vocabulary");
-  char * vocabulary_weights_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.loop_proposal.vocabulary_weights");
-  char * vocabulary_descriptor_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.loop_proposal.vocabulary_descriptor");
-  char * builder_descriptor_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.vocabulary_builder.descriptor");
-  loop_proposal_ = loop_proposal_str;
-  //vocabulary_ = std::string(getConfigPath()) + "/" + std::string(vocabulary_str);
-  //vocabulary_weights_ = std::string(getConfigPath()) + "/" + std::string(vocabulary_weights_str);
-  vocabulary_descriptor_ = std::string(vocabulary_descriptor_str);
-  builder_descriptor_ = std::string(builder_descriptor_str);
-  free(loop_proposal_str);
-  free(vocabulary_str);
-  free(vocabulary_weights_str);
-  free(vocabulary_descriptor_str);
-  free(builder_descriptor_str);
-  min_time_ = bot_param_get_int_or_fail(bot_param_, "vision_slam.loop_proposal.min_time");
-  min_score_ = bot_param_get_double_or_fail(bot_param_, "vision_slam.loop_proposal.min_score");
-  max_num_proposals_ = bot_param_get_int_or_fail(bot_param_, "vision_slam.loop_proposal.max_num_proposals");
-
-  // closure
-  char * alignment_descriptor_str = bot_param_get_str_or_fail(bot_param_, "vision_slam.loop_closure.alignment_descriptor");
-  alignment_descriptor_ = std::string(alignment_descriptor_str);
-  free(alignment_descriptor_str);
-  min_inliers_ = bot_param_get_int_or_fail(bot_param_, "vision_slam.loop_closure.min_inliers");
-  */
   
   // new
   depth_source_type_ = STEREO;
@@ -135,9 +78,7 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
   if (!file.isOpened()) {
     std::cout << "could not read the yaml config file\n";
     exit(-1);
-    //return false;
   }
-
 
   double stereo_baseline = static_cast<double>(file["cameras"][0]["stereo_baseline"]); // actual value should be negative e.g. -0.05
   std::cout << stereo_baseline << " \n";
@@ -159,15 +100,9 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
   std::cout << B_r_BC << " [B_r_BC]\n";
   std::cout << B_q_BC.x() << " " << B_q_BC.y() << " " << B_q_BC.z() << " " << B_q_BC.w() << " B_q_BC [xyzw]\n";
 
-
   Eigen::Quaterniond B_q_BC2 = Eigen::Quaterniond(B_t_BC_.rotation());
   std::cout << B_q_BC2.x() << " " << B_q_BC2.y() << " " << B_q_BC2.z() << " " << B_q_BC2.w() << " B_q_BC [xyzw]\n";
 
-
-  // Eigen::Vector3d B_r_BC = 
-
-
-  
   // cameras
   /*
   key_prefix_ = "cameras." + depth_source_name;
@@ -185,16 +120,11 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
     exit(-1);
   }
   free (depth_source_type_str);
-
-  char * lcm_channel_str = bot_param_get_str_or_fail(bot_param_, (key_prefix_ + ".lcm_channel").c_str());
-  lcm_channel_ = lcm_channel_str;
-  free(lcm_channel_str);
   */
 }
 
 KmclConfiguration::~KmclConfiguration()
 {
-//  bot_param_destroy(bot_param_);
 }
 
 boost::shared_ptr<fovis::PrimeSenseCalibration>
@@ -320,28 +250,6 @@ KmclConfiguration::load_stereo_calibration() const {
     params->k3 = static_cast<double>(file["cameras"][i]["distortion_k3"]);
     params->p1 = static_cast<double>(file["cameras"][i]["distortion_p1"]);
     params->p2 = static_cast<double>(file["cameras"][i]["distortion_p2"]);
-
-    /*
-    params->width = bot_param_get_int_or_fail(bot_param_, (key_prefix_str+".intrinsic_cal.width").c_str());
-    params->height = bot_param_get_int_or_fail(bot_param_,(key_prefix_str+".intrinsic_cal.height").c_str());
-    
-    double vals[5];
-    bot_param_get_double_array_or_fail(bot_param_, (key_prefix_str+".intrinsic_cal.pinhole").c_str(), vals, 5);
-    params->fx = vals[0];
-    params->fy = vals[1];
-    params->cx = vals[3];
-    params->cy = vals[4];
-    
-    if (3 == bot_param_get_double_array(bot_param_, (key_prefix_str+".intrinsic_cal.distortion_k").c_str(), vals, 3)) {
-      params->k1 = vals[0];
-      params->k2 = vals[1];
-      params->k3 = vals[2];
-    }
-    if (2 == bot_param_get_double_array(bot_param_, (key_prefix_str+".intrinsic_cal.distortion_p").c_str(), vals, 2)) {
-      params->p1 = vals[0];
-      params->p2 = vals[1];
-    }    
-*/
   }
 
   // We assume rotation is a rotation matrix
@@ -381,33 +289,18 @@ void KmclConfiguration::set_vo_option_int(fovis::VisualOdometryOptions & vo_opts
     const std::string & option) const
 {
   int ival;
-  /*
-  std::string param = std::string("fovis.") + option;
-  if (bot_param_get_int(bot_param_, param.c_str(), &ival) == 0)
-    vo_opts[option] = boost::lexical_cast<std::string>(ival);
-    */
 }
 
 void KmclConfiguration::set_vo_option_double(fovis::VisualOdometryOptions & vo_opts,
     const std::string & option) const
 {
   double dval;
-  /*
-  std::string param = std::string("fovis.") + option;
-  if (bot_param_get_double(bot_param_, param.c_str(), &dval) == 0)
-    vo_opts[option] = boost::lexical_cast<std::string>(dval);
-    */
 }
 
 void KmclConfiguration::set_vo_option_boolean(fovis::VisualOdometryOptions & vo_opts,
     const std::string & option) const
 {
   int bval;
-  /*
-  std::string param = std::string("fovis.") + option;
-  if (bot_param_get_boolean(bot_param_, param.c_str(), &bval) == 0)
-    vo_opts[option] = boost::lexical_cast<std::string>((bval?"true":"false"));
-    */
 }
 
 fovis::VisualOdometryOptions KmclConfiguration::visual_odometry_options() const {

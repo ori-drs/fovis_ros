@@ -13,11 +13,6 @@
 
 #include <fovision/common.hpp>
 
-//#include <lcm/lcm-cpp.hpp>
-//#include <bot_frames/bot_frames.h>
-////#include <bot_frames_cpp/bot_frames_cpp.hpp>
-//#include <lcmtypes/bot_core.hpp>
-
 //#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
 
 
@@ -26,7 +21,6 @@
 class VoEstimator
 {
 public:
-  //VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_, 
   VoEstimator(std::string channel_extension_ = "", std::string camera_config_ = "CAMERA");
   ~VoEstimator();
 
@@ -51,14 +45,11 @@ public:
 
 
 private:
-  //boost::shared_ptr<lcm::LCM> lcm_;
   //pronto_vis* pc_vis_;
   
   // have we received the first pose estimate:?
   bool pose_initialized_;
   bool vo_initialized_;
-
-  //BotFrames* botframes_;
 
   std::string channel_extension_;
   std::string camera_config_;

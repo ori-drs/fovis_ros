@@ -32,9 +32,6 @@ public:
     void doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime);
     void doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime);
 
-    //fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
-    //  Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp);
-    
     void send_delta_translation_msg(Eigen::Isometry3d motion_estimate,
       Eigen::MatrixXd motion_cov, std::string channel_name);
     

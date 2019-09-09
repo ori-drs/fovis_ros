@@ -32,8 +32,6 @@ VoFeatures::VoFeatures(int image_width_, int image_height_):
   //pc_vis_->obj_cfg_list.push_back( obj_cfg(3002,"Current Camera Pose",5,reset) );
   //pc_vis_->ptcld_cfg_list.push_back( ptcld_cfg(3003,"Current Features",1,reset, 3002,1,colors_v_b));
 
-  //imgutils_ = new image_io_utils( lcm_, image_width_, 2*image_height_); // extra space for stereo tasks
-
 }
 
 // TODO: remove fovis dependency entirely:

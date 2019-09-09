@@ -20,17 +20,11 @@
 
 #include "imagefeatures.hpp"
 //#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
-
-//#include <lcmtypes/reg.hpp>
-//#include <lcmtypes/reg/features_t.hpp>
-//#include <lcmtypes/bot_core_image_t.h>
 
 class VoFeatures
 {
 public:
   VoFeatures(int image_width_, int image_height_);
-  //VoFeatures(boost::shared_ptr<lcm::LCM> &lcm_, int image_width_, int image_height_);
   ~VoFeatures();
 
   void setFeatures(const fovis::FeatureMatch* matches, int num_matches, int64_t utime);
@@ -73,7 +67,6 @@ public:
   uint8_t* getFeatureImage(){ return left_cur_buf_; }
 
 private:
-  //boost::shared_ptr<lcm::LCM> lcm_;
   //pronto_vis* pc_vis_;
   int image_width_;
   int image_height_;
@@ -101,8 +94,6 @@ private:
   uint8_t *left_cur_buf_;
   std::vector<ImageFeature> features_cur_;
   std::vector<int> features_cur_indices_;
-
-  //image_io_utils*  imgutils_;
 
   // no longer used:
   // uint8_t *right_ref_buf_, *right_cur_buf_;

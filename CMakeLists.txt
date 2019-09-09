@@ -9,19 +9,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-#  pronto_vis
-#  image_io_utils
-#  pronto_conversions
-#  bot_frames_cpp
-#  pronto_lcmtypes
-#  reg_lcmtypes
-#  bot_core_lcmtypes
-#  ori_lcmtypes
-#  bot_param
   fovis
-#  concise_args
-#  path_util
-#  fovis_lcmtypes
   estimate_pose
   image_transport
   tf_conversions

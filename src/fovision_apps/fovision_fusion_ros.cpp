@@ -5,18 +5,11 @@
 // For IMU orientation integration:
 // Estimate is maintained in the body frame which is assumed to be
 // Forward-Left-Up such at roll and pitch can be isolated from yaw.
-
-
 #include <zlib.h>
-
 
 #include <fovision_apps/fovision_fusion_core.hpp>
 
-
 //#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
-
-//#include <path_util/path_util.h>
 
 #include <opencv/cv.h> // for disparity 
 
@@ -510,5 +503,4 @@ int main(int argc, char **argv){
 
   new StereoOdom(nh, fcfg);
   ros::spin();
-  //while(0 == lcm_recv->handle());
 }

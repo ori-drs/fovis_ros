@@ -11,9 +11,6 @@
 
 #include <vector>
 #include <string>
-//#include <bot_param/param_client.h>
-//#include <bot_param/param_util.h>
-//#include <lcm/lcm.h>
 #include <boost/shared_ptr.hpp>
 #include <fovis/fovis.hpp>
 
@@ -46,7 +43,6 @@ public:
 class BotParamConfiguration : public Configuration
 {
 public:
-  //BotParamConfiguration(lcm_t* bot_param_lcm, BotParam* bot_param, const std::string & key_prefix);
   BotParamConfiguration(const std::string & key_prefix);
   virtual ~BotParamConfiguration();
 
@@ -57,8 +53,6 @@ public:
   virtual std::string get(const std::string & key, const std::string & default_value);
 
 private:
-  //lcm_t* bot_param_lcm_;
-  //BotParam* bot_param_;
   std::string key_prefix_;
 };
 
@@ -148,8 +142,6 @@ private:
                              const std::string & option) const;
 			     
 
-  //lcm_t* bot_param_lcm_;
-  //BotParam* bot_param_;
   std::string key_prefix_;
   std::string lcm_channel_;
 

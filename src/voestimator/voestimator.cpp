@@ -1,9 +1,5 @@
 #include "voestimator/voestimator.hpp"
 
-//VoEstimator::VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_,
-//  std::string channel_extension_, std::string camera_config_):
-//  lcm_(lcm_), botframes_(botframes_), channel_extension_(channel_extension_), camera_config_(camera_config_),
-//  pose_initialized_(false), vo_initialized_(false){
 VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_config_):
   channel_extension_(channel_extension_), camera_config_(camera_config_),
   pose_initialized_(false), vo_initialized_(false){
@@ -16,23 +12,6 @@ VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_conf
   //pc_vis_->obj_cfg_list.push_back( obj_cfg(60000,"Pose Body",5,1) );
 }
 
-
-/*
-int get_trans_with_utime(BotFrames *bot_frames,
-        const char *from_frame, const char *to_frame, int64_t utime,
-        Eigen::Isometry3d & mat){
-  int status;
-  double matx[16];
-  status = bot_frames_get_trans_mat_4x4_with_utime( bot_frames, from_frame,  to_frame, utime, matx);
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      mat(i,j) = matx[i*4+j];
-    }
-  }  
-
-  return status;
-}
-*/
 
 void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera){
 

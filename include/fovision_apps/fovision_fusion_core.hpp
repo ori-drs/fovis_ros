@@ -34,7 +34,6 @@ struct FusionCoreConfig
 class FusionCore{
   public:
     FusionCore(const FusionCoreConfig& fcfg_);
-    //FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_);
     
     ~FusionCore(){
       free (left_buf_);

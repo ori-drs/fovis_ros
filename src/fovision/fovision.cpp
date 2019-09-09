@@ -31,21 +31,12 @@ FoVision::~FoVision()
 }
 
 
-
 // Typical Stereo:
 void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
   stereo_depth_->setRightImage(right_buf);
   odom_->processFrame(left_buf, stereo_depth_);
-
-  //const fovis::MotionEstimator * me = odom_->getMotionEstimator();
-  //std::cout << "doOdometry (core)\n";
-  //fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
-  //std::cout << (int) estim_status << " status\n";
-  //Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
-  //std::cout << motion_estimate.translation().transpose() << "\n";
-
 }
 
 // Left and Disparity:
@@ -54,8 +45,6 @@ void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime)
   current_timestamp_ = utime;
   stereo_disparity_->setDisparityData(disparity_buf);
   odom_->processFrame(left_buf, stereo_disparity_);
-
-  //  const fovis::MotionEstimator * me = odom_->getMotionEstimator();
 }
 
 
@@ -81,9 +70,6 @@ void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t 
   current_timestamp_ = utime;
   depth_image_->setDepthImage(depth_buf);
   odom_->processFrame(left_buf, depth_image_);
-
-  //writeRawImage(depth_buf, kcal_->getWidth(), kcal_->getHeight(), utime);
-  //const fovis::MotionEstimator * me = odom_.getMotionEstimator();
 }
 
 

@@ -3,7 +3,6 @@
 
 #include <fovis/fovis.hpp>
 
-//#include <bot_lcmgl_client/lcmgl.h>
 /*
 namespace fovis
 {
@@ -15,7 +14,6 @@ class StereoCalibration;
 class Visualization {
 public:
   Visualization(const fovis::StereoCalibration* calib);
-  //Visualization(bot_lcmgl_t* lcmgl, const fovis::StereoCalibration* calib);
   virtual ~Visualization();
 
   void draw(const fovis::VisualOdometry* odom);
@@ -28,7 +26,6 @@ private:
 
   void colormap(float z, float rgb[3]);
 
-  //bot_lcmgl_t* _lcmgl;
   const fovis::StereoCalibration* _calibration;
   float _min_z;
   float _max_z;

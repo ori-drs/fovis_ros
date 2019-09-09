@@ -1,11 +1,5 @@
 // Main VO Fusion Library
-
-
 #include <zlib.h>
-//#include <lcm/lcm-cpp.hpp>
-//#include <bot_param/param_client.h>
-//#include <bot_frames/bot_frames.h>
-
 
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
@@ -13,13 +7,8 @@
 #include "fovision/fovision.hpp"
 
 //#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 
 #include <fovision_apps/fovision_fusion_core.hpp>
-
-//#include <ConciseArgs>
-
-//#include <path_util/path_util.h>
 
 #include <opencv/cv.h> // for disparity 
 
@@ -29,43 +18,10 @@ using namespace cv; // for disparity ops
 
 std::ofstream fovision_output_file_;
 
-/*
-int get_trans_with_utime(BotFrames *bot_frames,
-        const char *from_frame, const char *to_frame, int64_t utime,
-        Eigen::Isometry3d & mat){
-  int status;
-  double matx[16];
-  status = bot_frames_get_trans_mat_4x4_with_utime( bot_frames, from_frame,  to_frame, utime, matx);
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      mat(i,j) = matx[i*4+j];
-    }
-  }  
-
-  return status;
-}
-*/
-
-
-//FusionCore::FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_) : 
 FusionCore::FusionCore(const FusionCoreConfig& fcfg_) : 
        fcfg_(fcfg_), utime_cur_(0), utime_prev_(0), 
        ref_utime_(0), changed_ref_frames_(false)
 {
-  // Set up frames and config:
-  /*if (fcfg_.param_file.empty()) {
-    std::cout << "Get param from LCM\n";
-    botparam_ = bot_param_get_global(lcm_recv_->getUnderlyingLCM(), 0);
-  } else {
-    std::cout << "Get param from file\n";
-    botparam_ = bot_param_new_from_file(fcfg_.param_file.c_str());
-  }
-  if (botparam_ == NULL) {
-    exit(1);
-  }
-  botframes_= bot_frames_get_global(lcm_recv_->getUnderlyingLCM(), botparam_);
-  //botframes_cpp_ = new bot::frames(botframes_);
-  */
 
   config_ = new voconfig::KmclConfiguration(fcfg_.camera_config, fcfg_.config_filename);
   boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
@@ -123,23 +79,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   imu_counter_=0;
 
   body_to_imu_ = Eigen::Isometry3d::Identity();
-  imu_to_camera_ = Eigen::Isometry3d::Identity();
-
-  //imu_to_camera_.translation().x() = 0.386;
-  //imu_to_camera_.translation().y() = 0.015;
-  //imu_to_camera_.translation().z() = 0.160;
-  //Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates // xyzw: 0.549529 -0.445107 0.445016 -0.549417 
-  //imu_to_camera_.rotate( quat );
-  //std::cout << quat.x() << " " << quat.y() << " " << quat.z() << " " << quat.w() << "\n";
-
-  //Eigen::Isometry3d B_t_BC = config_->B_t_BC();
-  //Eigen::Quaterniond B_q_BC = Eigen::Quaterniond(B_t_BC.rotation());
-  //std::cout << B_q_BC.x() << " " << B_q_BC.y() << " " << B_q_BC.z() << " " << B_q_BC.w() << " B_q_BC [xyzw]\n";
   imu_to_camera_ = config_->B_t_BC();
-
-  // This assumes the imu to body frame is fixed, need to update if the neck is actuated
-  //get_trans_with_utime( botframes_ ,  "body", "imu", 0, body_to_imu_);
-  //get_trans_with_utime( botframes_ ,  "imu",  string( fcfg_.camera_config + "_LEFT" ).c_str(), 0, imu_to_camera_);
 
   cout <<"FusionCore Constructed\n";
 }
