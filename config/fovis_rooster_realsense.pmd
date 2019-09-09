@@ -75,8 +75,8 @@ group "4.bag" {
         exec = "rosbag play /home/mfallon/logs/rooster/2019-08-23-around-maths/rooster_2019-08-23-12-04-32.bag --pause --clock -s 245 /tf:=/tf_new  /os1_cloud_node/points_fixed:=/null";
         host = "localhost";
     }
-    cmd "rosbag2" {
-        exec = "rosbag play /home/mfallon/logs/rooster/2019-09-02-fire-college/rooster_2019-09-02-15-42-56.bag --pause --clock -s 45 /tf:=/tf_new  /os1_cloud_node/points_fixed:=/null";
+    cmd "rosbag_fsc" {
+        exec = "rosbag play /home/mfallon/logs/rooster/2019-09-02-fire-college/rooster_2019-09-02-15-42-56.bag --pause --clock -s 45 /tf:=/tf_new  ";
         host = "localhost";
     }
 }
