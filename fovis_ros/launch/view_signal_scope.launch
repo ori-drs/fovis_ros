@@ -2,6 +2,6 @@
 
 <launch>
 
-  <node name="signal_scope" pkg="signal_scope" type="signal_scope" args="$(find vo_estimator)/signal_scope/plot_fovis.py"  />
+  <node name="signal_scope" pkg="signal_scope" type="signal_scope" args="$(find fovis_ros)/signal_scope/plot_fovis.py"  />
 
 </launch>

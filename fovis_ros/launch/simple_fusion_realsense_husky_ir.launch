@@ -1,5 +1,5 @@
 <launch>
-  <node name="simple_fusion" pkg="vo_estimator" type="simple_fusion" output="screen">
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
     <param name="image_a_topic" value="/camera/infra1/image_rect_raw" />
     <param name="image_b_topic" value="/camera/infra2/image_rect_raw" />
 

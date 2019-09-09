@@ -2,6 +2,6 @@
 
 <launch>
 
-  <node name="rviz_fovis" pkg="rviz" type="rviz" args="-d $(find vo_estimator)/config/fovis_ros.rviz"  />
+  <node name="rviz_fovis" pkg="rviz" type="rviz" args="-d $(find fovis_ros)/config/fovis_ros.rviz"  />
 
 </launch>

@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vo_estimator)
-
-if (NOT COMMAND pods_use_pkg_config_packages)
-  include(cmake/pods.cmake)
-endif()
+project(fovis_ros)
 
 add_compile_options(-std=c++11)
 
