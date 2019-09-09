@@ -11,29 +11,19 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-#include <lcm/lcm-cpp.hpp>
-
 #include <fovis/fovis.hpp>
 
-#include <lcmtypes/bot_core/pose_t.hpp>
-#include <lcmtypes/fovis/stats_t.hpp>
-#include <lcmtypes/fovis/update_t.hpp>
-
-#include <bot_lcmgl_client/lcmgl.h>
 #include "visualization.hpp"
-
 
 class FoVision
 {
 public:
-    FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
-             boost::shared_ptr<fovis::StereoCalibration> kcal,
-             bool draw_lcmgl_, int which_vo_options_);
+    FoVision(boost::shared_ptr<fovis::StereoCalibration> kcal,
+             int which_vo_options_);
     
     
     ~FoVision();
 
-    bool draw_lcmgl_;
     int which_vo_options_;
     
     void writeRawImage(float *float_buf, int width, int height, int64_t utime);
@@ -42,8 +32,8 @@ public:
     void doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime);
     void doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime);
 
-    fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
-      Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp);
+    //fovis::update_t get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
+    //  Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp);
     
     void send_delta_translation_msg(Eigen::Isometry3d motion_estimate,
       Eigen::MatrixXd motion_cov, std::string channel_name);
@@ -51,7 +41,7 @@ public:
     void fovis_stats();
     
     Eigen::Isometry3d getMotionEstimate(){ 
-      Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
+      Eigen::Isometry3d motion_estimate = odom_->getMotionEstimate();
       
       // rotate coordinate frame so that look vector is +X, and up is +Z
       Eigen::Matrix3d M;
@@ -72,7 +62,7 @@ public:
     }
       
     fovis::MotionEstimateStatusCode getEstimateStatus(){
-      fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
+      fovis::MotionEstimateStatusCode estim_status = odom_->getMotionEstimateStatus();
       /*std::cout << estim_status << "is status\n";
       if (estim_status == fovis::SUCCESS){
         std::cout << estim_status << "is valid status\n";
@@ -83,28 +73,31 @@ public:
       return estim_status;
     }
     
-    const fovis::FeatureMatch* getMatches(){ return odom_.getMotionEstimator()->getMatches(); }
-    int getNumMatches(){ return odom_.getMotionEstimator()->getNumMatches(); }
-    int getNumInliers(){ return odom_.getMotionEstimator()->getNumInliers(); }
+    const fovis::FeatureMatch* getMatches(){ return odom_->getMotionEstimator()->getMatches(); }
+    int getNumMatches(){ return odom_->getMotionEstimator()->getNumMatches(); }
+    int getNumInliers(){ return odom_->getMotionEstimator()->getNumInliers(); }
 
-    bool getChangeReferenceFrames(){ return odom_.getChangeReferenceFrames(); }
+    bool getChangeReferenceFrames(){ return odom_->getChangeReferenceFrames(); }
 
     void getMotion(Eigen::Isometry3d &delta, Eigen::MatrixXd &delta_cov, fovis::MotionEstimateStatusCode& delta_status ){
-      delta=       odom_.getMotionEstimate();
-      delta_cov =  odom_.getMotionEstimateCov();
-      delta_status = odom_.getMotionEstimateStatus();
+      delta=       odom_->getMotionEstimate();
+      delta_cov =  odom_->getMotionEstimateCov();
+      delta_status = odom_->getMotionEstimateStatus();
     }
 
     Eigen::Isometry3d getPose(){
-      return odom_.getPose();
+      return odom_->getPose();
     }
 
     void setPublishFovisStats(bool publish_fovis_stats_in){ publish_fovis_stats_ = publish_fovis_stats_in; }
 
+    const fovis::VisualOdometry* getVisualOdometry() const {
+      return odom_;
+    }
+
 private:
-    boost::shared_ptr<lcm::LCM> lcm_;
     boost::shared_ptr<fovis::StereoCalibration> kcal_;
-    fovis::VisualOdometry odom_;
+    fovis::VisualOdometry* odom_;
     
     // Depth Sources:
     fovis::StereoDepth* stereo_depth_; // typical left/right stereo
@@ -126,8 +119,7 @@ private:
     void getOptionsCommon(fovis::VisualOdometryOptions &vo_opts);
     void getOptionsFaster(fovis::VisualOdometryOptions &vo_opts);
 
-
-    int64_t current_timestamp_,prev_timestamp_;
+    int64_t current_timestamp_, prev_timestamp_;
 
     Visualization* visualization_;    
 };

@@ -17,9 +17,9 @@
 #include <boost/shared_ptr.hpp>
 #include <lcm/lcm-cpp.hpp>
 
-#include "lcmtypes/bot_core.hpp"
-#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
-#include <ConciseArgs>
+//#include "lcmtypes/bot_core.hpp"
+//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
+//#include <ConciseArgs>
 using namespace cv;
 using namespace std;
 
@@ -41,7 +41,7 @@ class Pass{
     bool verbose_;
     std::string image_channel_, ins_channel_;
     std::string output_folder_;
-    image_io_utils*  imgutils_;
+    //image_io_utils*  imgutils_;
     uint8_t* img_buf_; 
     uint8_t* rgb_compress_buffer_;
 

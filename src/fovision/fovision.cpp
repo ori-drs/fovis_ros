@@ -5,13 +5,13 @@
 
 using namespace std;
 
-FoVision::FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
-  boost::shared_ptr<fovis::StereoCalibration> kcal, bool draw_lcmgl_,
+FoVision::FoVision(
+  boost::shared_ptr<fovis::StereoCalibration> kcal, 
   int which_vo_options_):
-  lcm_(lcm_), kcal_(kcal), draw_lcmgl_(draw_lcmgl_), which_vo_options_(which_vo_options_),
-  odom_(kcal_->getLeftRectification(), FoVision::getOptions() ),
+  kcal_(kcal), which_vo_options_(which_vo_options_),
   pose_(Eigen::Isometry3d::Identity()), publish_fovis_stats_(false), publish_pose_(false)
 {
+  odom_ = new fovis::VisualOdometry(kcal_->getLeftRectification(), FoVision::getOptions());
 
   fovis::VisualOdometryOptions vo_opts = getOptions();
   // typical left/right stereo
@@ -20,12 +20,6 @@ FoVision::FoVision(boost::shared_ptr<lcm::LCM> &lcm_,
   stereo_disparity_= new fovis::StereoDisparity( kcal_.get());
   // left/depth from realsense
   depth_image_ = new fovis::DepthImage(kcal_->getRectifiedParameters(), kcal_->getWidth(), kcal_->getHeight());
-
-  if (draw_lcmgl_){
-    bot_lcmgl_t* lcmgl = bot_lcmgl_init(lcm_->getUnderlyingLCM(), "stereo-odometry");
-    visualization_ = new Visualization(lcmgl, kcal.get());
-  }
-
 }
 
 
@@ -43,10 +37,14 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
   stereo_depth_->setRightImage(right_buf);
-  odom_.processFrame(left_buf, stereo_depth_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+  odom_->processFrame(left_buf, stereo_depth_);
 
-  if(draw_lcmgl_) { visualization_->draw(&odom_); }
+  //const fovis::MotionEstimator * me = odom_->getMotionEstimator();
+  //std::cout << "doOdometry (core)\n";
+  //fovis::MotionEstimateStatusCode estim_status = odom_.getMotionEstimateStatus();
+  //std::cout << (int) estim_status << " status\n";
+  //Eigen::Isometry3d motion_estimate = odom_.getMotionEstimate();
+  //std::cout << motion_estimate.translation().transpose() << "\n";
 
 }
 
@@ -54,13 +52,10 @@ void FoVision::doOdometry(uint8_t *left_buf,uint8_t *right_buf, int64_t utime){
 void FoVision::doOdometry(uint8_t *left_buf,float *disparity_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
-
   stereo_disparity_->setDisparityData(disparity_buf);
-  odom_.processFrame(left_buf, stereo_disparity_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
+  odom_->processFrame(left_buf, stereo_disparity_);
 
-  if(draw_lcmgl_) { visualization_->draw(&odom_); }
-
+  //  const fovis::MotionEstimator * me = odom_->getMotionEstimator();
 }
 
 
@@ -84,19 +79,15 @@ void FoVision::writeRawImage(float *float_buf, int width, int height, int64_t ut
 void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t utime){
   prev_timestamp_ = current_timestamp_;
   current_timestamp_ = utime;
+  depth_image_->setDepthImage(depth_buf);
+  odom_->processFrame(left_buf, depth_image_);
 
   //writeRawImage(depth_buf, kcal_->getWidth(), kcal_->getHeight(), utime);
-
-  depth_image_->setDepthImage(depth_buf);
-  odom_.processFrame(left_buf, depth_image_);
-  const fovis::MotionEstimator * me = odom_.getMotionEstimator();
-
-  if(draw_lcmgl_) { visualization_->draw(&odom_); }
-
+  //const fovis::MotionEstimator * me = odom_.getMotionEstimator();
 }
 
 
-
+/*
 fovis::update_t FoVision::get_delta_translation_msg(Eigen::Isometry3d motion_estimate,
     Eigen::MatrixXd motion_cov, int64_t timestamp, int64_t prev_timestamp){
 
@@ -169,21 +160,22 @@ fovis::update_t FoVision::get_delta_translation_msg(Eigen::Isometry3d motion_est
 
   return update_msg;
 }
+*/
 
 
 
 void FoVision::send_delta_translation_msg(Eigen::Isometry3d motion_estimate,
     Eigen::MatrixXd motion_cov, std::string channel_name){
   
-  fovis::update_t update_msg = get_delta_translation_msg(motion_estimate, motion_cov, current_timestamp_, prev_timestamp_);
+  //fovis::update_t update_msg = get_delta_translation_msg(motion_estimate, motion_cov, current_timestamp_, prev_timestamp_);
   
   //if (estim_status !=  fovis::NO_DATA) {
-  lcm_->publish(channel_name.c_str(), &update_msg);
+  //lcm_->publish(channel_name.c_str(), &update_msg);
   //}
 }
 
 void FoVision::fovis_stats(){
-  
+  /*
   send_delta_translation_msg(odom_.getMotionEstimate(),
           odom_.getMotionEstimateCov(), "VO_DELTA_CAMERA" );
    
@@ -230,7 +222,7 @@ void FoVision::fovis_stats(){
     pose_msg.orientation[3] = rotation.z();
     lcm_->publish("POSE_BODY", &pose_msg);
   }  
-  
+  */
 }
 
 

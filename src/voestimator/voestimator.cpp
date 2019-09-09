@@ -1,18 +1,23 @@
 #include "voestimator/voestimator.hpp"
 
-VoEstimator::VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_,
-  std::string channel_extension_, std::string camera_config_):
-  lcm_(lcm_), botframes_(botframes_), channel_extension_(channel_extension_), camera_config_(camera_config_),
+//VoEstimator::VoEstimator(boost::shared_ptr<lcm::LCM> &lcm_, BotFrames* botframes_,
+//  std::string channel_extension_, std::string camera_config_):
+//  lcm_(lcm_), botframes_(botframes_), channel_extension_(channel_extension_), camera_config_(camera_config_),
+//  pose_initialized_(false), vo_initialized_(false){
+VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_config_):
+  channel_extension_(channel_extension_), camera_config_(camera_config_),
   pose_initialized_(false), vo_initialized_(false){
   local_to_body_.setIdentity();
+  camera_to_body_.setIdentity();
 
   
   // Vis Config:
-  pc_vis_ = new pronto_vis( lcm_->getUnderlyingLCM() );
-  pc_vis_->obj_cfg_list.push_back( obj_cfg(60000,"Pose Body",5,1) );
+  //pc_vis_ = new pronto_vis( lcm_->getUnderlyingLCM() );
+  //pc_vis_->obj_cfg_list.push_back( obj_cfg(60000,"Pose Body",5,1) );
 }
 
 
+/*
 int get_trans_with_utime(BotFrames *bot_frames,
         const char *from_frame, const char *to_frame, int64_t utime,
         Eigen::Isometry3d & mat){
@@ -27,11 +32,24 @@ int get_trans_with_utime(BotFrames *bot_frames,
 
   return status;
 }
+*/
 
 void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera){
 
   // 0. Assume head to camera is rigid:
-  get_trans_with_utime( botframes_ ,  "body", std::string(camera_config_ + "_LEFT").c_str(), utime, camera_to_body_);
+  //camera_to_body_.setIdentity();
+
+  // rosrun tf tf_echo base realsense_d435_front_forward_depth_optical_frame .... in sim - the only optical frame in sim
+  // however: realsense_d435_front_forward_infra1_optical_frame is the actual frame in the data
+  // TODO: update when robot is running live
+  //camera_to_body_.translation().x() = 0.386;
+  //camera_to_body_.translation().y() = 0.015;
+  //camera_to_body_.translation().z() = 0.160;
+  //Eigen::Quaterniond quat = euler_to_quat(-1.780, 0.0, -1.571); //12 degrees pitch down in optical coordinates
+  //camera_to_body_.rotate( quat );
+  //camera_to_body_ = camera_to_body_.inverse(); //NB
+  //REPLACE get_trans_with_utime( botframes_ ,  "body", std::string(camera_config_ + "_LEFT").c_str(), utime, camera_to_body_);
+
 
   // 1. Update the Position of the head frame:
   Eigen::Isometry3d delta_body = camera_to_body_.inverse()*delta_camera*camera_to_body_;
@@ -72,8 +90,8 @@ void VoEstimator::publishUpdate(int64_t utime,
   }
 
   // Send vo pose to collections:
-  Isometry3dTime local_to_headT = Isometry3dTime(utime, local_to_head);
-  pc_vis_->pose_to_lcm_from_list(60000, local_to_headT);
+  //Isometry3dTime local_to_headT = Isometry3dTime(utime, local_to_head);
+  //pc_vis_->pose_to_lcm_from_list(60000, local_to_headT);
   // std::cout << head_rot_rate_.transpose() << " head rot rate out\n";
   // std::cout << head_lin_rate_.transpose() << " head lin rate out\n";
 
@@ -89,6 +107,7 @@ void VoEstimator::publishUpdate(int64_t utime,
 void VoEstimator::publishPose(int64_t utime, std::string channel, Eigen::Isometry3d pose,
   Eigen::Vector3d vel_lin, Eigen::Vector3d vel_ang){
   Eigen::Quaterniond r(pose.rotation());
+  /*
   bot_core::pose_t pose_msg;
   pose_msg.utime =   utime;
   pose_msg.pos[0] = pose.translation().x();
@@ -108,4 +127,5 @@ void VoEstimator::publishPose(int64_t utime, std::string channel, Eigen::Isometr
   pose_msg.accel[1]=0;
   pose_msg.accel[2]=0;
   lcm_->publish( channel, &pose_msg);
+  */
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <node name="rviz_fovis" pkg="rviz" type="rviz" args="-d $(find vo_estimator)/config/fovis_ros.rviz"  />
+
+</launch>

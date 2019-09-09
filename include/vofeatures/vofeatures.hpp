@@ -19,17 +19,18 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include "imagefeatures.hpp"
-#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
+//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
+//#include <image_io_utils/image_io_utils.hpp> // to simplify jpeg/zlib compression and decompression
 
 //#include <lcmtypes/reg.hpp>
-#include <lcmtypes/reg/features_t.hpp>
-#include <lcmtypes/bot_core_image_t.h>
+//#include <lcmtypes/reg/features_t.hpp>
+//#include <lcmtypes/bot_core_image_t.h>
 
 class VoFeatures
 {
 public:
-  VoFeatures(boost::shared_ptr<lcm::LCM> &lcm_, int image_width_, int image_height_);
+  VoFeatures(int image_width_, int image_height_);
+  //VoFeatures(boost::shared_ptr<lcm::LCM> &lcm_, int image_width_, int image_height_);
   ~VoFeatures();
 
   void setFeatures(const fovis::FeatureMatch* matches, int num_matches, int64_t utime);
@@ -63,15 +64,17 @@ public:
   void sendImage(std::string channel, uint8_t *img_buf, std::vector<ImageFeature> &features,
                  std::vector<int> &feature_indices);
 
-  void getFeaturesFromLCM(const  reg::features_t* msg, std::vector<ImageFeature> &features, 
-    Eigen::Isometry3d &pose);
+  //void getFeaturesFromLCM(const  reg::features_t* msg, std::vector<ImageFeature> &features, 
+  //  Eigen::Isometry3d &pose);
   void sendFeaturesAsCollection(std::vector<ImageFeature> features, 
                                 std::vector<int> features_indices,
                                 int vs_id);
 
+  uint8_t* getFeatureImage(){ return left_cur_buf_; }
+
 private:
-  boost::shared_ptr<lcm::LCM> lcm_;
-  pronto_vis* pc_vis_;
+  //boost::shared_ptr<lcm::LCM> lcm_;
+  //pronto_vis* pc_vis_;
   int image_width_;
   int image_height_;
   int output_counter_;
@@ -84,10 +87,6 @@ private:
                     Eigen::Isometry3d pose,
                     int64_t utime);
 
-
-
-  void publishImage(std::string channel, cv::Mat img, int n_colors);
-  
   void drawFeaturesOnImage(cv::Mat &img, std::vector<ImageFeature> &features,
                            std::vector<int> &feature_indices);
 
@@ -103,7 +102,7 @@ private:
   std::vector<ImageFeature> features_cur_;
   std::vector<int> features_cur_indices_;
 
-  image_io_utils*  imgutils_;
+  //image_io_utils*  imgutils_;
 
   // no longer used:
   // uint8_t *right_ref_buf_, *right_cur_buf_;

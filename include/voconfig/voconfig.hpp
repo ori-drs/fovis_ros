@@ -11,9 +11,9 @@
 
 #include <vector>
 #include <string>
-#include <bot_param/param_client.h>
-#include <bot_param/param_util.h>
-#include <lcm/lcm.h>
+//#include <bot_param/param_client.h>
+//#include <bot_param/param_util.h>
+//#include <lcm/lcm.h>
 #include <boost/shared_ptr.hpp>
 #include <fovis/fovis.hpp>
 
@@ -46,7 +46,8 @@ public:
 class BotParamConfiguration : public Configuration
 {
 public:
-  BotParamConfiguration(lcm_t* bot_param_lcm, BotParam* bot_param, const std::string & key_prefix);
+  //BotParamConfiguration(lcm_t* bot_param_lcm, BotParam* bot_param, const std::string & key_prefix);
+  BotParamConfiguration(const std::string & key_prefix);
   virtual ~BotParamConfiguration();
 
   virtual bool has_key(const std::string & key);
@@ -56,8 +57,8 @@ public:
   virtual std::string get(const std::string & key, const std::string & default_value);
 
 private:
-  lcm_t* bot_param_lcm_;
-  BotParam* bot_param_;
+  //lcm_t* bot_param_lcm_;
+  //BotParam* bot_param_;
   std::string key_prefix_;
 };
 
@@ -73,8 +74,7 @@ public:
     OPENNI
   };
 
-  KmclConfiguration(BotParam* botparam,
-      const std::string & depth_source_name);
+  KmclConfiguration(const std::string & depth_source_name, const std::string & config_filename);
 
   ~KmclConfiguration();
 
@@ -134,9 +134,11 @@ public:
   int min_inliers() { return min_inliers_; }
   int max_num_proposals() { return max_num_proposals_; }
 
+  Eigen::Isometry3d B_t_BC() const { return B_t_BC_; }
+
+
 private:
-  void init(BotParam* bot_param,
-            const std::string & depth_source_name);
+  void init(const std::string & depth_source_name);
 
   void set_vo_option_int(fovis::VisualOdometryOptions & vo_opts,
                          const std::string & option) const;
@@ -146,8 +148,8 @@ private:
                              const std::string & option) const;
 			     
 
-  lcm_t* bot_param_lcm_;
-  BotParam* bot_param_;
+  //lcm_t* bot_param_lcm_;
+  //BotParam* bot_param_;
   std::string key_prefix_;
   std::string lcm_channel_;
 
@@ -165,6 +167,13 @@ private:
   int max_num_proposals_;
 
   DepthSourceTypeCode depth_source_type_;
+
+  // transformation between base and camera
+  // same as rosrun tf tf_echo base camera (in that order)
+  Eigen::Isometry3d B_t_BC_;
+
+  std::string config_filename_;
+
 };
 
 }

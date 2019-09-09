@@ -1,19 +1,22 @@
 #include "vofeatures/vofeatures.hpp"
 #include <string>
 #include <iostream>
+#include <fovision/common.hpp>
 
 using namespace cv;
 
-VoFeatures::VoFeatures(boost::shared_ptr<lcm::LCM> &lcm_, int image_width_, int image_height_):
-  lcm_(lcm_), image_width_(image_width_), image_height_(image_height_), utime_(0), output_counter_(0)   {
+VoFeatures::VoFeatures(int image_width_, int image_height_):
+  image_width_(image_width_), image_height_(image_height_), utime_(0), output_counter_(0)   {
 
-  if(!lcm_->good()){
-    std::cerr <<"ERROR: lcm is not good()" <<std::endl;
-  }
+  //if(!lcm_->good()){
+  //  std::cerr <<"ERROR: lcm is not good()" <<std::endl;
+  //}
 
   // Vis Config:
   // mfallon:
+  /*
   pc_vis_ = new pronto_vis( lcm_->getUnderlyingLCM() );
+  */
   float colors_g[] ={0.0,1.0,0.0};
   std::vector <float> colors_v_g;
   colors_v_g.assign(colors_g,colors_g+4*sizeof(float));
@@ -24,12 +27,12 @@ VoFeatures::VoFeatures(boost::shared_ptr<lcm::LCM> &lcm_, int image_width_, int 
   
   // obj: id name type reset
   // pts: id name type reset objcoll usergb rgb
-  pc_vis_->obj_cfg_list.push_back( obj_cfg(3000,"Reference Camera Pose",5,reset) );
-  pc_vis_->ptcld_cfg_list.push_back( ptcld_cfg(3001,"Reference Features",1,1, 3000,1,colors_v_g));
-  pc_vis_->obj_cfg_list.push_back( obj_cfg(3002,"Current Camera Pose",5,reset) );
-  pc_vis_->ptcld_cfg_list.push_back( ptcld_cfg(3003,"Current Features",1,reset, 3002,1,colors_v_b));
+  //pc_vis_->obj_cfg_list.push_back( obj_cfg(3000,"Reference Camera Pose",5,reset) );
+  //pc_vis_->ptcld_cfg_list.push_back( ptcld_cfg(3001,"Reference Features",1,1, 3000,1,colors_v_g));
+  //pc_vis_->obj_cfg_list.push_back( obj_cfg(3002,"Current Camera Pose",5,reset) );
+  //pc_vis_->ptcld_cfg_list.push_back( ptcld_cfg(3003,"Current Features",1,reset, 3002,1,colors_v_b));
 
-  imgutils_ = new image_io_utils( lcm_, image_width_, 2*image_height_); // extra space for stereo tasks
+  //imgutils_ = new image_io_utils( lcm_, image_width_, 2*image_height_); // extra space for stereo tasks
 
 }
 
@@ -158,10 +161,10 @@ void VoFeatures::doFeatureProcessing(bool useCurrent, bool writeOutput){
     // This timestamp is incorrect. need to get and cache the correct one:
     sendFeatures(features_ref_,features_ref_indices_, "FEATURES_REF", ref_camera_pose_, utime_);
     sendImage("REF_LEFT",left_ref_buf_, features_ref_, features_ref_indices_);
-    Isometry3dTime ref_camera_poseT = Isometry3dTime(utime_, ref_camera_pose_);
+    //Isometry3dTime ref_camera_poseT = Isometry3dTime(utime_, ref_camera_pose_);
   
     // Send Features paired with the pose at the ref frame:
-    pc_vis_->pose_to_lcm_from_list(3000, ref_camera_poseT);
+    //pc_vis_->pose_to_lcm_from_list(3000, ref_camera_poseT);
     sendFeaturesAsCollection(features_ref_, features_ref_indices_, 3001); // red, most recent 
 
     //pc_vis_->pose_to_lcm_from_list(3002, ref_camera_poseT);
@@ -169,13 +172,13 @@ void VoFeatures::doFeatureProcessing(bool useCurrent, bool writeOutput){
   }else{ // current
     sendFeatures(features_cur_,features_cur_indices_,"FEATURES_CUR", cur_camera_pose_, utime_);
     sendImage("CUR_LEFT",left_cur_buf_, features_cur_, features_cur_indices_);
-    Isometry3dTime cur_camera_poseT = Isometry3dTime(utime_, cur_camera_pose_);
+    //Isometry3dTime cur_camera_poseT = Isometry3dTime(utime_, cur_camera_pose_);
 
     // Send Features paired with the pose at the ref frame:
     //pc_vis_->pose_to_lcm_from_list(3000, cur_camera_poseT);
     //sendFeaturesAsCollection(features_cur_, features_cur_indices_, 3001); // red, most recent 
 
-    pc_vis_->pose_to_lcm_from_list(3002, cur_camera_poseT);
+    //pc_vis_->pose_to_lcm_from_list(3002, cur_camera_poseT);
     sendFeaturesAsCollection(features_cur_, features_cur_indices_, 3003); // blue, last 
   }
 
@@ -203,23 +206,8 @@ void VoFeatures::sendImage(std::string channel, uint8_t* img_buf, std::vector<Im
   img.data = img_buf;
 
   drawFeaturesOnImage(img, features, feature_indices);
-  imgutils_->sendImageJpeg(img.data, 0, img.cols, img.rows, 94, channel, 1);
+  //REPLACE imgutils_->sendImageJpeg(img.data, 0, img.cols, img.rows, 94, channel, 1);
 }
-
-void VoFeatures::publishImage(std::string channel, cv::Mat img, int n_colors){
-  bot_core_image_t image;
-  image.utime =0;
-  image.width = img.cols;
-  image.height= img.rows;
-  image.row_stride =n_colors*img.cols;
-  image.pixelformat =BOT_CORE_IMAGE_T_PIXEL_FORMAT_GRAY;
-  image.size =n_colors*img.cols*img.rows;
-  image.data = img.data;
-  image.nmetadata =0;
-  image.metadata = NULL;
-  bot_core_image_t_publish( lcm_->getUnderlyingLCM() , channel.c_str(), &image);    
-}
-
 
 void VoFeatures::writeImage(uint8_t* img_buf, int counter, int64_t utime){
   //cout << "images written to file @ " << utime_ << "\n";
@@ -288,6 +276,7 @@ void VoFeatures::writePose(Eigen::Isometry3d pose, int64_t utime){
 void VoFeatures::sendFeaturesAsCollection(std::vector<ImageFeature> features, 
                                           std::vector<int> features_indices,
                                           int vs_id){
+  /*
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB> ());
   for (size_t i = 0; i < features.size(); i++) {
     if (features_indices[i]){
@@ -300,7 +289,8 @@ void VoFeatures::sendFeaturesAsCollection(std::vector<ImageFeature> features,
       cloud->points.push_back(pt);
     }
   }
-  pc_vis_->ptcld_to_lcm_from_list(vs_id, *cloud, utime_, utime_);
+  */
+  //pc_vis_->ptcld_to_lcm_from_list(vs_id, *cloud, utime_, utime_);
 }
 
 void VoFeatures::sendFeatures(std::vector<ImageFeature> features, 
@@ -309,6 +299,7 @@ void VoFeatures::sendFeatures(std::vector<ImageFeature> features,
                               Eigen::Isometry3d pose,
                               int64_t utime){
   
+  /*
   reg::features_t msg;
   msg.utime = utime;
   for (size_t i = 0; i < features.size(); i++) {
@@ -346,9 +337,11 @@ void VoFeatures::sendFeatures(std::vector<ImageFeature> features,
   msg.quat[2] = r.y();
   msg.quat[3] = r.z();
   lcm_->publish(channel.c_str(), &msg);
+  */
 }
 
 
+/*
 void VoFeatures::getFeaturesFromLCM(const  reg::features_t* msg, std::vector<ImageFeature> &features, Eigen::Isometry3d &pose){
   //std::vector<ImageFeature> features;
     
@@ -376,7 +369,6 @@ void VoFeatures::getFeaturesFromLCM(const  reg::features_t* msg, std::vector<Ima
     pose.translation() << msg->pos[0], msg->pos[1], msg->pos[2];
     Eigen::Quaterniond m(msg->quat[0],msg->quat[1],msg->quat[2],msg->quat[3]);
     pose.rotate(m);
-    /*
     cout << line << " is line\n";
     cout << "i: " << i <<"\n";
     cout << "f.track_id: " << f.track_id <<"\n";
@@ -386,7 +378,6 @@ void VoFeatures::getFeaturesFromLCM(const  reg::features_t* msg, std::vector<Ima
     cout << "f.xyz: " << f.xyz[0] << " "<< f.xyz[1]<< " "<< f.xyz[2]<<"\n";
     cout << "f.xyzw: " << f.xyzw[0] << " "<< f.xyzw[1]<< " "<< f.xyzw[2]<< " "<< f.xyzw[3]<<"\n";
     cout << "f.color: " << (int)f.color[0] << " "<< (int)f.color[1] << " "<< (int)f.color[2] <<"\n";
-      */
 
     features.push_back(f);
   }
@@ -394,4 +385,4 @@ void VoFeatures::getFeaturesFromLCM(const  reg::features_t* msg, std::vector<Ima
   //cout << "in: " << msg->nfeatures << " | extracted: "<< features.size() << "\n"; 
   return;  
 }
-
+*/

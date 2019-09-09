@@ -1,6 +1,4 @@
 #include <Eigen/Dense>
-#include <bot_param/param_client.h>
-#include <bot_frames/bot_frames.h>
 
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
@@ -10,6 +8,8 @@
 struct FusionCoreConfig
 {
   std::string camera_config; // which block from the cfg to read
+  std::string config_filename; // yaml file to be read
+
   std::string output_tf_frame;
   // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
   int orientation_fusion_mode;
@@ -25,8 +25,6 @@ struct FusionCoreConfig
   bool verbose;
   int correction_frequency;
   std::string in_log_fname;
-  std::string param_file;
-  bool draw_lcmgl;
   bool write_feature_output;
   int which_vo_options;
   bool extrapolate_when_vo_fails;
@@ -35,7 +33,8 @@ struct FusionCoreConfig
 
 class FusionCore{
   public:
-    FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_);
+    FusionCore(const FusionCoreConfig& fcfg_);
+    //FusionCore(boost::shared_ptr<lcm::LCM> &lcm_recv_, boost::shared_ptr<lcm::LCM> &lcm_pub_, const FusionCoreConfig& fcfg_);
     
     ~FusionCore(){
       free (left_buf_);
@@ -93,11 +92,19 @@ class FusionCore{
         if (fcfg_.publish_feature_analysis)
             featureAnalysis();
 
-        fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+        // only use imu after its been initialized
+        if (local_to_body_orientation_from_imu_initialized_){
+          fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+        }
     }
 
     void updateMotion();
     void featureAnalysis();
+    uint8_t* getFeatureImage(){ 
+      return features_->getFeatureImage();
+    }
+
+
     void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
     void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
 
@@ -121,19 +128,17 @@ class FusionCore{
         std::cout << "Initialised pose\n";
     }
 
+    const fovis::VisualOdometry* getVisualOdometry() const {
+      return vo_->getVisualOdometry();
+    }
+
   private:
     const FusionCoreConfig fcfg_;    
     
     int image_size_; // just the resolution of the image
-    image_io_utils*  imgutils_;    
     
     int64_t utime_cur_, utime_prev_;
 
-    boost::shared_ptr<lcm::LCM> lcm_recv_;
-    boost::shared_ptr<lcm::LCM> lcm_pub_;
-    BotParam* botparam_;
-    BotFrames* botframes_;
-    //bot::frames* botframes_cpp_;
     voconfig::KmclConfiguration* config_;
 
     // Vision and Estimation
@@ -149,6 +154,8 @@ class FusionCore{
     bool pose_initialized_; // initalized from VO
     int imu_counter_;
     Eigen::Isometry3d body_to_imu_, imu_to_camera_;
+
+    bool local_to_body_orientation_from_imu_initialized_; // has an imu measurement been received
     
     // previous successful vo estimates as rates:
     Eigen::Vector3d vo_velocity_linear_;
