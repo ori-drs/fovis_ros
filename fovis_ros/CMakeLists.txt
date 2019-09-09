@@ -18,7 +18,7 @@ find_package(OpenCV 3.0 QUIET)
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES vo_estimator
+#  LIBRARIES fovis_ros
 #  CATKIN_DEPENDS bot2_frames_cpp cv_bridge image_io_utils pronto_conversions pronto_vis
 #  DEPENDS system_lib
 )

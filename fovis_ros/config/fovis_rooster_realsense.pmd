@@ -18,15 +18,15 @@ group "0b.static_tf" {
 
 group "1.progs" {
     cmd "fovis_ros" {
-        exec = "roslaunch vo_estimator simple_fusion_realsense_rooster.launch";
+        exec = "roslaunch fovis_ros simple_fusion_realsense_rooster.launch";
         host = "localhost";
     }
     cmd "traj_server" {
-        exec = "roslaunch vo_estimator trajectory_server.launch";
+        exec = "roslaunch fovis_ros trajectory_server.launch";
         host = "localhost";
     }
     cmd "rviz" {
-        exec = "roslaunch vo_estimator  view_fovis.launch";
+        exec = "roslaunch fovis_ros  view_fovis.launch";
         host = "localhost";
     }
 }
@@ -84,7 +84,7 @@ group "4.bag" {
 
 group "x.misc" {
     cmd "fake_imu" {
-        exec = "rosrun vo_estimator fake_imu.py";
+        exec = "rosrun fovis_ros fake_imu.py";
         host = "localhost";
     }
     cmd "image_view" {
@@ -92,11 +92,11 @@ group "x.misc" {
         host = "localhost";
     }
     cmd "signal_scope" {
-        exec = "roslaunch vo_estimator view_signal_scope.launch";
+        exec = "roslaunch fovis_ros view_signal_scope.launch";
         host = "localhost";
     }
     cmd "static_tf_alt" {
-        exec = "rosrun vo_estimator static_transform_publisher_using_message_time.py";
+        exec = "rosrun fovis_ros static_transform_publisher_using_message_time.py";
         host = "localhost";
     }
 }
