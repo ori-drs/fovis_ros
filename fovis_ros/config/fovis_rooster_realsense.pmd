@@ -83,6 +83,10 @@ group "4.bag" {
 
 
 group "x.misc" {
+    cmd "plane_fit_map" {
+        exec = "rosrun aicp_ros plane_fit_map";
+        host = "localhost";
+    }
     cmd "fake_imu" {
         exec = "rosrun fovis_ros fake_imu.py";
         host = "localhost";
