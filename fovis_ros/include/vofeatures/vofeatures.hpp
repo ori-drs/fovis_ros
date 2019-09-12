@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-#include <lcm/lcm-cpp.hpp>
+//#include <lcm/lcm-cpp.hpp>
 #include <fovis/fovis.hpp>
 
 #include <opencv2/opencv.hpp>

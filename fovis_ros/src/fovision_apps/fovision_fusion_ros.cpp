@@ -50,8 +50,6 @@ class StereoOdom{
 
   private:
     const FusionCoreConfig fcfg_;
-    boost::shared_ptr<lcm::LCM> lcm_recv_;
-    boost::shared_ptr<lcm::LCM> lcm_pub_;
     FusionCore* vo_core_;
 
     // ROS:
