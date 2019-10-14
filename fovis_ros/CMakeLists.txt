@@ -10,18 +10,30 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   tf_conversions
   eigen_conversions
-  cv_bridge
   fovis_msgs
 )
 
 find_package(OpenCV 3.0 QUIET)
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES fovis_ros
-#  CATKIN_DEPENDS bot2_frames_cpp cv_bridge image_io_utils pronto_conversions pronto_vis
-#  DEPENDS system_lib
-)
+set(VO_CONFIG_LIBNAME voconfig)
+set(VO_FEATURES_LIBNAME vofeatures)
+set(VO_ESTIMATOR_LIBNAME voestimator)
+set(FOVISION_LIBNAME fovision)
+set(FOVISION_FUSION_LIBNAME fovision_fusion_core)
+
+catkin_package(INCLUDE_DIRS include
+	       LIBRARIES ${VO_CONFIG_LIBNAME} 
+	                 ${VO_FEATURES_LIBNAME}
+			 ${VO_ESTIMATOR_LIBNAME}
+			 ${FOVISION_LIBNAME}
+			 ${FOVISION_FUSION_LIBNAME}
+               CATKIN_DEPENDS cv_bridge 
+	                      fovis 
+			      estimate_pose
+			      image_transport
+			      tf_conversions
+			      eigen_conversions
+			      fovis_msgs)
 
 ###########
 ## Build ##
@@ -37,41 +49,24 @@ set(LIBRARY_NAME voconfig)
 add_library(${LIBRARY_NAME} src/voconfig/voconfig.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
-################
 set(LIBRARY_NAME vofeatures)
 add_library(${LIBRARY_NAME} src/vofeatures/vofeatures.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
-################
 set(LIBRARY_NAME voestimator)
 add_library(${LIBRARY_NAME} src/voestimator/voestimator.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
 
-################
 set(LIBRARY_NAME fovision)
 add_library(${LIBRARY_NAME} src/fovision/fovision.cpp src/fovision/visualization.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
-
-
 
 set(LIBRARY_NAME fovision_fusion_core)
 add_library(${LIBRARY_NAME} src/fovision_apps/fovision_fusion_core.cpp)
 target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
 
-
-####### LCM Fusion #########
-#add_executable(simple_fusion_lcm src/fovision_apps/fovision_fusion.cpp)
-#target_link_libraries (simple_fusion_lcm ${catkin_LIBRARIES} fovision_fusion_core)
-
-####### ROS Fusion #########
 add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp)
 target_link_libraries (simple_fusion ${catkin_LIBRARIES} fovision_fusion_core)
-
-####### LCM Basic VO #######
-#add_executable(simple_vo_lcm src/fovision_apps/fovision_vo.cpp)
-#target_link_libraries (simple_vo_lcm ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
-
-
 
 ################
 #set(LIBRARY_NAME vis-loop-closure)
