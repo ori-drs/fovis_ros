@@ -35,38 +35,25 @@ catkin_package(INCLUDE_DIRS include
 			      eigen_conversions
 			      fovis_msgs)
 
-###########
-## Build ##
-###########
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+add_library(${VO_CONFIG_LIBNAME} src/voconfig/voconfig.cpp)
+target_link_libraries(${VO_CONFIG_LIBNAME} ${catkin_LIBRARIES})
 
-################
-set(LIBRARY_NAME voconfig)
-add_library(${LIBRARY_NAME} src/voconfig/voconfig.cpp)
-target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
+add_library(${VO_FEATURES_LIBNAME} src/vofeatures/vofeatures.cpp)
+target_link_libraries(${VO_FEATURES_LIBNAME} ${catkin_LIBRARIES})
 
-set(LIBRARY_NAME vofeatures)
-add_library(${LIBRARY_NAME} src/vofeatures/vofeatures.cpp)
-target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
+add_library(${VO_ESTIMATOR_LIBNAME} src/voestimator/voestimator.cpp)
+target_link_libraries(${VO_ESTIMATOR_LIBNAME} ${catkin_LIBRARIES})
 
-set(LIBRARY_NAME voestimator)
-add_library(${LIBRARY_NAME} src/voestimator/voestimator.cpp)
-target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
+add_library(${FOVISION_LIBNAME} src/fovision/fovision.cpp src/fovision/visualization.cpp)
+target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 
-set(LIBRARY_NAME fovision)
-add_library(${LIBRARY_NAME} src/fovision/fovision.cpp src/fovision/visualization.cpp)
-target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES})
-
-set(LIBRARY_NAME fovision_fusion_core)
-add_library(${LIBRARY_NAME} src/fovision_apps/fovision_fusion_core.cpp)
-target_link_libraries(${LIBRARY_NAME} ${catkin_LIBRARIES} voconfig vofeatures voestimator fovision)
+add_library(${FOVISION_FUSION_LIBNAME} src/fovision_apps/fovision_fusion_core.cpp)
+target_link_libraries(${FOVISION_FUSION_LIBNAME} ${catkin_LIBRARIES} ${VO_CONFIG_LIBNAME} ${VO_FEATURES_LIBNAME} ${VO_ESTIMATOR_LIBNAME} ${FOVISION_LIBNAME})
 
 add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp)
-target_link_libraries (simple_fusion ${catkin_LIBRARIES} fovision_fusion_core)
+target_link_libraries (simple_fusion ${catkin_LIBRARIES} ${FOVISION_FUSION_LIBNAME})
 
 ################
 #set(LIBRARY_NAME vis-loop-closure)
