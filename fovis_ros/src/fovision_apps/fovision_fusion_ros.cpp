@@ -55,13 +55,20 @@ class StereoOdom{
     // ROS:
     ros::NodeHandle node_;
     image_transport::ImageTransport it_;
+
     void head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros, const sensor_msgs::CameraInfoConstPtr& info_cam_a,
                       const sensor_msgs::ImageConstPtr& image_b_ros, const sensor_msgs::CameraInfoConstPtr& info_cam_b);
-    void head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros, const sensor_msgs::ImageConstPtr& image_b_ros);
+
+    void head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
+                                     const sensor_msgs::ImageConstPtr& image_b_ros);
+
     image_transport::SubscriberFilter image_a_ros_sub_, image_b_ros_sub_;
+
     message_filters::Subscriber<sensor_msgs::CameraInfo> info_a_ros_sub_, info_b_ros_sub_;
-    message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::Image,
-        sensor_msgs::CameraInfo> sync_;
+
+    message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo,
+                                      sensor_msgs::Image, sensor_msgs::CameraInfo> sync_;
+
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
     tf::TransformBroadcaster br;
 
@@ -88,7 +95,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   vo_core_ = new FusionCore(fcfg_);
 
   // Parameters:
-  output_using_imu_time_=true;
+  output_using_imu_time_ = true;
   if (!node_.getParam("output_using_imu_time", output_using_imu_time_)) {
     ROS_ERROR("Note: Could not read parameter `output_using_imu_time`. Enabled by default");
   }
@@ -106,6 +113,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   }
   ROS_INFO( "%s is the image_a topic subscription [for stereo]", image_a_string.c_str());
   info_a_string = image_a_string + "/camera_info";
+
   if (!node_.getParam("image_a_transport", image_a_transport)) {
     ROS_ERROR("Could not read `image_a_transport`.");
     exit(-1);
@@ -118,6 +126,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   }
   ROS_INFO( "%s is the image_b topic subscription [for stereo]", image_b_string.c_str());
   info_b_string = image_b_string + "/camera_info";
+
   if (!node_.getParam("image_b_transport", image_b_transport)) {
     ROS_ERROR("Could not read `image_b_transport`.");
     exit(-1);
@@ -136,11 +145,9 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   sync_without_info_.connectInput(image_a_ros_sub_, image_b_ros_sub_);
   sync_without_info_.registerCallback(boost::bind(&StereoOdom::head_stereo_without_info_cb , this, _1, _2));
 
-
   std::string output_body_pose_topic;
   node_.getParam("output_body_pose_topic", output_body_pose_topic); 
   body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
-
 
   std::string input_imu_topic;
   node_.getParam("input_imu_topic", input_imu_topic);
@@ -153,19 +160,19 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
                                     &StereoOdom::poseOdomCallback, this);
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
-  if (fcfg_.publish_feature_analysis)
+
+  if (fcfg_.publish_feature_analysis){
     fovis_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
+  }
 
   ROS_INFO_STREAM("StereoOdom Constructed");
 }
 
-
-
 int stereo_counter = 0;
 void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
-                         const sensor_msgs::CameraInfoConstPtr& info_a_ros,
-                         const sensor_msgs::ImageConstPtr& image_b_ros,
-                         const sensor_msgs::CameraInfoConstPtr& info_b_ros)
+                                const sensor_msgs::CameraInfoConstPtr& info_a_ros,
+                                const sensor_msgs::ImageConstPtr& image_b_ros,
+                                const sensor_msgs::CameraInfoConstPtr& info_b_ros)
 {
 /*  
   ROS_ERROR("AHDCAM [%d]", stereo_counter);
