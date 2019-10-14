@@ -16,7 +16,7 @@
 
   <depend>cv_bridge</depend>
   <depend>fovis</depend>
-  <depend>estimate_pose</depend>
+  <!--depend>estimate_pose</depend-->
   <depend>image_transport</depend>
   <depend>tf_conversions</depend>
   <depend>eigen_conversions</depend>

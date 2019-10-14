@@ -6,7 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   fovis
-  estimate_pose
+  #  estimate_pose
   image_transport
   tf_conversions
   eigen_conversions
@@ -29,7 +29,7 @@ catkin_package(INCLUDE_DIRS include
 			 ${FOVISION_FUSION_LIBNAME}
                CATKIN_DEPENDS cv_bridge 
 	                      fovis 
-			      estimate_pose
+			      # estimate_pose
 			      image_transport
 			      tf_conversions
 			      eigen_conversions
