@@ -46,6 +46,7 @@ class StereoOdom{
       FusionCoreConfig fcfg_);
     
     ~StereoOdom(){
+      delete vo_core_;
     }
 
   private:
