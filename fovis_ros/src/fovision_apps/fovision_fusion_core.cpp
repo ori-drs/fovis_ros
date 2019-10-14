@@ -6,8 +6,6 @@
 #include "voestimator/voestimator.hpp"
 #include "fovision/fovision.hpp"
 
-//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-
 #include <fovision_apps/fovision_fusion_core.hpp>
 
 #include <opencv/cv.h> // for disparity 
@@ -62,14 +60,14 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   estimator_->setCameraToBody( body_to_camera_.inverse() );
 
 
-  pose_initialized_=false;
+  pose_initialized_ = false;
   // if not using imu or pose, initialise with robot model
   if (fcfg_.pose_initialization_mode == 0){
     std::cout << "Pose initialized using cfg\n";
     Eigen::Isometry3d body_to_local_initial = Eigen::Isometry3d::Identity();
     //get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
     estimator_->setBodyPose(body_to_local_initial);  
-    pose_initialized_=true;
+    pose_initialized_ = true;
   }
 
 
