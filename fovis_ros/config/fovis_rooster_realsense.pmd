@@ -81,6 +81,35 @@ group "4.bag" {
     }
 }
 
+group "5.sensors" {
+    cmd "ouster" {
+        exec = "roslaunch rooster_logging rooster_os1.launch";
+        host = "localhost";
+    }
+    cmd "tfs_not_needed" {
+        exec = "roslaunch rooster_logging rooster_static_transforms.launch";
+        host = "localhost";
+    }
+    cmd "realsense" {
+        exec = "roslaunch rooster_logging realsense_d435i_driver.launch";
+        host = "localhost";
+    }
+}
+
+group "6.sensor_vis" {
+    cmd "view_rooster" {
+        exec = "roslaunch rooster_logging view_rooster.launch";
+        host = "localhost";
+    }
+    cmd "topic_writer" {
+        exec = "rosrun rooster_logging topic_writer.py";
+        host = "localhost";
+    }
+    cmd "rosrecord" {
+        exec = "roslaunch rooster_logging record_rosbag_rooster.launch";
+        host = "localhost";
+    }
+}
 
 group "x.misc" {
     cmd "plane_fit_map" {
