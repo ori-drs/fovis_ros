@@ -79,6 +79,10 @@ group "4.bag" {
         exec = "rosbag play /home/mfallon/logs/rooster/2019-09-02-fire-college/rooster_2019-09-02-15-42-56.bag --pause --clock -s 45 /tf:=/tf_new  ";
         host = "localhost";
     }
+    cmd "rosbag_maths_live_basic" {
+        exec = "rosbag play rooster_2019-09-24-11-30-51.bag --pause --clock --topics /camera/infra1/camera_info /camera/infra1/image_rect_raw/compressed /camera/infra2/camera_info /camera/infra2/image_rect_raw/compressed /os1_cloud_node/points";
+        host = "localhost";
+    }
 }
 
 group "5.sensors" {
