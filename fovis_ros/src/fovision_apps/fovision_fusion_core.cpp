@@ -109,7 +109,7 @@ void FusionCore::featureAnalysis(){
         features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , ref_utime_);
         features_->setReferenceImage(left_buf_ref_);
         features_->setReferenceCameraPose( ref_camera_pose_ );
-        //features_->doFeatureProcessing(false); // use reference features
+        features_->doFeatureProcessing(false, fcfg_.write_feature_output ); // use reference features
       }
     }
     changed_ref_frames_=false;

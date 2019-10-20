@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   cv_bridge
   fovis_msgs
+  pcl_ros
 )
 
 find_package(OpenCV 3.0 QUIET)

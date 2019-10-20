@@ -99,10 +99,14 @@ class FusionCore{
 
     void updateMotion();
     void featureAnalysis();
-    uint8_t* getFeatureImage(){ 
-      return features_->getFeatureImage();
+
+    uint8_t* getFeaturesImage(){ 
+      return features_->getFeaturesImage();
     }
 
+    pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud(){ 
+      return features_->getFeaturesCloud();
+    }
 
     void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
     void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
