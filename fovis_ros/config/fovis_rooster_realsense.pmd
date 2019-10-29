@@ -11,7 +11,7 @@ group "0a.core" {
 
 group "0b.static_tf" {
     cmd "static_tf" {
-        exec = "rosrun tf static_transform_publisher 0.0 0 0.1  3.142 0 0.0  base os1_lidar  10";
+        exec = "rosrun tf static_transform_publisher -0.025 -0.045 0.054  3.142 0 0.0  base os1_lidar  10";
         host = "localhost";
     }
 }
