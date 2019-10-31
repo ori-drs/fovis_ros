@@ -50,7 +50,7 @@ group "2.time_and_imu_fixing" {
     }
 }
 
-group "3.aicp" {
+group "3a.aicp_mapping" {
     cmd "aicp" {
         exec = "roslaunch aicp_ros aicp_mapping_rooster.launch";
         host = "localhost";
@@ -60,6 +60,21 @@ group "3.aicp" {
         host = "localhost";
     }
     cmd "loc_man" {
+        exec = "roslaunch localization_manager_ros localization_manager_ros.launch";
+        host = "localhost";
+    }
+}
+
+group "3b.aicp_localization" {
+    cmd "aicp_localization" {
+        exec = "roslaunch aicp_ros aicp_localization_rooster.launch";
+        host = "localhost";
+    }
+    cmd "view_aicp2" {
+        exec = "roslaunch aicp_ros view_aicp_simple.launch";
+        host = "localhost";
+    }
+    cmd "loc_man2" {
         exec = "roslaunch localization_manager_ros localization_manager_ros.launch";
         host = "localhost";
     }
