@@ -11,7 +11,7 @@ group "0a.core" {
 
 group "0b.static_tf" {
     cmd "static_tf" {
-        exec = "rosrun tf static_transform_publisher 0.0 0 0.1  3.142 0 0.0  base os1_lidar  10";
+        exec = "rosrun tf static_transform_publisher -0.025 -0.045 0.054  3.142 0 0.0  base os1_lidar  10";
         host = "localhost";
     }
 }
@@ -50,7 +50,7 @@ group "2.time_and_imu_fixing" {
     }
 }
 
-group "3.aicp" {
+group "3a.aicp_mapping" {
     cmd "aicp" {
         exec = "roslaunch aicp_ros aicp_mapping_rooster.launch";
         host = "localhost";
@@ -60,6 +60,21 @@ group "3.aicp" {
         host = "localhost";
     }
     cmd "loc_man" {
+        exec = "roslaunch localization_manager_ros localization_manager_ros.launch";
+        host = "localhost";
+    }
+}
+
+group "3b.aicp_localization" {
+    cmd "aicp_localization" {
+        exec = "roslaunch aicp_ros aicp_localization_rooster.launch";
+        host = "localhost";
+    }
+    cmd "view_aicp2" {
+        exec = "roslaunch aicp_ros view_aicp_simple.launch";
+        host = "localhost";
+    }
+    cmd "loc_man2" {
         exec = "roslaunch localization_manager_ros localization_manager_ros.launch";
         host = "localhost";
     }
@@ -79,8 +94,41 @@ group "4.bag" {
         exec = "rosbag play /home/mfallon/logs/rooster/2019-09-02-fire-college/rooster_2019-09-02-15-42-56.bag --pause --clock -s 45 /tf:=/tf_new  ";
         host = "localhost";
     }
+    cmd "rosbag_maths_live_basic" {
+        exec = "rosbag play rooster_2019-09-24-11-30-51.bag --pause --clock --topics /camera/infra1/camera_info /camera/infra1/image_rect_raw/compressed /camera/infra2/camera_info /camera/infra2/image_rect_raw/compressed /os1_cloud_node/points";
+        host = "localhost";
+    }
 }
 
+group "5.sensors" {
+    cmd "ouster" {
+        exec = "roslaunch rooster_logging rooster_os1.launch";
+        host = "localhost";
+    }
+    cmd "tfs_not_needed" {
+        exec = "roslaunch rooster_logging rooster_static_transforms.launch";
+        host = "localhost";
+    }
+    cmd "realsense" {
+        exec = "roslaunch rooster_logging realsense_d435i_driver.launch";
+        host = "localhost";
+    }
+}
+
+group "6.sensor_vis" {
+    cmd "view_rooster" {
+        exec = "roslaunch rooster_logging view_rooster.launch";
+        host = "localhost";
+    }
+    cmd "topic_writer" {
+        exec = "rosrun rooster_logging topic_writer.py";
+        host = "localhost";
+    }
+    cmd "rosrecord" {
+        exec = "roslaunch rooster_logging record_rosbag_rooster.launch";
+        host = "localhost";
+    }
+}
 
 group "x.misc" {
     cmd "plane_fit_map" {

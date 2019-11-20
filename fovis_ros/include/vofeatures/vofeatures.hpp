@@ -19,6 +19,9 @@
 
 #include "imagefeatures.hpp"
 
+#include <pcl/io/io.h>
+
+
 class VoFeatures
 {
 public:
@@ -55,16 +58,21 @@ public:
   }
 
   void doFeatureProcessing(bool useCurrent, bool writeOutput = false);
-  void sendImage(std::string channel, uint8_t *img_buf, std::vector<ImageFeature> &features,
+  void drawFeaturesOnImage(uint8_t *img_buf, std::vector<ImageFeature> &features,
                  std::vector<int> &feature_indices);
 
-  //void getFeaturesFromLCM(const  reg::features_t* msg, std::vector<ImageFeature> &features, 
-  //  Eigen::Isometry3d &pose);
-  void sendFeaturesAsCollection(std::vector<ImageFeature> features, 
+  void storeFeaturesAsCloud(std::vector<ImageFeature> features, 
                                 std::vector<int> features_indices,
-                                int vs_id);
+                                bool is_ref);
 
-  uint8_t* getFeatureImage(){ return left_cur_buf_; }
+  // Returns the left image with the point features drawn on it
+  uint8_t* getFeaturesImage(){ return left_cur_buf_; }
+
+  // Returns a pcl point cloud of the points, in the robotics frame of the object
+  pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud(void){
+    return features_cloud_;
+  }
+
 
 private:
   //pronto_vis* pc_vis_;
@@ -75,13 +83,6 @@ private:
   void writeImage(uint8_t* img_buf, int counter, int64_t utime);
   void writeFeatures(std::vector<ImageFeature> features, int counter, int64_t utime);
   void writePose(Eigen::Isometry3d pose, int64_t utime);
-  void sendFeatures(std::vector<ImageFeature> features, 
-                    std::vector<int> features_indices, std::string channel,
-                    Eigen::Isometry3d pose,
-                    int64_t utime);
-
-  void drawFeaturesOnImage(cv::Mat &img, std::vector<ImageFeature> &features,
-                           std::vector<int> &feature_indices);
 
   // All the incoming data and state:
   Eigen::Isometry3d ref_camera_pose_, cur_camera_pose_;
@@ -94,6 +95,8 @@ private:
   uint8_t *left_cur_buf_;
   std::vector<ImageFeature> features_cur_;
   std::vector<int> features_cur_indices_;
+
+  pcl::PointCloud<pcl::PointXYZRGB> features_cloud_;
 
   // no longer used:
   // uint8_t *right_ref_buf_, *right_cur_buf_;

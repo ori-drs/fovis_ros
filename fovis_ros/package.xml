@@ -20,6 +20,7 @@
   <depend>tf_conversions</depend>
   <depend>eigen_conversions</depend>
   <depend>fovis_msgs</depend>
+  <depend>pcl_ros</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export />

@@ -3,6 +3,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 using namespace std;
 using namespace cv; // for disparity ops
@@ -82,8 +84,9 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
 
-  if (fcfg_.publish_feature_analysis){
-    fovis_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
+  if (fcfg_.publish_feature_analysis) {
+    features_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
+    features_cloud_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/fovis/features_cloud", 1);
   }
 
   ROS_INFO_STREAM("StereoOdom Constructed");
@@ -266,11 +269,17 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   publishFovisStats(image_a_ros->header.stamp.sec, image_a_ros->header.stamp.nsec);
 
   if (fcfg_.publish_feature_analysis){
-    uint8_t* feature_image_ = vo_core_->getFeatureImage();
+    uint8_t* feature_image_ = vo_core_->getFeaturesImage();
     cv::Mat A(h,w,CV_8UC1);
     A.data = feature_image_;
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", A).toImageMsg();
-    fovis_image_pub_.publish(msg);
+    features_image_pub_.publish(msg);
+    pcl::PointCloud<pcl::PointXYZRGB> features_cloud = vo_core_->getFeaturesCloud();
+    sensor_msgs::PointCloud2 cloud_msg;
+    pcl::toROSMsg(features_cloud, cloud_msg);
+    cloud_msg.header.stamp = image_a_ros->header.stamp;
+    cloud_msg.header.frame_id = fcfg_.output_tf_frame;//image_a_ros->header.frame_id;
+    features_cloud_pub_.publish(cloud_msg);
   }
 
   int64_t utime_output = utime_cur;

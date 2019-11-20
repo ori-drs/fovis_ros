@@ -50,7 +50,9 @@ class StereoOdom{
 
     void publishFovisStats(int sec, int nsec);
 
-    ros::Publisher body_pose_pub_, fovis_stats_pub_, fovis_image_pub_;
+    ros::Publisher body_pose_pub_, fovis_stats_pub_;
+    ros::Publisher features_image_pub_;
+    ros::Publisher features_cloud_pub_;
 
     int64_t utime_imu_;
 

@@ -6,7 +6,7 @@
 // Estimate is maintained in the body frame which is assumed to be
 // Forward-Left-Up such at roll and pitch can be isolated from yaw.
 
-#include <fovision_apps/stereo_odom_ros.hpp>
+#include "fovision_apps/stereo_odom_ros.hpp"
 
 
 using namespace std;
