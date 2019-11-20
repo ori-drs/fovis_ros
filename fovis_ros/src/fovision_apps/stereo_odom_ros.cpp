@@ -10,12 +10,12 @@ using namespace std;
 using namespace cv; // for disparity ops
 
 StereoOdom::StereoOdom(ros::NodeHandle node_in,
-       FusionCoreConfig fcfg_) :
+                       FusionCoreConfig fcfg) :
        node_(node_in), it_(node_in), sync_(10), sync_without_info_(10),
-       fcfg_(fcfg_)
+       fcfg_(fcfg)
 {
 
-  vo_core_ = new FusionCore(fcfg_);
+  vo_core_ = new FusionCore(fcfg);
 
   // Parameters:
   output_using_imu_time_ = true;
@@ -66,7 +66,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   //sync_.connectInput(image_a_ros_sub_, info_a_ros_sub_, image_b_ros_sub_, info_b_ros_sub_);
   //sync_.registerCallback(boost::bind(&App::head_stereo_cb, this, _1, _2, _3, _4));
   sync_without_info_.connectInput(image_a_ros_sub_, image_b_ros_sub_);
-  sync_without_info_.registerCallback(boost::bind(&StereoOdom::head_stereo_without_info_cb , this, _1, _2));
+  sync_without_info_.registerCallback(boost::bind(&StereoOdom::stereoCallback , this, _1, _2));
 
   std::string output_body_pose_topic;
   node_.getParam("output_body_pose_topic", output_body_pose_topic);
@@ -84,7 +84,7 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
 
-  if (fcfg_.publish_feature_analysis) {
+  if (fcfg.publish_feature_analysis) {
     features_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
     features_cloud_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/fovis/features_cloud", 1);
   }
@@ -97,10 +97,10 @@ StereoOdom::~StereoOdom(){
 }
 
 
-void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
-                                const sensor_msgs::CameraInfoConstPtr& info_a_ros,
-                                const sensor_msgs::ImageConstPtr& image_b_ros,
-                                const sensor_msgs::CameraInfoConstPtr& info_b_ros)
+void StereoOdom::stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
+                                        const sensor_msgs::CameraInfoConstPtr& info_a_ros,
+                                        const sensor_msgs::ImageConstPtr& image_b_ros,
+                                        const sensor_msgs::CameraInfoConstPtr& info_b_ros)
 {
 /*
   ROS_ERROR("AHDCAM [%d]", stereo_counter);
@@ -156,8 +156,8 @@ void StereoOdom::publishFovisStats(int sec, int nsec){
 }
 
 
-void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
-                         const sensor_msgs::ImageConstPtr& image_b_ros)
+void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
+                                const sensor_msgs::ImageConstPtr& image_b_ros)
 {
   if (stereo_counter % 120 == 0)
   {
