@@ -286,9 +286,9 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
   int64_t utime_output = utime_cur;
   // use the IMU time stamp - so that the rest of the system sees a state estimate with timestamp with low latency
-  if (output_using_imu_time_)
+  if (output_using_imu_time_){
     utime_output = utime_imu_;
-
+  }
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
@@ -303,9 +303,9 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
   body_pose.pose.pose = gpose;
   body_pose_pub_.publish(body_pose);
 
-  if (fcfg_.write_pose_to_file)
+  if (fcfg_.write_pose_to_file){
     vo_core_->writePoseToFile(vo_core_->getBodyPose(), utime_output);
-
+  }
   // This hard coded transform from base to head is because
   // when playing back logs static broadcaster doesnt work
   /*tf::Transform transform2;
@@ -326,8 +326,11 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
 void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
 {
-  Eigen::Quaterniond imu_orientation_from_imu(msg->orientation.w,msg->orientation.x,
-                                              msg->orientation.y,msg->orientation.z);
+  Eigen::Quaterniond imu_orientation_from_imu(msg->orientation.w,
+                                              msg->orientation.x,
+                                              msg->orientation.y,
+                                              msg->orientation.z);
+
   Eigen::Vector3d gyro = Eigen::Vector3d(0,0,0); // i have nothing for this yet
   utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
 
