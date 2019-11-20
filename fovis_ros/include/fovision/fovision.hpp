@@ -22,7 +22,7 @@ public:
              int which_vo_options_);
     
     
-    ~FoVision();
+    virtual ~FoVision();
 
     int which_vo_options_;
     
