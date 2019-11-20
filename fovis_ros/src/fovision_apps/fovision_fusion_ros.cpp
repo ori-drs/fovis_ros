@@ -47,24 +47,12 @@ int main(int argc, char **argv){
   nh.getParam("config_filename", fcfg.config_filename);
   nh.getParam("write_pose_to_file", fcfg.write_pose_to_file);
 
-  char* drs_base;
-  drs_base = getenv ("DRS_BASE");
-
-  std::string configPath;
-  configPath = std::string( getenv ("DRS_BASE") ) + "/config";
-
-  std::cout << configPath << "\n";
-  
-
-
   cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
   cout << fcfg.pose_initialization_mode << " is pose_initialization_mode\n";
   cout << fcfg.camera_config << " is camera_config\n";
   cout << "output_tf_frame: publish odom to "<< fcfg.output_tf_frame << "\n";
   cout << fcfg.config_filename << " is config_filename [full path]\n";
   cout << fcfg.which_vo_options << " is which_vo_options\n";
-
-
 
   StereoOdom* so = new StereoOdom(nh, fcfg);
   ros::spin();
