@@ -55,4 +55,5 @@ class StereoOdom{
     int64_t utime_imu_;
 
     bool output_using_imu_time_;
+    int stereo_counter = 0;
 };

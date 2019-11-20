@@ -185,4 +185,5 @@ class FusionCore{
     int filter_image_rows_above_;
     bool publish_filtered_image_;
 
+    int counter = 0;
 };    

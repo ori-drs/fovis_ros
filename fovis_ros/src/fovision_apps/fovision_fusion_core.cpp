@@ -83,7 +83,6 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
 }
 
 
-int counter =0;
 void FusionCore::featureAnalysis(){
 
   /// Incremental Feature Output:

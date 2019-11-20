@@ -89,7 +89,6 @@ StereoOdom::StereoOdom(ros::NodeHandle node_in,
   ROS_INFO_STREAM("StereoOdom Constructed");
 }
 
-int stereo_counter = 0;
 void StereoOdom::head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
                                 const sensor_msgs::CameraInfoConstPtr& info_a_ros,
                                 const sensor_msgs::ImageConstPtr& image_b_ros,
