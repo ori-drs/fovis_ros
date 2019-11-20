@@ -189,18 +189,14 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
     memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
     pixel_convert_8u_rgb_to_8u_gray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
 
-  } else if (image_a_ros->encoding == "mono8"){
-    ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
-    void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
-    memcpy(vo_core_->left_buf_, left_data, h*step_a);
-
-  } else if (image_a_ros->encoding == "8UC1"){
+  } else if (image_a_ros->encoding == "mono8" || image_a_ros->encoding == "8UC1")
+  {
     // assumed to be grey scale
     ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->left_buf_, left_data, h*step_a);
 
-  }else{
+  } else{
     ROS_INFO_STREAM("first image encoding not supported. something is wrong! ["<< image_a_ros->encoding <<"]");
     ROS_INFO_STREAM("Returning. not processing");
     return;
@@ -251,25 +247,18 @@ void StereoOdom::head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& i
 
     vo_core_->doOdometryLeftDepth();
 
-  }else if (image_b_ros->encoding == "mono8"){
+  }else if (image_b_ros->encoding == "mono8" || image_b_ros->encoding == "8UC1")
+  {
     // assumed to be grayscale from multisense
     // this works with realsense d435 ir also
     void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
     memcpy(vo_core_->right_buf_, right_data, h*step_b);
     vo_core_->doOdometryLeftRight();
-
-  }else if (image_b_ros->encoding == "8UC1"){
-    // assumed to be grayscale
-    void* right_data = const_cast<void*>(static_cast<const void*>(image_b_ros->data.data()));
-    memcpy(vo_core_->right_buf_, right_data, h*step_b);
-    vo_core_->doOdometryLeftRight();
-
-  }else{
+  } else{
     ROS_INFO_STREAM("second image mode not supported. something is wrong! ["<< image_b_ros->encoding <<"]");
     ROS_INFO_STREAM("Returning. not processing");
     return;
   }
-
 
   // This is where inertial data is fused
   vo_core_->doPostProcessing();
