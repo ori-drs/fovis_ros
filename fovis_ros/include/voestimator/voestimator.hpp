@@ -22,7 +22,7 @@ class VoEstimator
 {
 public:
   VoEstimator(std::string channel_extension_ = "", std::string camera_config_ = "CAMERA");
-  ~VoEstimator();
+  virtual ~VoEstimator() = default;
 
   void updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera);
 

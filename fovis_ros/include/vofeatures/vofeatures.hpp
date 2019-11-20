@@ -25,7 +25,9 @@ class VoFeatures
 {
 public:
   VoFeatures(int image_width_, int image_height_);
-  ~VoFeatures();
+
+  // do nothing special, the buffers are set free by someone else
+  virtual ~VoFeatures() = default;
 
   void setFeatures(const fovis::FeatureMatch* matches, int num_matches, int64_t utime);
   
