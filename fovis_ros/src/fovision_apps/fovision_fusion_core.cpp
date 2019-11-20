@@ -230,7 +230,7 @@ void FusionCore::filterDepth(int w, int h){
 
 
 // Transform the Microstrain IMU orientation into the body frame:
-Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaterniond imu_orientation_from_imu){
+Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu){
   Eigen::Isometry3d motion_estimate;
   motion_estimate.setIdentity();
   motion_estimate.translation() << 0,0,0;
@@ -317,7 +317,7 @@ void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientatio
 }
 
 
-void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
+void FusionCore::writePoseToFile(const Eigen::Isometry3d& pose, int64_t utime){
 
   if(!fovision_output_file_.is_open()){
     std::cout << "pose_body_trajectory.txt file not open, opening it\n";
@@ -344,7 +344,10 @@ void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 }
 
 
-void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime){
+void FusionCore::setBodyOrientationFromImu(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                                           const Eigen::Vector3d& gyro,
+                                           int64_t imu_utime)
+{
   local_to_body_orientation_from_imu_ = local_to_body_orientation_from_imu;
   local_to_body_orientation_from_imu_initialized_ = true;
 

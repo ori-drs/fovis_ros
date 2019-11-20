@@ -115,24 +115,28 @@ class FusionCore{
       return features_->getFeaturesCloud();
     }
 
-    void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
+    void writePoseToFile(const Eigen::Isometry3d& pose, int64_t utime);
     void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
 
-    inline void updatePosition(Eigen::Isometry3d delta_camera) {
+    inline void updatePosition(const Eigen::Isometry3d& delta_camera) {
         estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
     }
 
 
-    Eigen::Quaterniond imuOrientationToRobotOrientation(Eigen::Quaterniond imu_orientation_from_imu);
+    Eigen::Quaterniond imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu);
 
-    void setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime);
-    Eigen::Quaterniond getBodyOrientationFromImu(){ return local_to_body_orientation_from_imu_; }
+    void setBodyOrientationFromImu(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                                   const Eigen::Vector3d& gyro, int64_t imu_utime);
+
+    inline Eigen::Quaterniond getBodyOrientationFromImu(){
+      return local_to_body_orientation_from_imu_;
+    }
 
     inline Eigen::Isometry3d getBodyPose() {
         return estimator_->getBodyPose();
     }
 
-    inline void initializePose(Eigen::Isometry3d init_pose) {
+    inline void initializePose(const Eigen::Isometry3d& init_pose) {
         estimator_->setBodyPose(init_pose);
         pose_initialized_ = true;
         std::cout << "Initialised pose\n";

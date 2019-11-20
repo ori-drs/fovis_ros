@@ -8,8 +8,10 @@ VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_conf
 }
 
 
-void VoEstimator::updatePosition(int64_t utime, int64_t utime_prev, Eigen::Isometry3d delta_camera){
-
+void VoEstimator::updatePosition(int64_t utime,
+                                 int64_t utime_prev,
+                                 const Eigen::Isometry3d& delta_camera)
+{
   // 0. Assume head to camera is rigid:
   //camera_to_body_.setIdentity();
 
