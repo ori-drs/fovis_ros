@@ -52,7 +52,8 @@ target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 add_library(${FOVISION_FUSION_LIBNAME} src/fovision_apps/fovision_fusion_core.cpp)
 target_link_libraries(${FOVISION_FUSION_LIBNAME} ${catkin_LIBRARIES} ${VO_CONFIG_LIBNAME} ${VO_FEATURES_LIBNAME} ${VO_ESTIMATOR_LIBNAME} ${FOVISION_LIBNAME})
 
-add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp)
+add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp
+                             src/fovision_apps/stereo_odom_ros.cpp)
 target_link_libraries (simple_fusion ${catkin_LIBRARIES} ${FOVISION_FUSION_LIBNAME})
 
 ################
