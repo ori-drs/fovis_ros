@@ -101,7 +101,7 @@ class FusionCore{
 
       // only use imu after its been initialized
       if (local_to_body_orientation_from_imu_initialized_){
-        fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+        fuseInertial(local_to_body_orientation_from_imu_, utime_cur_);
       }
     }
 
@@ -116,7 +116,7 @@ class FusionCore{
     }
 
     void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
-    void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
+    void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
 
     inline void updatePosition(Eigen::Isometry3d delta_camera) {
         estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);

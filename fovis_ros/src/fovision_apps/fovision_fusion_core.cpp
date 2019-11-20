@@ -248,8 +248,9 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaternio
 
 
 
-void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime){
-
+void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                              int64_t utime)
+{
   if (fcfg_.orientation_fusion_mode==0){ // Ignore any imu or pose orientation measurements
     // Publish the pose
     estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
