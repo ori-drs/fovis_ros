@@ -106,7 +106,7 @@ class FusionCore{
 
     void updateMotion();
     void featureAnalysis();
-    uint8_t* getFeatureImage(){ 
+    inline uint8_t* getFeatureImage(){
       return features_->getFeatureImage();
     }
 
@@ -114,7 +114,7 @@ class FusionCore{
     void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
     void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
 
-    void updatePosition(Eigen::Isometry3d delta_camera){
+    inline void updatePosition(Eigen::Isometry3d delta_camera) {
         estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
     }
 
@@ -124,17 +124,17 @@ class FusionCore{
     void setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime);
     Eigen::Quaterniond getBodyOrientationFromImu(){ return local_to_body_orientation_from_imu_; }
 
-    Eigen::Isometry3d getBodyPose(){
+    inline Eigen::Isometry3d getBodyPose() {
         return estimator_->getBodyPose();
     }
 
-    void initializePose(Eigen::Isometry3d init_pose){
+    inline void initializePose(Eigen::Isometry3d init_pose) {
         estimator_->setBodyPose(init_pose);
         pose_initialized_ = true;
         std::cout << "Initialised pose\n";
     }
 
-    const fovis::VisualOdometry* getVisualOdometry() const {
+    inline const fovis::VisualOdometry* getVisualOdometry() const {
       return vo_->getVisualOdometry();
     }
 
