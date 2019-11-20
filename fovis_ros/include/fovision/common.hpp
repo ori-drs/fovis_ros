@@ -1,4 +1,6 @@
-Eigen::Quaterniond euler_to_quat(double roll, double pitch, double yaw) {
+#pragma once
+
+inline Eigen::Quaterniond euler_to_quat(double roll, double pitch, double yaw) {
 
   // This conversion function introduces a NaN in Eigen Rotations when:
   // roll == pi , pitch,yaw =0    ... or other combinations.
@@ -24,7 +26,7 @@ Eigen::Quaterniond euler_to_quat(double roll, double pitch, double yaw) {
   return Eigen::Quaterniond(w,x,y,z);
 }
 
-void quat_to_euler(const Eigen::Quaterniond& q, double& roll, double& pitch, double& yaw) {
+inline void quat_to_euler(const Eigen::Quaterniond& q, double& roll, double& pitch, double& yaw) {
   const double q0 = q.w();
   const double q1 = q.x();
   const double q2 = q.y();
@@ -36,7 +38,7 @@ void quat_to_euler(const Eigen::Quaterniond& q, double& roll, double& pitch, dou
 
 
 // was bot_quat_rotate_to
-void quat_rotate_to (const double rot[4], const double v[3], double r[3])
+inline void quat_rotate_to (const double rot[4], const double v[3], double r[3])
 {
     double ab  =  rot[0]*rot[1], ac = rot[0]*rot[2], ad  =  rot[0]*rot[3];
     double nbb = -rot[1]*rot[1], bc = rot[1]*rot[2], bd  =  rot[1]*rot[3];
@@ -46,3 +48,4 @@ void quat_rotate_to (const double rot[4], const double v[3], double r[3])
     r[1] = 2*((ad + bc)*v[0] + (nbb + ndd)*v[1] + (cd - ab)*v[2]) + v[1];
     r[2] = 2*((bd - ac)*v[0] + (ab + cd)*v[1] + (nbb + ncc)*v[2]) + v[2];
 }
+
