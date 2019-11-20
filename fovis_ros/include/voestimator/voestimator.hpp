@@ -13,11 +13,10 @@
 
 #include <fovision/common.hpp>
 
-//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-
-
-// A simple class which maintains an estimate of a head position
-// and can publish it to LCM
+/**
+ * @brief A simple class which maintains an estimate of a head position by
+ * integrating the delta from a Visual Odometry source
+ */
 class VoEstimator
 {
 public:

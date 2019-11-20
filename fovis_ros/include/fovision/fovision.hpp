@@ -77,7 +77,7 @@ public:
     bool getChangeReferenceFrames(){ return odom_->getChangeReferenceFrames(); }
 
     void getMotion(Eigen::Isometry3d &delta, Eigen::MatrixXd &delta_cov, fovis::MotionEstimateStatusCode& delta_status ){
-      delta=       odom_->getMotionEstimate();
+      delta = odom_->getMotionEstimate();
       delta_cov =  odom_->getMotionEstimateCov();
       delta_status = odom_->getMotionEstimateStatus();
     }

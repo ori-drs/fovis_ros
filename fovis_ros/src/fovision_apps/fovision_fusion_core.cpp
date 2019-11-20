@@ -123,7 +123,7 @@ void FusionCore::featureAnalysis(){
 }
 
 
-void FusionCore::updateMotion(){
+void FusionCore::updateMotion() {
   // 1. Estimate the motion using VO
   Eigen::Isometry3d delta_camera;
   Eigen::MatrixXd delta_cov;
@@ -240,9 +240,6 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaternio
   // TODO: do this with rotation matrices for efficiency:
   Eigen::Isometry3d body_pose_from_imu = motion_estimate * body_to_imu_;
   Eigen::Quaterniond body_orientation_from_imu(body_pose_from_imu.rotation());
-  // For debug:
-  //estimator_->publishPose(msg->utime, "POSE_BODY" , motion_estimate_out, Eigen::Vector3d::Identity() , Eigen::Vector3d::Identity());
-  //estimator_->publishPose(msg->utime, "POSE_BODY_ALT" , motion_estimate, Eigen::Vector3d::Identity() , Eigen::Vector3d::Identity());
 
   return body_orientation_from_imu;
 }
