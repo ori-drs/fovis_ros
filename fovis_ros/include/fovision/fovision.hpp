@@ -107,7 +107,6 @@ private:
     //fovis::PrimeSenseDepth depth_producer_; // disparity from Freenect
     //fovis::DepthImage* depth_image_; // depth from OpenNI
     
-    float* depth_data_;
     Eigen::Isometry3d pose_;
 
     fovis::VisualOdometryOptions getOptions();
