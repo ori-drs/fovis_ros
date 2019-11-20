@@ -74,7 +74,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   // IMU:
   local_to_body_orientation_from_imu_initialized_ = false;
   local_to_body_orientation_from_imu_ = Eigen::Quaterniond(1,0,0,0);
-  imu_counter_=0;
+  imu_counter_ = 0;
 
   body_to_imu_ = Eigen::Isometry3d::Identity();
   imu_to_camera_ = config_->B_t_BC();
@@ -86,7 +86,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
 void FusionCore::featureAnalysis(){
 
   /// Incremental Feature Output:
-  if (counter% fcfg_.feature_analysis_publish_period == 0 ){
+  if (counter % fcfg_.feature_analysis_publish_period == 0 ){
     features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , utime_cur_);
     features_->setCurrentImage(left_buf_);
     features_->setCurrentCameraPose( estimator_->getCameraPose() );

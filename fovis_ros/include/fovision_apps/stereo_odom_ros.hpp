@@ -27,8 +27,10 @@ class StereoOdom{
     ros::NodeHandle node_;
     image_transport::ImageTransport it_;
 
-    void head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros, const sensor_msgs::CameraInfoConstPtr& info_cam_a,
-                      const sensor_msgs::ImageConstPtr& image_b_ros, const sensor_msgs::CameraInfoConstPtr& info_cam_b);
+    void head_stereo_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
+                        const sensor_msgs::CameraInfoConstPtr& info_cam_a,
+                        const sensor_msgs::ImageConstPtr& image_b_ros,
+                        const sensor_msgs::CameraInfoConstPtr& info_cam_b);
 
     void head_stereo_without_info_cb(const sensor_msgs::ImageConstPtr& image_a_ros,
                                      const sensor_msgs::ImageConstPtr& image_b_ros);

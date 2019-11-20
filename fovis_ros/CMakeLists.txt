@@ -46,7 +46,8 @@ target_link_libraries(${VO_FEATURES_LIBNAME} ${catkin_LIBRARIES})
 add_library(${VO_ESTIMATOR_LIBNAME} src/voestimator/voestimator.cpp)
 target_link_libraries(${VO_ESTIMATOR_LIBNAME} ${catkin_LIBRARIES})
 
-add_library(${FOVISION_LIBNAME} src/fovision/fovision.cpp src/fovision/visualization.cpp)
+add_library(${FOVISION_LIBNAME} src/fovision/fovision.cpp
+                                src/fovision/visualization.cpp)
 target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 
 add_library(${FOVISION_FUSION_LIBNAME} src/fovision_apps/fovision_fusion_core.cpp)

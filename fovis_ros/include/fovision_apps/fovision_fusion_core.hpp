@@ -91,16 +91,17 @@ class FusionCore{
     void filterDepth(int w, int h);
 
 
-    void doPostProcessing(){
-        updateMotion();
+    inline void doPostProcessing() {
+      updateMotion();
 
-        if (fcfg_.publish_feature_analysis)
-            featureAnalysis();
+      if (fcfg_.publish_feature_analysis){
+        featureAnalysis();
+      }
 
-        // only use imu after its been initialized
-        if (local_to_body_orientation_from_imu_initialized_){
-          fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
-        }
+      // only use imu after its been initialized
+      if (local_to_body_orientation_from_imu_initialized_){
+        fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
+      }
     }
 
     void updateMotion();
