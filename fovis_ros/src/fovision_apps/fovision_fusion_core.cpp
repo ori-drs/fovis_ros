@@ -128,6 +128,7 @@ void FusionCore::updateMotion() {
   Eigen::Isometry3d delta_camera;
   Eigen::MatrixXd delta_cov;
   fovis::MotionEstimateStatusCode delta_status;
+
   vo_->getMotion(delta_camera, delta_cov, delta_status );
   vo_->fovis_stats();
 
@@ -253,7 +254,6 @@ void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientatio
 {
   if (fcfg_.orientation_fusion_mode==0){ // Ignore any imu or pose orientation measurements
     // Publish the pose
-    estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
   }else{
     if (imu_counter_== fcfg_.correction_frequency){
       // Every X frames: replace the pitch and roll with that from the IMU
@@ -309,9 +309,6 @@ void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientatio
     }
     if (imu_counter_ > fcfg_.correction_frequency) { imu_counter_ =0; }
     imu_counter_++;
-
-    // Publish the pose
-    estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
   }
 
 }

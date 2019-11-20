@@ -50,57 +50,7 @@ void VoEstimator::updatePosition(int64_t utime,
   head_lin_rate_alpha_ =  alpha * head_lin_rate_alpha_ + (1 - alpha) * head_lin_rate_;
   head_rot_rate_alpha_ =  alpha * head_rot_rate_alpha_ + (1 - alpha) * head_rot_rate_;
 
-  // 4. Output the head position update, at the rates provided by VO
-  publishUpdate(utime_prev, local_to_body_, "POSE_HEAD_ALT_FOVIS", true);
   local_to_body_prev_ = local_to_body_;
   delta_body_prev_ = delta_body;
 }
   
-void VoEstimator::publishUpdate(int64_t utime,
-                                Eigen::Isometry3d local_to_head, std::string channel, bool output_alpha_filter){
-  if ((!pose_initialized_) || (!vo_initialized_)) {
-    std::cout << (int) pose_initialized_ << " pose | " << (int) vo_initialized_ << " vo - ";
-    std::cout << "pose or vo not initialized, refusing to publish POSE_HEAD and POSE_BODY\n";
-    return;
-  }
-
-  // Send vo pose to collections:
-  //Isometry3dTime local_to_headT = Isometry3dTime(utime, local_to_head);
-  //pc_vis_->pose_to_lcm_from_list(60000, local_to_headT);
-  // std::cout << head_rot_rate_.transpose() << " head rot rate out\n";
-  // std::cout << head_lin_rate_.transpose() << " head lin rate out\n";
-
-  // publish local to head pose
-  if (output_alpha_filter){
-    publishPose(utime, channel + channel_extension_, local_to_head, head_lin_rate_alpha_, head_rot_rate_alpha_);
-  }else{
-    publishPose(utime, channel + channel_extension_, local_to_head, head_lin_rate_, head_rot_rate_);
-  }
-}
-
-
-void VoEstimator::publishPose(int64_t utime, std::string channel, Eigen::Isometry3d pose,
-  Eigen::Vector3d vel_lin, Eigen::Vector3d vel_ang){
-  Eigen::Quaterniond r(pose.rotation());
-  /*
-  bot_core::pose_t pose_msg;
-  pose_msg.utime =   utime;
-  pose_msg.pos[0] = pose.translation().x();
-  pose_msg.pos[1] = pose.translation().y();
-  pose_msg.pos[2] = pose.translation().z();
-  pose_msg.orientation[0] =  r.w();
-  pose_msg.orientation[1] =  r.x();
-  pose_msg.orientation[2] =  r.y();
-  pose_msg.orientation[3] =  r.z();
-  pose_msg.vel[0] = vel_lin(0);
-  pose_msg.vel[1] = vel_lin(1);
-  pose_msg.vel[2] = vel_lin(2);
-  pose_msg.rotation_rate[0] = vel_ang(0);
-  pose_msg.rotation_rate[1] = vel_ang(1);
-  pose_msg.rotation_rate[2] = vel_ang(2);
-  pose_msg.accel[0]=0; // not estimated or filled in
-  pose_msg.accel[1]=0;
-  pose_msg.accel[2]=0;
-  lcm_->publish( channel, &pose_msg);
-  */
-}
