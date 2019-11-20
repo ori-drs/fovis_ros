@@ -45,8 +45,6 @@ public:
 
 
 private:
-  //pronto_vis* pc_vis_;
-  
   // have we received the first pose estimate:?
   bool pose_initialized_;
   bool vo_initialized_;

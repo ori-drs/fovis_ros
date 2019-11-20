@@ -11,7 +11,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-//#include <lcm/lcm-cpp.hpp>
 #include <fovis/fovis.hpp>
 
 #include <opencv2/opencv.hpp>
@@ -19,7 +18,6 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include "imagefeatures.hpp"
-//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
 
 class VoFeatures
 {
