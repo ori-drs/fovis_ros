@@ -1,7 +1,7 @@
 #include "voestimator/voestimator.hpp"
 
-VoEstimator::VoEstimator(std::string channel_extension_, std::string camera_config_):
-  channel_extension_(channel_extension_), camera_config_(camera_config_),
+VoEstimator::VoEstimator(std::string channel_extension, std::string camera_config):
+  channel_extension_(channel_extension), camera_config_(camera_config),
   pose_initialized_(false), vo_initialized_(false){
   local_to_body_.setIdentity();
   camera_to_body_.setIdentity();
