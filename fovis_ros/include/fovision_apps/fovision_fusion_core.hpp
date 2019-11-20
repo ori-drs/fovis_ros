@@ -28,6 +28,7 @@ struct FusionCoreConfig
   bool write_feature_output;
   int which_vo_options;
   bool extrapolate_when_vo_fails;
+  double processing_rate = 1.0;
 };
 
 

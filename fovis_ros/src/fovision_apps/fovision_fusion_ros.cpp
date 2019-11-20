@@ -19,7 +19,7 @@ int main(int argc, char **argv){
   fcfg.output_extension = "";
   fcfg.correction_frequency = 1;//; was typicall unused at 100;
   fcfg.feature_analysis_publish_period = 1; // 5
-  double processing_rate = 1; // real time
+  fcfg.processing_rate = 1.0; // real time
   fcfg.write_feature_output = false;
 
   fcfg.verbose = false;
@@ -33,7 +33,6 @@ int main(int argc, char **argv){
   fcfg.camera_config = "MULTISENSE_CAMERA";
   fcfg.config_filename = "anymal.yaml";
   fcfg.write_pose_to_file = false;
-
 
   ros::NodeHandle nh("~");
   nh.getParam("verbose", fcfg.verbose);
