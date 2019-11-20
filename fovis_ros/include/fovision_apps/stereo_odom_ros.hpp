@@ -15,9 +15,7 @@ class StereoOdom{
     StereoOdom(ros::NodeHandle node_in,
       FusionCoreConfig fcfg_);
 
-    ~StereoOdom(){
-      delete vo_core_;
-    }
+    virtual ~StereoOdom();
 
   private:
     const FusionCoreConfig fcfg_;
