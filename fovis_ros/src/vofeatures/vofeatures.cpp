@@ -232,18 +232,20 @@ void VoFeatures::storeFeaturesAsCloud(std::vector<ImageFeature> features,
     if (features_indices[i]){
       ImageFeature f = features[i];
       pcl::PointXYZRGB pt;
-      //pt.x = f.xyz[0];
-      //pt.y = f.xyz[1];
-      //pt.z = f.xyz[2];
-      // NB: here i'm transforming the features into x-forward coordinate frame, rather than the CV frame used in fovis
-      // this is for simplicity when publishing in the base frame
-      pt.x = f.xyz[2];
-      pt.y = -f.xyz[0];
-      pt.z = -f.xyz[1];
-      if (is_ref){
-        pt.r =255.0; pt.g =0; pt.b =0; // red
+      pt.x = f.xyz[0];
+      pt.y = f.xyz[1];
+      pt.z = f.xyz[2];
+
+      if (is_ref) {
+        // red
+        pt.r = 255.0;
+        pt.g = 0;
+        pt.b =0;
       }else{
-        pt.r =0; pt.g =0; pt.b =255.0; // blue
+        // blue
+        pt.r = 0;
+        pt.g = 0;
+        pt.b = 255.0;
       }
       cloud->points.push_back(pt);
     }

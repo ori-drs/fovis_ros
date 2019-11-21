@@ -75,7 +75,6 @@ public:
 
 
 private:
-  //pronto_vis* pc_vis_;
   int image_width_;
   int image_height_;
   int output_counter_;
@@ -97,9 +96,6 @@ private:
   std::vector<int> features_cur_indices_;
 
   pcl::PointCloud<pcl::PointXYZRGB> features_cloud_;
-
-  // no longer used:
-  // uint8_t *right_ref_buf_, *right_cur_buf_;
 
   std::fstream output_pose_file_;
 };
