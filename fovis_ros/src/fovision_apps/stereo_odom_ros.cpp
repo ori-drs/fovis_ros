@@ -55,31 +55,29 @@ StereoOdom::StereoOdom(ros::NodeHandle& node_in,
   }
   ROS_INFO( "%s is the image_b_transport transport", image_b_transport.c_str());
 
-
-  image_a_ros_sub_.subscribe(it_, ros::names::resolve(image_a_string), 30, image_transport::TransportHints( image_a_transport ));
-  image_b_ros_sub_.subscribe(it_, ros::names::resolve(image_b_string), 30, image_transport::TransportHints( image_b_transport ));
-
+  image_a_ros_sub_.subscribe(it_, image_a_string, 30, image_transport::TransportHints( image_a_transport ));
+  image_b_ros_sub_.subscribe(it_, image_b_string, 30, image_transport::TransportHints( image_b_transport ));
 
   //info_a_ros_sub_.subscribe(node_, ros::names::resolve(info_a_string), 30);
   //info_b_ros_sub_.subscribe(node_, ros::names::resolve(info_b_string), 30);
   //sync_.connectInput(image_a_ros_sub_, info_a_ros_sub_, image_b_ros_sub_, info_b_ros_sub_);
   //sync_.registerCallback(boost::bind(&App::head_stereo_cb, this, _1, _2, _3, _4));
   sync_without_info_.connectInput(image_a_ros_sub_, image_b_ros_sub_);
-  sync_without_info_.registerCallback(boost::bind(&StereoOdom::stereoCallback , this, _1, _2));
+  sync_without_info_.registerCallback(&StereoOdom::stereoCallback, this);
+
+  std::string input_imu_topic;
+  node_.getParam("input_imu_topic", input_imu_topic);
+  imuSensorSub_ = node_.subscribe(input_imu_topic, 100,
+                                  &StereoOdom::imuSensorCallback, this);
+
+  std::string input_body_pose_topic;
+  node_.getParam("input_body_pose_topic", input_body_pose_topic);
+  poseOdomSub_ = node_.subscribe(input_body_pose_topic, 100,
+                                    &StereoOdom::poseOdomCallback, this);
 
   std::string output_body_pose_topic;
   node_.getParam("output_body_pose_topic", output_body_pose_topic);
   body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
-
-  std::string input_imu_topic;
-  node_.getParam("input_imu_topic", input_imu_topic);
-  imuSensorSub_ = node_.subscribe(std::string(input_imu_topic), 100,
-                                    &StereoOdom::imuSensorCallback, this);
-
-  std::string input_body_pose_topic;
-  node_.getParam("input_body_pose_topic", input_body_pose_topic);
-  poseOdomSub_ = node_.subscribe(std::string(input_body_pose_topic), 100,
-                                    &StereoOdom::poseOdomCallback, this);
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
 
