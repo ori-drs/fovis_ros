@@ -2,11 +2,13 @@
 #include <string>
 #include <iostream>
 #include <fovision/common.hpp>
+#include <pcl/common/transforms.h>
 
 using namespace cv;
 
-VoFeatures::VoFeatures(int image_width_, int image_height_):
-  image_width_(image_width_), image_height_(image_height_), utime_(0), output_counter_(0)   {
+VoFeatures::VoFeatures(int image_width_, int image_height_, const Eigen::Isometry3d& camera_to_body):
+  image_width_(image_width_), image_height_(image_height_), utime_(0), output_counter_(0), camera_to_body_(camera_to_body)
+{
 }
 
 
@@ -250,5 +252,7 @@ void VoFeatures::storeFeaturesAsCloud(std::vector<ImageFeature> features,
       cloud->points.push_back(pt);
     }
   }
-  features_cloud_ = *cloud;
+  features_cloud_.clear();
+  // put the features in the base frame
+  pcl::transformPointCloud(*cloud, features_cloud_,camera_to_body_.cast<float>());
 }

@@ -25,7 +25,9 @@
 class VoFeatures
 {
 public:
-  VoFeatures(int image_width_, int image_height_);
+  VoFeatures(int image_width_,
+             int image_height_,
+             const Eigen::Isometry3d& camera_to_body = Eigen::Isometry3d::Identity());
 
   // do nothing special, the buffers are set free by someone else
   virtual ~VoFeatures() = default;
@@ -58,8 +60,10 @@ public:
   }
 
   void doFeatureProcessing(bool useCurrent, bool writeOutput = false);
-  void drawFeaturesOnImage(uint8_t *img_buf, std::vector<ImageFeature> &features,
-                 std::vector<int> &feature_indices);
+
+  void drawFeaturesOnImage(uint8_t *img_buf,
+                           std::vector<ImageFeature> &features,
+                           std::vector<int> &feature_indices);
 
   void storeFeaturesAsCloud(std::vector<ImageFeature> features, 
                                 std::vector<int> features_indices,
@@ -85,6 +89,7 @@ private:
 
   // All the incoming data and state:
   Eigen::Isometry3d ref_camera_pose_, cur_camera_pose_;
+  Eigen::Isometry3d camera_to_body_;
   int64_t utime_;
   // pointers to reference image: (only used of visual output):
   uint8_t *left_ref_buf_;

@@ -53,11 +53,15 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
   vo_ = new FoVision(stereo_calibration_, fcfg_.which_vo_options);
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
 
-  features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
+  Eigen::Isometry3d body_to_camera_ = config_->B_t_BC();
+
+  features_ = new VoFeatures(stereo_calibration_->getWidth(),
+                             stereo_calibration_->getHeight(),
+                             body_to_camera_);
   estimator_ = new VoEstimator();
 
-  Eigen::Isometry3d body_to_camera_ = config_->B_t_BC();
-  estimator_->setCameraToBody( body_to_camera_.inverse() );
+
+  estimator_->setCameraToBody(body_to_camera_.inverse());
 
 
   pose_initialized_ = false;
