@@ -16,8 +16,8 @@ using namespace cv; // for disparity ops
 
 std::ofstream fovision_output_file_;
 
-FusionCore::FusionCore(const FusionCoreConfig& fcfg_) : 
-       fcfg_(fcfg_), utime_cur_(0), utime_prev_(0), 
+FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
+       fcfg_(fcfg), utime_cur_(0), utime_prev_(0),
        ref_utime_(0), changed_ref_frames_(false)
 {
 

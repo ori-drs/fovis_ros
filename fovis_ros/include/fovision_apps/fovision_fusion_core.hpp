@@ -34,7 +34,7 @@ struct FusionCoreConfig
 
 class FusionCore{
   public:
-    FusionCore(const FusionCoreConfig& fcfg_);
+    FusionCore(const FusionCoreConfig& fcfg);
     
     ~FusionCore(){
       free (left_buf_);
