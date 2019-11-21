@@ -21,7 +21,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
        ref_utime_(0), changed_ref_frames_(false)
 {
 
-  config_ = new voconfig::KmclConfiguration(fcfg_.camera_config, fcfg_.config_filename);
+  config_ = new voconfig::KmclConfiguration(fcfg_.config_filename);
   boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
   stereo_calibration_ = boost::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
 
@@ -54,7 +54,7 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
 
   features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
-  estimator_ = new VoEstimator(fcfg_.output_extension, fcfg_.camera_config );
+  estimator_ = new VoEstimator();
 
   Eigen::Isometry3d body_to_camera_ = config_->B_t_BC();
   estimator_->setCameraToBody( body_to_camera_.inverse() );

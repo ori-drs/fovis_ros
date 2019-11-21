@@ -20,7 +20,7 @@
 class VoEstimator
 {
 public:
-  VoEstimator(std::string channel_extension_ = "", std::string camera_config_ = "CAMERA");
+  VoEstimator();
   virtual ~VoEstimator() = default;
 
   void updatePosition(int64_t utime,
@@ -58,8 +58,6 @@ private:
   bool pose_initialized_;
   bool vo_initialized_;
 
-  std::string channel_extension_;
-  std::string camera_config_;
   Eigen::Isometry3d camera_to_body_;
   Eigen::Isometry3d local_to_body_;
   

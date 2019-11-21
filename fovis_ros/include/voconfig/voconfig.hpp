@@ -68,7 +68,7 @@ public:
     OPENNI
   };
 
-  KmclConfiguration(const std::string & depth_source_name, const std::string & config_filename);
+  KmclConfiguration(const std::string & config_filename);
 
   ~KmclConfiguration();
 
@@ -132,7 +132,7 @@ public:
 
 
 private:
-  void init(const std::string & depth_source_name);
+  void init();
 
   void set_vo_option_int(fovis::VisualOdometryOptions & vo_opts,
                          const std::string & option) const;

@@ -62,14 +62,13 @@ std::string BotParamConfiguration::get(const std::string & key, const std::strin
   return val;
 }
 
-KmclConfiguration::KmclConfiguration(
-                            const std::string & depth_source_name, const std::string & config_filename)
+KmclConfiguration::KmclConfiguration(const std::string & config_filename)
     : depth_source_type_(UNKNOWN), config_filename_(config_filename)
 {
-  init(depth_source_name);
+  init();
 }
 
-void KmclConfiguration::init(const std::string & depth_source_name) {
+void KmclConfiguration::init() {
   
   // new
   depth_source_type_ = STEREO;
