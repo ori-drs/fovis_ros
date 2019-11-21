@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 
 #include <opencv2/core.hpp>
+#include <eigen_utils/eigen_utils.hpp>
 
 /// \brief Parse the contents of a 3 element vector.
 Eigen::Vector3d parseVector3d(const cv::FileNode& node) {
@@ -84,12 +85,15 @@ void KmclConfiguration::init() {
 
   Eigen::Vector3d B_r_BC = parseVector3d(file["cameras"][0]["B_r_BC"]);
 
-  Eigen::Quaterniond B_q_BC = Eigen::Quaterniond {
-      static_cast<double>(file["cameras"][0]["B_q_BC"][3]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][0]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][1]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][2])
-    };
+  Eigen::Quaterniond B_q_BC;
+  B_q_BC.w() = static_cast<double>(file["cameras"][0]["B_q_BC"][3]);
+  B_q_BC.x() = static_cast<double>(file["cameras"][0]["B_q_BC"][0]);
+  B_q_BC.y() = static_cast<double>(file["cameras"][0]["B_q_BC"][1]);
+  B_q_BC.z() = static_cast<double>(file["cameras"][0]["B_q_BC"][2]);
+
+  std::cout << "Received Body to Camera rotation [RPY, deg]: " << eigen_utils::getEulerAnglesDeg(B_q_BC).transpose() << std::endl;
+  // normalize the quaternion we read from config file to be sure it's valid
+  B_q_BC.normalize();
   // Eigen:Quaternion is WXYZ | yaml is XYZW
 
   B_t_BC_ = Eigen::Isometry3d::Identity();
