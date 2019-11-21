@@ -31,8 +31,14 @@ cameras:
 
       stereo_baseline: 0.05, # positive, as for David. internally fovis used -0.05
 
-      B_r_BC: [0.386, 0.015, 0.160], # my values
-      B_q_BC: [0.549529, -0.445107, 0.445016, -0.549417] # x y z w
+
+      # same configuration tested for VILENS paper (ICRA 2019)
+      B_r_BC: [0.371, 0.018, 0.162],
+      B_q_BC: [-0.5418, 0.5552, -0.4516, 0.4407] 
+      
+      # previous configuration manually found by M. Fallon
+      # B_r_BC: [0.371, 0.018, 0.162]
+      # B_q_BC: [0.549529, -0.445107, 0.445016, -0.549417] # x y z w
 
       #B_r_BC: [0.383, 0.015, 0.143], # David's values
       #B_q_BC: [0.546, -0.546, 0.449, -0.449], # David's values
