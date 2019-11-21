@@ -12,11 +12,9 @@ using namespace cv; // for disparity ops
 StereoOdom::StereoOdom(ros::NodeHandle& node_in,
                        const StereoOdomConfig& cfg,
                        const FusionCoreConfig& fcfg) :
-       node_(node_in), it_(node_in), sync_(10), sync_without_info_(10),
-       cfg_(cfg), fcfg_(fcfg)
+       node_(node_in), it_(node_), sync_(10), sync_without_info_(10),
+       cfg_(cfg), fcfg_(fcfg), vo_core_(new FusionCore(fcfg_))
 {
-
-  vo_core_ = new FusionCore(fcfg_);
 
   // Parameters:
   output_using_imu_time_ = true;
@@ -91,10 +89,6 @@ StereoOdom::StereoOdom(ros::NodeHandle& node_in,
   }
 
   ROS_INFO_STREAM("StereoOdom Constructed");
-}
-
-StereoOdom::~StereoOdom(){
-  delete vo_core_;
 }
 
 
@@ -291,6 +285,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
+
   br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", cfg_.output_tf_frame));
 
 

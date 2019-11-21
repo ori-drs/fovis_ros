@@ -21,7 +21,7 @@ class StereoOdom{
                const StereoOdomConfig& cfg,
                const FusionCoreConfig& fcfg);
 
-    virtual ~StereoOdom();
+    virtual ~StereoOdom() = default;
 private:
     void stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
                                 const sensor_msgs::CameraInfoConstPtr& info_cam_a,
@@ -45,11 +45,11 @@ private:
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
     StereoOdomConfig cfg_;
     const FusionCoreConfig fcfg_;
-    FusionCore* vo_core_;
 
     image_transport::SubscriberFilter image_a_ros_sub_, image_b_ros_sub_;
 
     message_filters::Subscriber<sensor_msgs::CameraInfo> info_a_ros_sub_, info_b_ros_sub_;
+    std::unique_ptr<FusionCore> vo_core_;
 
     tf::TransformBroadcaster br;
 
