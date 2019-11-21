@@ -10,10 +10,16 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
+struct StereoOdomConfig {
+  std::string output_tf_frame;
+  bool write_pose_to_file;
+};
+
 class StereoOdom{
   public:
-    StereoOdom(ros::NodeHandle node_in,
-               FusionCoreConfig fcfg);
+    StereoOdom(ros::NodeHandle& node_in,
+               const StereoOdomConfig& cfg,
+               const FusionCoreConfig& fcfg);
 
     virtual ~StereoOdom();
 private:
@@ -37,6 +43,7 @@ private:
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo,
                                       sensor_msgs::Image, sensor_msgs::CameraInfo> sync_;
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
+    StereoOdomConfig cfg_;
     const FusionCoreConfig fcfg_;
     FusionCore* vo_core_;
 

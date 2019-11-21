@@ -7,28 +7,27 @@
 
 struct FusionCoreConfig
 {
-  std::string camera_config; // which block from the cfg to read
-  std::string config_filename; // yaml file to be read
+  // yaml file to be read
+  std::string config_filename = "";
 
-  std::string output_tf_frame;
   // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
-  int orientation_fusion_mode;
+  int orientation_fusion_mode = 0;
 
   // how should we set the initial pose? 0 using the config file, 1 using imu, 2 using a pose source
-  int pose_initialization_mode; 
+  int pose_initialization_mode = 0;
 
-  bool publish_feature_analysis;
-  int feature_analysis_publish_period; // number of frames between publishing the point features 
-  std::string output_extension;
-  std::string output_signal;
-  bool write_pose_to_file;
-  bool verbose;
-  int correction_frequency;
-  std::string in_log_fname;
-  bool write_feature_output;
-  int which_vo_options;
-  bool extrapolate_when_vo_fails;
-  double processing_rate = 1.0;
+  bool publish_feature_analysis = false;
+
+  // number of frames between publishing the point features
+  int feature_analysis_publish_period = 1; // 5
+
+  bool verbose = false;
+  // was typicall unused at 100;
+  int correction_frequency = 1;
+
+  bool write_feature_output = false;
+  int which_vo_options = 2;
+  bool extrapolate_when_vo_fails = false;
 };
 
 

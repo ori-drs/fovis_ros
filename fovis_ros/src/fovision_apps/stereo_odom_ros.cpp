@@ -9,10 +9,11 @@
 using namespace std;
 using namespace cv; // for disparity ops
 
-StereoOdom::StereoOdom(ros::NodeHandle node_in,
-                       FusionCoreConfig fcfg) :
+StereoOdom::StereoOdom(ros::NodeHandle& node_in,
+                       const StereoOdomConfig& cfg,
+                       const FusionCoreConfig& fcfg) :
        node_(node_in), it_(node_in), sync_(10), sync_without_info_(10),
-       fcfg_(fcfg)
+       cfg_(cfg), fcfg_(fcfg)
 {
 
   vo_core_ = new FusionCore(fcfg);
@@ -278,7 +279,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
     sensor_msgs::PointCloud2 cloud_msg;
     pcl::toROSMsg(features_cloud, cloud_msg);
     cloud_msg.header.stamp = image_a_ros->header.stamp;
-    cloud_msg.header.frame_id = fcfg_.output_tf_frame;//image_a_ros->header.frame_id;
+    cloud_msg.header.frame_id = cfg_.output_tf_frame;//image_a_ros->header.frame_id;
     features_cloud_pub_.publish(cloud_msg);
   }
 
@@ -290,7 +291,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
   tf::Transform transform;
   tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", fcfg_.output_tf_frame));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", cfg_.output_tf_frame));
 
 
   geometry_msgs::PoseWithCovarianceStamped body_pose;
@@ -301,7 +302,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
   body_pose.pose.pose = gpose;
   body_pose_pub_.publish(body_pose);
 
-  if (fcfg_.write_pose_to_file){
+  if (cfg_.write_pose_to_file){
     vo_core_->writePoseToFile(vo_core_->getBodyPose(), utime_output);
   }
   // This hard coded transform from base to head is because
