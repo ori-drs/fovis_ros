@@ -47,11 +47,11 @@ class FusionCore{
       free(left_buf_ref_);
     }
 
-    bool isPoseInitialized(){
+    inline bool isPoseInitialized() {
         return pose_initialized_;
     }
 
-    void setCurrentTime(int64_t utime_in){
+    inline void setCurrentTime(int64_t utime_in) {
         utime_prev_ = utime_cur_;
         utime_cur_ = utime_in;
     }
@@ -65,26 +65,26 @@ class FusionCore{
     float* depth_buf_;    
 
 
-    void doOdometryLeftRight(){
+    inline void doOdometryLeftRight() {
         vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
     }
 
-    void doOdometryLeftDisparity(){
+    inline void doOdometryLeftDisparity() {
         vo_->doOdometry(left_buf_,disparity_buf_.data(), utime_cur_);
     }
 
-    void doOdometryLeftDepth(){
+    inline void doOdometryLeftDepth() {
         vo_->doOdometryDepthImage(left_buf_,depth_buf_, utime_cur_);
     }
 
-    bool isFilterDisparityEnabled(){
+    inline bool isFilterDisparityEnabled() {
         return filter_disparity_;
     }
     // Filter the disparity image
     void filterDisparity(int w, int h);
 
 
-    bool isFilterDepthEnabled(){
+    inline bool isFilterDepthEnabled() {
         return filter_depth_;
     }
     // Filter the depth image
@@ -105,16 +105,19 @@ class FusionCore{
     }
 
     void updateMotion();
+
     void featureAnalysis();
+
     inline uint8_t* getFeaturesImage(){
       return features_->getFeaturesImage();
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud(){ 
+    inline pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud() {
       return features_->getFeaturesCloud();
     }
 
     void writePoseToFile(const Eigen::Isometry3d& pose, int64_t utime);
+
     void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
 
     inline void updatePosition(const Eigen::Isometry3d& delta_camera) {
