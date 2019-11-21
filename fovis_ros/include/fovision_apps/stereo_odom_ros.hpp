@@ -29,7 +29,7 @@ private:
                                 const sensor_msgs::CameraInfoConstPtr& info_cam_b);
 
     void stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
-                                     const sensor_msgs::ImageConstPtr& image_b_ros);
+                        const sensor_msgs::ImageConstPtr& image_b_ros);
 
     void imuSensorCallback(const sensor_msgs::ImuConstPtr& msg);
 
@@ -40,15 +40,13 @@ private:
   private:
     ros::NodeHandle& node_;
     image_transport::ImageTransport it_;
+    image_transport::SubscriberFilter image_a_ros_sub_, image_b_ros_sub_;
+    message_filters::Subscriber<sensor_msgs::CameraInfo> info_a_ros_sub_, info_b_ros_sub_;
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo,
                                       sensor_msgs::Image, sensor_msgs::CameraInfo> sync_;
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
     StereoOdomConfig cfg_;
     const FusionCoreConfig fcfg_;
-
-    image_transport::SubscriberFilter image_a_ros_sub_, image_b_ros_sub_;
-
-    message_filters::Subscriber<sensor_msgs::CameraInfo> info_a_ros_sub_, info_b_ros_sub_;
     std::unique_ptr<FusionCore> vo_core_;
 
     tf::TransformBroadcaster br;
