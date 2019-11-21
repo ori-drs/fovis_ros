@@ -24,9 +24,9 @@ class StereoOdom{
     virtual ~StereoOdom();
 private:
     void stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
-                        const sensor_msgs::CameraInfoConstPtr& info_cam_a,
-                        const sensor_msgs::ImageConstPtr& image_b_ros,
-                        const sensor_msgs::CameraInfoConstPtr& info_cam_b);
+                                const sensor_msgs::CameraInfoConstPtr& info_cam_a,
+                                const sensor_msgs::ImageConstPtr& image_b_ros,
+                                const sensor_msgs::CameraInfoConstPtr& info_cam_b);
 
     void stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
                                      const sensor_msgs::ImageConstPtr& image_b_ros);
@@ -38,7 +38,7 @@ private:
     void publishFovisStats(int sec, int nsec);
 
   private:
-    ros::NodeHandle node_;
+    ros::NodeHandle& node_;
     image_transport::ImageTransport it_;
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo,
                                       sensor_msgs::Image, sensor_msgs::CameraInfo> sync_;

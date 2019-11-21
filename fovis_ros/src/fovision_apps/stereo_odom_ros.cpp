@@ -16,7 +16,7 @@ StereoOdom::StereoOdom(ros::NodeHandle& node_in,
        cfg_(cfg), fcfg_(fcfg)
 {
 
-  vo_core_ = new FusionCore(fcfg);
+  vo_core_ = new FusionCore(fcfg_);
 
   // Parameters:
   output_using_imu_time_ = true;
