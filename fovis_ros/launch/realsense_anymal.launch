@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<launch>
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
+	  <rosparam file="$(find fovis_ros)/config/anymal_fsc.yaml" />
+	  <param name="config_filename" value="$(find fovis_ros)/config/anymal.yaml" />
+  </node>
+  <include file="$(find pronto_anymal)/launch/publish_trajectory.launch">
+    <arg name="child_frame" value="base_fovis" />
+    <arg name="estimator_name" value="fovis" />
+  </include>
+  <include file="$(find pronto_anymal)/launch/publish_trajectory.launch">
+    <arg name="child_frame" value="base" />
+    <arg name="estimator_name" value="tsif" />
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find fovis_ros)/config/fovis_ros.rviz"/>
+
+</launch>
