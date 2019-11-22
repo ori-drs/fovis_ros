@@ -9,6 +9,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <fovis_msgs/VisualOdometryUpdate.h>
 
 struct StereoOdomConfig {
   std::string output_tf_frame;
@@ -42,6 +43,8 @@ private:
 
     void publishFovisStats(int sec, int nsec);
 
+    void publishDeltaVO();
+
   private:
     ros::NodeHandle& node_;
     image_transport::ImageTransport it_;
@@ -50,6 +53,7 @@ private:
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo,
                                       sensor_msgs::Image, sensor_msgs::CameraInfo> sync_;
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync_without_info_;
+
     StereoOdomConfig cfg_;
     const FusionCoreConfig fcfg_;
     std::unique_ptr<FusionCore> vo_core_;
@@ -59,20 +63,23 @@ private:
     ros::Subscriber imuSensorSub_;
     ros::Subscriber poseOdomSub_;
 
-    ros::Publisher body_pose_pub_, fovis_stats_pub_;
+    ros::Publisher body_pose_pub_;
+    ros::Publisher fovis_stats_pub_;
     ros::Publisher features_image_pub_;
     ros::Publisher features_cloud_pub_;
+    ros::Publisher delta_vo_pub_;
 
     int64_t utime_imu_;
 
     bool output_using_imu_time_;
     int stereo_counter = 0;
 
+    fovis_msgs::VisualOdometryUpdate delta_vo_msg_;
 private:
-    int convertPixelRGBtoGray (uint8_t *dest,
-                               int dstride,
-                               int width,
-                               int height,
-                               const uint8_t *src,
-                               int sstride);
+    int convertPixelRGBtoGray(uint8_t *dest,
+                              int dstride,
+                              int width,
+                              int height,
+                              const uint8_t *src,
+                              int sstride);
 };

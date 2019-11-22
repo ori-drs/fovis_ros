@@ -28,20 +28,28 @@ public:
   VoEstimator();
   virtual ~VoEstimator() = default;
 
-  void updatePosition(int64_t utime,
-                      int64_t utime_prev,
-                      const Eigen::Isometry3d& delta_camera);
+  void updatePose(int64_t utime,
+                  int64_t utime_prev,
+                  const Eigen::Isometry3d& delta_camera);
+
+  inline void getBodyRelativePose(uint64_t& utime_prev,
+                                  uint64_t& utime_curr,
+                                  Eigen::Isometry3d& relative_pose) {
+    utime_prev = utime_prev_;
+    utime_curr = utime_curr_;
+    relative_pose = delta_body_curr_;
+  }
 
   inline Eigen::Isometry3d getCameraPose(){
-    return local_to_body_*camera_to_body_.inverse();
+    return world_to_body_curr_*camera_to_body_.inverse();
   }
 
   inline Eigen::Isometry3d getBodyPose(){
-    return local_to_body_;
+    return world_to_body_curr_;
   }
 
   void setBodyPose(const Eigen::Isometry3d& local_to_body_in) {
-    local_to_body_ = local_to_body_in;
+    world_to_body_curr_ = local_to_body_in;
     pose_initialized_ = true;
   }
 
@@ -64,15 +72,19 @@ private:
   bool vo_initialized_;
 
   Eigen::Isometry3d camera_to_body_;
-  Eigen::Isometry3d local_to_body_;
+  Eigen::Isometry3d world_to_body_curr_;
   
-  Eigen::Isometry3d local_to_body_prev_;
+  Eigen::Isometry3d world_to_body_prev_;
   Eigen::Isometry3d delta_body_prev_;
+  Eigen::Isometry3d delta_body_curr_;
+
+  uint64_t utime_curr_ = 0;
+  uint64_t utime_prev_ = 0;
   
   // Cache of rates: All are stored as RPY
+  double alpha = 0.8;
   Eigen::Vector3d head_rot_rate_, head_lin_rate_;
   Eigen::Vector3d head_rot_rate_alpha_, head_lin_rate_alpha_;
-  
 };
 
 #endif

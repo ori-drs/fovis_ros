@@ -111,7 +111,7 @@ class FusionCore{
     void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
 
     inline void updatePosition(const Eigen::Isometry3d& delta_camera) {
-        estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
+        estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
     }
 
 
@@ -136,6 +136,12 @@ class FusionCore{
 
     inline const fovis::VisualOdometry* getVisualOdometry() const {
       return vo_->getVisualOdometry();
+    }
+
+    inline void getBodyRelativePose(uint64_t& utime_prev,
+                                    uint64_t& utime_curr,
+                                    Eigen::Isometry3d& relative_pose) {
+      estimator_->getBodyRelativePose(utime_prev,utime_curr, relative_pose);
     }
 
   private:

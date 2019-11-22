@@ -80,6 +80,7 @@ StereoOdom::StereoOdom(ros::NodeHandle& node_in,
   body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
+  delta_vo_pub_ = node_.advertise<fovis_msgs::VisualOdometryUpdate>("/fovis/delta_vo", 10);
 
   if (fcfg.publish_feature_analysis) {
     features_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
@@ -95,6 +96,29 @@ void StereoOdom::stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_
                                         const sensor_msgs::ImageConstPtr& image_b_ros,
                                         const sensor_msgs::CameraInfoConstPtr& info_b_ros)
 {
+
+}
+
+void StereoOdom::publishDeltaVO() {
+  uint64_t curr_timestamp;
+  uint64_t prev_timestamp;
+  Eigen::Isometry3d relative_pose;
+
+  vo_core_->getBodyRelativePose(curr_timestamp,
+                                prev_timestamp,
+                                relative_pose);
+
+  delta_vo_msg_.header.stamp = ros::Time::now();
+
+  delta_vo_msg_.curr_timestamp = ros::Time().fromNSec(curr_timestamp * 1e3);
+  delta_vo_msg_.prev_timestamp = ros::Time().fromNSec(prev_timestamp * 1e3);
+  delta_vo_msg_.covariance.fill(0);
+  geometry_msgs::Transform t;
+  tf::transformEigenToMsg(relative_pose,t);
+  delta_vo_msg_.relative_transform = t;
+  delta_vo_msg_.estimate_status = vo_core_->getVisualOdometry()->getMotionEstimateStatus();
+
+  delta_vo_pub_.publish(delta_vo_msg_);
 
 }
 
@@ -252,6 +276,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
   // This is where inertial data is fused
   vo_core_->doPostProcessing();
+  publishDeltaVO();
 
   publishFovisStats(image_a_ros->header.stamp.sec, image_a_ros->header.stamp.nsec);
 

@@ -172,7 +172,7 @@ void FusionCore::updateMotion() {
     //Eigen::Vector3d head_velocity_angular = estimator_->getBodyRotationRate();
     //std::cout << head_velocity_angular.transpose() << " vo angular head\n";
 
-  }else if ( fcfg_.extrapolate_when_vo_fails){
+  } else if (fcfg_.extrapolate_when_vo_fails){
     double dt = (double) ((utime_cur_ - utime_prev_)*1E-6);
     std::cout << "failed VO\n";
     if (fabs(dt) > 0.2){
@@ -195,7 +195,7 @@ void FusionCore::updateMotion() {
       delta_camera.translation().z() = vo_velocity_linear_[2] * dt;
       delta_camera.rotate(extrapolated_quat);
     }
-  }else{
+  } else {
     //std::cout << "VO failed. Not extrapolating. output identity "<< utime_cur_ <<"\n";
     delta_camera.setIdentity();
   }
@@ -207,7 +207,8 @@ void FusionCore::updateMotion() {
   }
 
   // 3. Update the motion estimation:
-  estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
+  estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
+
 }
 
 
