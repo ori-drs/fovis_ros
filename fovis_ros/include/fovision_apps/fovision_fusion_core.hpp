@@ -35,17 +35,7 @@ class FusionCore{
   public:
     FusionCore(const FusionCoreConfig& fcfg);
     
-    ~FusionCore(){
-      free (left_buf_);
-      free(right_buf_);
-      free(depth_buf_);
-      free(rgb_buf_);
-      free(decompress_disparity_buf_);
-      delete vo_;
-      delete features_;
-      delete estimator_;
-      free(left_buf_ref_);
-    }
+    virtual ~FusionCore();
 
     inline bool isPoseInitialized() {
         return pose_initialized_;

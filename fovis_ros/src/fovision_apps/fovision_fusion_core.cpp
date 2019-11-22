@@ -82,6 +82,17 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
 
   cout << "FusionCore Constructed"  << endl;
 }
+
+FusionCore::~FusionCore(){
+      free (left_buf_);
+      free(right_buf_);
+      free(depth_buf_);
+      free(rgb_buf_);
+      free(decompress_disparity_buf_);
+      delete vo_;
+      delete features_;
+      delete estimator_;
+      free(left_buf_ref_);
 }
 
 
