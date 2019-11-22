@@ -1,11 +1,3 @@
-// A VO-based non-probablistic state estimator for the multisense
-// - occasionally uses IMU to avoid orientation drift
-// - when VO fails extrapolate using previous vision lin rate and imu rot rates
-
-// For IMU orientation integration:
-// Estimate is maintained in the body frame which is assumed to be
-// Forward-Left-Up such at roll and pitch can be isolated from yaw.
-
 #include "fovision_apps/stereo_odom_ros.hpp"
 
 

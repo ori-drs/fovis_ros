@@ -15,6 +15,11 @@ struct StereoOdomConfig {
   bool write_pose_to_file;
 };
 
+/**
+ * @brief ROS wrapper for the FusionCore class. Takes stereo images, IMU, and
+ * pose messages and forwards them to FusionCore. Then takes the outputs and
+ * publishes useful messages such as statistics, TF and pose messages
+ */
 class StereoOdom{
   public:
     StereoOdom(ros::NodeHandle& node_in,

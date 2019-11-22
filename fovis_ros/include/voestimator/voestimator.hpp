@@ -14,8 +14,13 @@
 #include <fovision/common.hpp>
 
 /**
- * @brief A simple class which maintains an estimate of a head position by
- * integrating the delta from a Visual Odometry source
+ * @brief A VO-based non-probablistic state estimator for a stereo camera
+ * (tested on Carnegie Robotics' MultiSense SL and Intel's RealSense D435)
+ * - occasionally uses IMU to avoid orientation drift
+ * - when VO fails extrapolate using previous vision lin rate and imu rot rates
+ * For IMU orientation integration:
+ * Estimate is maintained in the body frame which is assumed to be
+ * Forward-Left-Up such at roll and pitch can be isolated from yaw.
  */
 class VoEstimator
 {
