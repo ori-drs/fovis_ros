@@ -95,22 +95,16 @@ void StereoOdom::stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_
                                         const sensor_msgs::ImageConstPtr& image_b_ros,
                                         const sensor_msgs::CameraInfoConstPtr& info_b_ros)
 {
-/*
-  ROS_ERROR("AHDCAM [%d]", stereo_counter);
-  int64_t current_utime = (int64_t)floor(image_a_ros->header.stamp.toNSec() / 1000);
-  publishStereo(image_a_ros, info_a_ros, image_b_ros, info_b_ros, "MULTISENSE_CAMERA");
 
-  if (stereo_counter % 30 == 0)
-  {
-    ROS_ERROR("HDCAM [%d]", stereo_counter);
-  }
-  stereo_counter++;
-*/
 }
 
 
-int pixel_convert_8u_rgb_to_8u_gray (uint8_t *dest, int dstride, int width,
-        int height, const uint8_t *src, int sstride)
+int StereoOdom::convertPixelRGBtoGray (uint8_t *dest,
+                                       int dstride,
+                                       int width,
+                                       int height,
+                                       const uint8_t *src,
+                                       int sstride)
 {
   int i, j;
   for (i=0; i<height; i++) {
@@ -298,18 +292,6 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
   if (cfg_.write_pose_to_file){
     vo_core_->writePoseToFile(vo_core_->getBodyPose(), utime_output);
   }
-  // This hard coded transform from base to head is because
-  // when playing back logs static broadcaster doesnt work
-  /*tf::Transform transform2;
-  Eigen::Isometry3d null = Eigen::Isometry3d::Identity();
-  null.translation().x() = 0.465;
-  null.translation().y() = 0.0;
-  null.translation().z() = 0.558;
-  Eigen::Quaterniond quat_pitch = euler_to_quat(0, 0.28278, 0); //about 16.2 degrees
-  null.rotate( quat_pitch );
-  tf::poseEigenToTF(null, transform2);
-  br.sendTransform(tf::StampedTransform(transform2, ros::Time().fromSec(utime_output * 1E-6), "base_link", "multisense/head"));
-  */
 
   stereo_counter++;
 }

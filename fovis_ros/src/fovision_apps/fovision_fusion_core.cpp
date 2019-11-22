@@ -1,12 +1,9 @@
-// Main VO Fusion Library
-#include <zlib.h>
-
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
 #include "voestimator/voestimator.hpp"
 #include "fovision/fovision.hpp"
 
-#include <fovision_apps/fovision_fusion_core.hpp>
+#include "fovision_apps/fovision_fusion_core.hpp"
 
 #include <opencv/cv.h> // for disparity 
 
@@ -83,7 +80,8 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
   body_to_imu_ = Eigen::Isometry3d::Identity();
   imu_to_camera_ = config_->B_t_BC();
 
-  cout <<"FusionCore Constructed\n";
+  cout << "FusionCore Constructed"  << endl;
+}
 }
 
 
