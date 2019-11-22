@@ -67,4 +67,12 @@ private:
 
     bool output_using_imu_time_;
     int stereo_counter = 0;
+
+private:
+    int convertPixelRGBtoGray (uint8_t *dest,
+                               int dstride,
+                               int width,
+                               int height,
+                               const uint8_t *src,
+                               int sstride);
 };
