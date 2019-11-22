@@ -22,8 +22,8 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
 {
 
   config_ = new voconfig::KmclConfiguration(fcfg_.config_filename);
-  boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
-  stereo_calibration_ = boost::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
+  std::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
+  stereo_calibration_ = std::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
 
   // Disparity filtering
   //filter_disparity_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.enabled");

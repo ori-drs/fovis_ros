@@ -130,11 +130,11 @@ KmclConfiguration::~KmclConfiguration()
 {
 }
 
-boost::shared_ptr<fovis::PrimeSenseCalibration>
+std::shared_ptr<fovis::PrimeSenseCalibration>
 KmclConfiguration::load_primesense_calibration() const {
   assert (depth_source_type_==PRIMESENSE || depth_source_type_==OPENNI);
   if (depth_source_type_ != PRIMESENSE && depth_source_type_ != OPENNI) {
-    return boost::shared_ptr<fovis::PrimeSenseCalibration>();
+    return std::shared_ptr<fovis::PrimeSenseCalibration>();
   }
   std::string key_prefix_str;
   fovis::PrimeSenseCalibrationParameters kparams;
@@ -194,7 +194,7 @@ KmclConfiguration::load_primesense_calibration() const {
   bot_matrix_to_quat(rotation, kparams.depth_to_rgb_quaternion);
   std::copy(translation, translation+3, kparams.depth_to_rgb_translation);
   */
-  return boost::shared_ptr<fovis::PrimeSenseCalibration>(new fovis::PrimeSenseCalibration(kparams));
+  return std::shared_ptr<fovis::PrimeSenseCalibration>(new fovis::PrimeSenseCalibration(kparams));
 }
 
 
@@ -209,7 +209,7 @@ bool parseBoolean(const std::string &str) {
 
 
 
-boost::shared_ptr<fovis::StereoCalibration>
+std::shared_ptr<fovis::StereoCalibration>
 KmclConfiguration::load_stereo_calibration() const {
   assert (depth_source_type_==STEREO);
 
@@ -222,7 +222,7 @@ KmclConfiguration::load_stereo_calibration() const {
   }
 
   if (depth_source_type_ != STEREO) {
-    return boost::shared_ptr<fovis::StereoCalibration>();
+    return std::shared_ptr<fovis::StereoCalibration>();
   }
   fovis::StereoCalibrationParameters stereo_params;
   fovis::CameraIntrinsicsParameters* params;
@@ -285,7 +285,7 @@ KmclConfiguration::load_stereo_calibration() const {
   std::copy(quat, quat+4, stereo_params.right_to_left_rotation);
   std::copy(translation, translation+3, stereo_params.right_to_left_translation);
 
-  return boost::shared_ptr<fovis::StereoCalibration>(new fovis::StereoCalibration(stereo_params));
+  return std::shared_ptr<fovis::StereoCalibration>(new fovis::StereoCalibration(stereo_params));
 }
 
 void KmclConfiguration::set_vo_option_int(fovis::VisualOdometryOptions & vo_opts,

@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <fovis/fovis.hpp>
 
 
@@ -33,8 +33,8 @@ public:
   virtual double get(const std::string & key, double default_value) = 0;
   virtual std::string get(const std::string & key, const std::string & default_value) = 0;
 
-  typedef boost::shared_ptr<Configuration> Ptr;
-  typedef boost::shared_ptr<const Configuration> ConstPtr;
+  typedef std::shared_ptr<Configuration> Ptr;
+  typedef std::shared_ptr<const Configuration> ConstPtr;
 };
 
 /**
@@ -87,7 +87,7 @@ public:
    * @return If successful return a shared pointer to the StereoCalibration object
    *         and nullptr otherwise.
    */
-  boost::shared_ptr<fovis::StereoCalibration> load_stereo_calibration() const;
+  std::shared_ptr<fovis::StereoCalibration> load_stereo_calibration() const;
 
   /**
    * Creates a PrimeSenseCalibration block using the provided configuration source and camera.
@@ -99,7 +99,7 @@ public:
    * @return If successful return a shared pointer to the PrimeSenseCalibration object
    *         and nullptr otherwise.
    */
-  boost::shared_ptr<fovis::PrimeSenseCalibration> load_primesense_calibration() const;
+  std::shared_ptr<fovis::PrimeSenseCalibration> load_primesense_calibration() const;
 
   /**
    * @return Parameters for fovis::VisualOdometry
