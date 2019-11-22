@@ -22,6 +22,7 @@ set(VO_FEATURES_LIBNAME vofeatures)
 set(VO_ESTIMATOR_LIBNAME voestimator)
 set(FOVISION_LIBNAME fovision)
 set(FOVISION_FUSION_LIBNAME fovision_fusion_core)
+set(FOVIS_EXE simple_fusion)
 
 catkin_package(INCLUDE_DIRS include
 	       LIBRARIES ${VO_CONFIG_LIBNAME} 
@@ -55,21 +56,32 @@ target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 add_library(${FOVISION_FUSION_LIBNAME} src/fovision_apps/fovision_fusion_core.cpp)
 target_link_libraries(${FOVISION_FUSION_LIBNAME} ${catkin_LIBRARIES} ${VO_CONFIG_LIBNAME} ${VO_FEATURES_LIBNAME} ${VO_ESTIMATOR_LIBNAME} ${FOVISION_LIBNAME})
 
-add_executable(simple_fusion src/fovision_apps/fovision_fusion_ros.cpp
+add_executable(${FOVIS_EXE} src/fovision_apps/fovision_fusion_ros.cpp
                              src/fovision_apps/stereo_odom_ros.cpp)
-target_link_libraries (simple_fusion ${catkin_LIBRARIES} ${FOVISION_FUSION_LIBNAME})
+target_link_libraries (${FOVIS_EXE} ${catkin_LIBRARIES} ${FOVISION_FUSION_LIBNAME})
 
-################
-#set(LIBRARY_NAME vis-loop-closure)
-#add_library(${LIBRARY_NAME} src/vis_loop_closure/vis_loop_closure.cpp)
-#target_link_libraries (${LIBRARY_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBS}
-#  voconfig vofeatures voestimator fovision)
+install(TARGETS ${VO_CONFIG_LIBNAME}
+                ${VO_FEATURES_LIBNAME}
+                ${VO_ESTIMATOR_LIBNAME}
+                ${FOVISION_LIBNAME}
+                ${FOVISION_FUSION_LIBNAME}
+       ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+       LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+       RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
-################
-#add_executable(se-vis-loop-closure-batch src/vis_loop_closure/vis_loop_closure_batch.cpp)
-#target_link_libraries (se-vis-loop-closure-batch ${catkin_LIBRARIES} ${OpenCV_LIBS}
-#  vis-loop-closure)
+install(TARGETS ${FOVIS_EXE}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-################
-#add_executable(se-vins-writer src/vins_writer/vins_writer.cpp)
-#target_link_libraries (se-vins-writer ${catkin_LIBRARIES} ${OpenCV_LIBS} lcm)
+catkin_install_python(PROGRAMS python/fake_imu_horizontal.py  
+	                       python/fake_imu.py
+			       python/static_transform_publisher_using_message_time.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
+
+install(DIRECTORY config/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
