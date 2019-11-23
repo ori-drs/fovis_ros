@@ -9,7 +9,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <fovis_msgs/VisualOdometryUpdate.h>
+#include <pronto_msgs/VisualOdometryUpdate.h>
 
 struct StereoOdomConfig {
   std::string output_tf_frame;
@@ -74,7 +74,7 @@ private:
     bool output_using_imu_time_;
     int stereo_counter = 0;
 
-    fovis_msgs::VisualOdometryUpdate delta_vo_msg_;
+    pronto_msgs::VisualOdometryUpdate delta_vo_msg_;
 private:
     int convertPixelRGBtoGray(uint8_t *dest,
                               int dstride,

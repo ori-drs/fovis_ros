@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   fovis_msgs
   pcl_ros
   eigen_utils
+  pronto_msgs
 )
 
 find_package(OpenCV 3.0 QUIET)
@@ -27,7 +28,8 @@ catkin_package(INCLUDE_DIRS include
 			      image_transport
 			      tf_conversions
 			      eigen_conversions
-			      fovis_msgs)
+                              fovis_msgs
+                              pronto_msgs)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

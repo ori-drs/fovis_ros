@@ -22,6 +22,7 @@
   <depend>fovis_msgs</depend>
   <depend>pcl_ros</depend>
   <depend>eigen_utils</depend>
+  <depend>pronto_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export />

@@ -80,7 +80,7 @@ StereoOdom::StereoOdom(ros::NodeHandle& node_in,
   body_pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped>(output_body_pose_topic, 10);
 
   fovis_stats_pub_ = node_.advertise<fovis_msgs::Stats>("/fovis/stats", 10);
-  delta_vo_pub_ = node_.advertise<fovis_msgs::VisualOdometryUpdate>("/fovis/delta_vo", 10);
+  delta_vo_pub_ = node_.advertise<pronto_msgs::VisualOdometryUpdate>("/fovis/delta_vo", 10);
 
   if (fcfg.publish_feature_analysis) {
     features_image_pub_ = node_.advertise<sensor_msgs::Image>("/fovis/features_image", 1);
