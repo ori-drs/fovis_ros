@@ -95,7 +95,7 @@ group "4.bag" {
         host = "localhost";
     }
     cmd "rosbag_maths_live_basic" {
-        exec = "rosbag play rooster_2019-09-24-11-30-51.bag --pause --clock --topics /camera/infra1/camera_info /camera/infra1/image_rect_raw/compressed /camera/infra2/camera_info /camera/infra2/image_rect_raw/compressed /os1_cloud_node/points";
+        exec = "rosbag play rooster_2019-09-24-11-30-51.bag --pause --clock --topics /camera/infra1/camera_info /camera/infra1/image_rect_raw/compressed /camera/infra2/camera_info /camera/infra2/image_rect_raw/compressed /os1_cloud_node/points -s 30";
         host = "localhost";
     }
 }
