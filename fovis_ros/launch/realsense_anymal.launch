@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<launch>
+  <!-- don't launch RViz by default -->
+  <arg name="rviz" default="false" />
+
+  <!-- launch the fovis ROS node -->
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
+    <rosparam file="$(find fovis_ros)/config/fovis/anymal.yaml" />
+    <param name="config_filename" value="$(find fovis_ros)/config/robot/anymal.yaml" />
+  </node>
+
+  <!-- launch the TSIF trajectory server -->
+  <include file="$(find fovis_ros)/launch/trajectory_server.launch"/>
+
+  <!-- launch the FOVIS trajectory server -->
+  <include file="$(find fovis_ros)/launch/trajectory_server.launch">
+    <arg name="prefix" value="fovis" />
+    <arg name="target_frame" value="base_fovis" />
+  </include>
+
+  <!-- launch RViz (if the user wants) -->
+  <node if="$(arg rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find fovis_ros)/config/fovis_ros.rviz" output="log" />
+</launch>
+

@@ -1,8 +1,10 @@
 <launch>
-  <node name="state_estimator_trajectory_server" pkg="hector_trajectory_server" type="hector_trajectory_server" output="screen">
-    <remap from="/trajectory" to="/fovis/trajectory"/>
+  <arg name="prefix" default="state_estimator" />
+  <arg name="target_frame" default="/base" />
+  <node name="$(arg prefix)_trajectory_server" pkg="hector_trajectory_server" type="hector_trajectory_server" output="screen">
+    <remap from="/trajectory" to="/$(arg prefix)/trajectory"/>
     <param name="target_frame_name" value="/odom" />
-    <param name="source_frame_name" value="/base" />
+    <param name="source_frame_name" value="$(arg target_frame)" />
     <param name="trajectory_publish_rate" value="10" />
   </node>
 </launch>

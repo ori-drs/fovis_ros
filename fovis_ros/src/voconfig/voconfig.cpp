@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 
 #include <opencv2/core.hpp>
+#include <eigen_utils/eigen_utils.hpp>
 
 /// \brief Parse the contents of a 3 element vector.
 Eigen::Vector3d parseVector3d(const cv::FileNode& node) {
@@ -62,14 +63,13 @@ std::string BotParamConfiguration::get(const std::string & key, const std::strin
   return val;
 }
 
-KmclConfiguration::KmclConfiguration(
-                            const std::string & depth_source_name, const std::string & config_filename)
+KmclConfiguration::KmclConfiguration(const std::string & config_filename)
     : depth_source_type_(UNKNOWN), config_filename_(config_filename)
 {
-  init(depth_source_name);
+  init();
 }
 
-void KmclConfiguration::init(const std::string & depth_source_name) {
+void KmclConfiguration::init() {
   
   // new
   depth_source_type_ = STEREO;
@@ -85,12 +85,15 @@ void KmclConfiguration::init(const std::string & depth_source_name) {
 
   Eigen::Vector3d B_r_BC = parseVector3d(file["cameras"][0]["B_r_BC"]);
 
-  Eigen::Quaterniond B_q_BC = Eigen::Quaterniond {
-      static_cast<double>(file["cameras"][0]["B_q_BC"][3]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][0]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][1]),
-      static_cast<double>(file["cameras"][0]["B_q_BC"][2])
-    };
+  Eigen::Quaterniond B_q_BC;
+  B_q_BC.w() = static_cast<double>(file["cameras"][0]["B_q_BC"][3]);
+  B_q_BC.x() = static_cast<double>(file["cameras"][0]["B_q_BC"][0]);
+  B_q_BC.y() = static_cast<double>(file["cameras"][0]["B_q_BC"][1]);
+  B_q_BC.z() = static_cast<double>(file["cameras"][0]["B_q_BC"][2]);
+
+  std::cout << "Received Body to Camera rotation [RPY, deg]: " << eigen_utils::getEulerAnglesDeg(B_q_BC).transpose() << std::endl;
+  // normalize the quaternion we read from config file to be sure it's valid
+  B_q_BC.normalize();
   // Eigen:Quaternion is WXYZ | yaml is XYZW
 
   B_t_BC_ = Eigen::Isometry3d::Identity();
@@ -127,11 +130,11 @@ KmclConfiguration::~KmclConfiguration()
 {
 }
 
-boost::shared_ptr<fovis::PrimeSenseCalibration>
+std::shared_ptr<fovis::PrimeSenseCalibration>
 KmclConfiguration::load_primesense_calibration() const {
   assert (depth_source_type_==PRIMESENSE || depth_source_type_==OPENNI);
   if (depth_source_type_ != PRIMESENSE && depth_source_type_ != OPENNI) {
-    return boost::shared_ptr<fovis::PrimeSenseCalibration>();
+    return std::shared_ptr<fovis::PrimeSenseCalibration>();
   }
   std::string key_prefix_str;
   fovis::PrimeSenseCalibrationParameters kparams;
@@ -191,7 +194,7 @@ KmclConfiguration::load_primesense_calibration() const {
   bot_matrix_to_quat(rotation, kparams.depth_to_rgb_quaternion);
   std::copy(translation, translation+3, kparams.depth_to_rgb_translation);
   */
-  return boost::shared_ptr<fovis::PrimeSenseCalibration>(new fovis::PrimeSenseCalibration(kparams));
+  return std::shared_ptr<fovis::PrimeSenseCalibration>(new fovis::PrimeSenseCalibration(kparams));
 }
 
 
@@ -206,7 +209,7 @@ bool parseBoolean(const std::string &str) {
 
 
 
-boost::shared_ptr<fovis::StereoCalibration>
+std::shared_ptr<fovis::StereoCalibration>
 KmclConfiguration::load_stereo_calibration() const {
   assert (depth_source_type_==STEREO);
 
@@ -219,7 +222,7 @@ KmclConfiguration::load_stereo_calibration() const {
   }
 
   if (depth_source_type_ != STEREO) {
-    return boost::shared_ptr<fovis::StereoCalibration>();
+    return std::shared_ptr<fovis::StereoCalibration>();
   }
   fovis::StereoCalibrationParameters stereo_params;
   fovis::CameraIntrinsicsParameters* params;
@@ -282,7 +285,7 @@ KmclConfiguration::load_stereo_calibration() const {
   std::copy(quat, quat+4, stereo_params.right_to_left_rotation);
   std::copy(translation, translation+3, stereo_params.right_to_left_translation);
 
-  return boost::shared_ptr<fovis::StereoCalibration>(new fovis::StereoCalibration(stereo_params));
+  return std::shared_ptr<fovis::StereoCalibration>(new fovis::StereoCalibration(stereo_params));
 }
 
 void KmclConfiguration::set_vo_option_int(fovis::VisualOdometryOptions & vo_opts,

@@ -5,11 +5,13 @@
 
 using namespace std;
 
-FoVision::FoVision(
-  boost::shared_ptr<fovis::StereoCalibration> kcal, 
-  int which_vo_options_):
-  kcal_(kcal), which_vo_options_(which_vo_options_),
-  pose_(Eigen::Isometry3d::Identity()), publish_fovis_stats_(false), publish_pose_(false)
+FoVision::FoVision(const StereoCalibrationPtr& kcal,
+                   int which_vo_options_) :
+  kcal_(kcal),
+  which_vo_options_(which_vo_options_),
+  pose_(Eigen::Isometry3d::Identity()),
+  publish_fovis_stats_(false),
+  publish_pose_(false)
 {
   odom_ = new fovis::VisualOdometry(kcal_->getLeftRectification(), FoVision::getOptions());
 

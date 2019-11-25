@@ -7,45 +7,41 @@
 
 struct FusionCoreConfig
 {
-  std::string camera_config; // which block from the cfg to read
-  std::string config_filename; // yaml file to be read
+  // yaml file to be read
+  std::string config_filename = "";
 
-  std::string output_tf_frame;
   // how should we fuse IMU sensors? 0 no fusion, 1 at init, 2 rpy, 2 rp only
-  int orientation_fusion_mode;
+  int orientation_fusion_mode = 0;
 
   // how should we set the initial pose? 0 using the config file, 1 using imu, 2 using a pose source
-  int pose_initialization_mode; 
+  int pose_initialization_mode = 0;
 
-  bool publish_feature_analysis;
-  int feature_analysis_publish_period; // number of frames between publishing the point features 
-  std::string output_extension;
-  std::string output_signal;
-  bool write_pose_to_file;
-  bool verbose;
-  int correction_frequency;
-  std::string in_log_fname;
-  bool write_feature_output;
-  int which_vo_options;
-  bool extrapolate_when_vo_fails;
+  bool publish_feature_analysis = false;
+
+  // number of frames between publishing the point features
+  int feature_analysis_publish_period = 1; // 5
+
+  bool verbose = false;
+  // was typicall unused at 100;
+  int correction_frequency = 1;
+
+  bool write_feature_output = false;
+  int which_vo_options = 2;
+  bool extrapolate_when_vo_fails = false;
 };
 
 
 class FusionCore{
   public:
-    FusionCore(const FusionCoreConfig& fcfg_);
+    FusionCore(const FusionCoreConfig& fcfg);
     
-    ~FusionCore(){
-      free (left_buf_);
-      free(right_buf_);
-      free(depth_buf_);
-    }
+    virtual ~FusionCore();
 
-    bool isPoseInitialized(){
+    inline bool isPoseInitialized() {
         return pose_initialized_;
     }
 
-    void setCurrentTime(int64_t utime_in){
+    inline void setCurrentTime(int64_t utime_in) {
         utime_prev_ = utime_cur_;
         utime_cur_ = utime_in;
     }
@@ -59,80 +55,93 @@ class FusionCore{
     float* depth_buf_;    
 
 
-    void doOdometryLeftRight(){
+    inline void doOdometryLeftRight() {
         vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
     }
 
-    void doOdometryLeftDisparity(){
+    inline void doOdometryLeftDisparity() {
         vo_->doOdometry(left_buf_,disparity_buf_.data(), utime_cur_);
     }
 
-    void doOdometryLeftDepth(){
+    inline void doOdometryLeftDepth() {
         vo_->doOdometryDepthImage(left_buf_,depth_buf_, utime_cur_);
     }
 
-    bool isFilterDisparityEnabled(){
+    inline bool isFilterDisparityEnabled() {
         return filter_disparity_;
     }
     // Filter the disparity image
     void filterDisparity(int w, int h);
 
 
-    bool isFilterDepthEnabled(){
+    inline bool isFilterDepthEnabled() {
         return filter_depth_;
     }
     // Filter the depth image
     void filterDepth(int w, int h);
 
 
-    void doPostProcessing(){
-        updateMotion();
+    inline void doPostProcessing() {
+      updateMotion();
 
-        if (fcfg_.publish_feature_analysis)
-            featureAnalysis();
+      if (fcfg_.publish_feature_analysis){
+        featureAnalysis();
+      }
 
-        // only use imu after its been initialized
-        if (local_to_body_orientation_from_imu_initialized_){
-          fuseInterial(local_to_body_orientation_from_imu_, utime_cur_);
-        }
+      // only use imu after its been initialized
+      if (local_to_body_orientation_from_imu_initialized_){
+        fuseInertial(local_to_body_orientation_from_imu_, utime_cur_);
+      }
     }
 
     void updateMotion();
+
     void featureAnalysis();
 
-    uint8_t* getFeaturesImage(){ 
+    inline uint8_t* getFeaturesImage(){
       return features_->getFeaturesImage();
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud(){ 
+    inline pcl::PointCloud<pcl::PointXYZRGB> getFeaturesCloud() {
       return features_->getFeaturesCloud();
     }
 
-    void writePoseToFile(Eigen::Isometry3d pose, int64_t utime);
-    void fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime);
+    void writePoseToFile(const Eigen::Isometry3d& pose, int64_t utime);
 
-    void updatePosition(Eigen::Isometry3d delta_camera){
-        estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
+    void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
+
+    inline void updatePosition(const Eigen::Isometry3d& delta_camera) {
+        estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
     }
 
 
-    Eigen::Quaterniond imuOrientationToRobotOrientation(Eigen::Quaterniond imu_orientation_from_imu);
+    Eigen::Quaterniond imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu);
 
-    void setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime);
-    Eigen::Quaterniond getBodyOrientationFromImu(){ return local_to_body_orientation_from_imu_; }
+    void setBodyOrientationFromImu(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                                   const Eigen::Vector3d& gyro, int64_t imu_utime);
 
-    Eigen::Isometry3d getBodyPose(){
+    inline Eigen::Quaterniond getBodyOrientationFromImu(){
+      return local_to_body_orientation_from_imu_;
+    }
+
+    inline Eigen::Isometry3d getBodyPose() {
         return estimator_->getBodyPose();
     }
 
-    void initializePose(Eigen::Isometry3d init_pose){
+    inline void initializePose(const Eigen::Isometry3d& init_pose) {
         estimator_->setBodyPose(init_pose);
         pose_initialized_ = true;
         std::cout << "Initialised pose\n";
     }
 
-    const fovis::VisualOdometry* getVisualOdometry() const {
+    inline const fovis::VisualOdometry* getVisualOdometry() const {
       return vo_->getVisualOdometry();
+    }
+
+    inline void getBodyRelativePose(uint64_t& utime_prev,
+                                    uint64_t& utime_curr,
+                                    Eigen::Isometry3d& relative_pose) {
+      estimator_->getBodyRelativePose(utime_prev,utime_curr, relative_pose);
     }
 
   private:
@@ -183,4 +192,5 @@ class FusionCore{
     int filter_image_rows_above_;
     bool publish_filtered_image_;
 
+    int counter = 0;
 };    

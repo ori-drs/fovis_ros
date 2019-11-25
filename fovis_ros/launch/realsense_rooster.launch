@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<launch>
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
+    <rosparam file="$(find fovis_ros)/config/fovis/rooster.yaml" />
+    <param name="config_filename" value="$(find fovis_ros)/config/robot/rooster.yaml" />
+  </node>
+</launch>
+

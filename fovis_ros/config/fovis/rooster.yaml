@@ -1,0 +1,37 @@
+image_a_topic : "/camera/infra1/image_rect_raw"
+image_a_transport : "compressed"
+
+image_b_topic : "/camera/infra2/image_rect_raw"
+image_b_transport : "compressed"
+
+# auxiliary inputs
+input_imu_topic : "/camera/imu_fixed_with_orientation_in_base"
+input_body_pose_topic : "/state_estimator/pose_in_odom"
+
+# output
+output_using_imu_time : false
+output_body_pose_topic : "/fovis/pose_in_odom"
+output_tf_frame : "/base"
+
+# 0 no fusion
+# 1 rpy from imu
+# 2 roll and pitch only from imu 
+# 3 rpy from body_pose_topic
+# 4 roll & pitch only from body_pose_topic
+orientation_fusion_mode : 0
+
+# 0 config file
+# 1 IMU roll and pitch
+# 2 using a pose topic
+pose_initialization_mode : 0
+extrapolate_when_vo_fails : false
+
+# 0: older
+# 1: well used on MultiSense
+# 2: used on MultiSense, higher fps and real time
+which_vo_options : 2
+
+verbose : false
+publish_feature_analysis : false
+write_pose_to_file : false
+

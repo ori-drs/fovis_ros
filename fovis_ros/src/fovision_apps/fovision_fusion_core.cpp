@@ -1,14 +1,9 @@
-// Main VO Fusion Library
-#include <zlib.h>
-
 #include "voconfig/voconfig.hpp"
 #include "vofeatures/vofeatures.hpp"
 #include "voestimator/voestimator.hpp"
 #include "fovision/fovision.hpp"
 
-//#include <pronto_vis/pronto_vis.hpp> // visualize pt clds
-
-#include <fovision_apps/fovision_fusion_core.hpp>
+#include "fovision_apps/fovision_fusion_core.hpp"
 
 #include <opencv/cv.h> // for disparity 
 
@@ -18,14 +13,14 @@ using namespace cv; // for disparity ops
 
 std::ofstream fovision_output_file_;
 
-FusionCore::FusionCore(const FusionCoreConfig& fcfg_) : 
-       fcfg_(fcfg_), utime_cur_(0), utime_prev_(0), 
+FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
+       fcfg_(fcfg), utime_cur_(0), utime_prev_(0),
        ref_utime_(0), changed_ref_frames_(false)
 {
 
-  config_ = new voconfig::KmclConfiguration(fcfg_.camera_config, fcfg_.config_filename);
-  boost::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
-  stereo_calibration_ = boost::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
+  config_ = new voconfig::KmclConfiguration(fcfg_.config_filename);
+  std::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
+  stereo_calibration_ = std::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
 
   // Disparity filtering
   //filter_disparity_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.enabled");
@@ -55,41 +50,56 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg_) :
   vo_ = new FoVision(stereo_calibration_, fcfg_.which_vo_options);
   vo_->setPublishFovisStats(fcfg_.publish_feature_analysis);
 
-  features_ = new VoFeatures(stereo_calibration_->getWidth(), stereo_calibration_->getHeight() );
-  estimator_ = new VoEstimator(fcfg_.output_extension, fcfg_.camera_config );
-
   Eigen::Isometry3d body_to_camera_ = config_->B_t_BC();
-  estimator_->setCameraToBody( body_to_camera_.inverse() );
+
+  features_ = new VoFeatures(stereo_calibration_->getWidth(),
+                             stereo_calibration_->getHeight(),
+                             body_to_camera_);
+  estimator_ = new VoEstimator();
 
 
-  pose_initialized_=false;
+  estimator_->setCameraToBody(body_to_camera_.inverse());
+
+
+  pose_initialized_ = false;
   // if not using imu or pose, initialise with robot model
   if (fcfg_.pose_initialization_mode == 0){
     std::cout << "Pose initialized using cfg\n";
     Eigen::Isometry3d body_to_local_initial = Eigen::Isometry3d::Identity();
     //get_trans_with_utime( botframes_ ,  "body", "local", 0, body_to_local_initial);
     estimator_->setBodyPose(body_to_local_initial);  
-    pose_initialized_=true;
+    pose_initialized_ = true;
   }
 
 
   // IMU:
   local_to_body_orientation_from_imu_initialized_ = false;
   local_to_body_orientation_from_imu_ = Eigen::Quaterniond(1,0,0,0);
-  imu_counter_=0;
+  imu_counter_ = 0;
 
   body_to_imu_ = Eigen::Isometry3d::Identity();
   imu_to_camera_ = config_->B_t_BC();
 
-  cout <<"FusionCore Constructed\n";
+  cout << "FusionCore Constructed"  << endl;
+}
+
+FusionCore::~FusionCore(){
+      free (left_buf_);
+      free(right_buf_);
+      free(depth_buf_);
+      free(rgb_buf_);
+      free(decompress_disparity_buf_);
+      delete vo_;
+      delete features_;
+      delete estimator_;
+      free(left_buf_ref_);
 }
 
 
-int counter =0;
 void FusionCore::featureAnalysis(){
 
   /// Incremental Feature Output:
-  if (counter% fcfg_.feature_analysis_publish_period == 0 ){
+  if (counter % fcfg_.feature_analysis_publish_period == 0 ){
     features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , utime_cur_);
     features_->setCurrentImage(left_buf_);
     features_->setCurrentCameraPose( estimator_->getCameraPose() );
@@ -126,11 +136,12 @@ void FusionCore::featureAnalysis(){
 }
 
 
-void FusionCore::updateMotion(){
+void FusionCore::updateMotion() {
   // 1. Estimate the motion using VO
   Eigen::Isometry3d delta_camera;
   Eigen::MatrixXd delta_cov;
   fovis::MotionEstimateStatusCode delta_status;
+
   vo_->getMotion(delta_camera, delta_cov, delta_status );
   vo_->fovis_stats();
 
@@ -161,7 +172,7 @@ void FusionCore::updateMotion(){
     //Eigen::Vector3d head_velocity_angular = estimator_->getBodyRotationRate();
     //std::cout << head_velocity_angular.transpose() << " vo angular head\n";
 
-  }else if ( fcfg_.extrapolate_when_vo_fails){
+  } else if (fcfg_.extrapolate_when_vo_fails){
     double dt = (double) ((utime_cur_ - utime_prev_)*1E-6);
     std::cout << "failed VO\n";
     if (fabs(dt) > 0.2){
@@ -184,7 +195,7 @@ void FusionCore::updateMotion(){
       delta_camera.translation().z() = vo_velocity_linear_[2] * dt;
       delta_camera.rotate(extrapolated_quat);
     }
-  }else{
+  } else {
     //std::cout << "VO failed. Not extrapolating. output identity "<< utime_cur_ <<"\n";
     delta_camera.setIdentity();
   }
@@ -196,7 +207,8 @@ void FusionCore::updateMotion(){
   }
 
   // 3. Update the motion estimation:
-  estimator_->updatePosition(utime_cur_, utime_prev_, delta_camera);
+  estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
+
 }
 
 
@@ -233,7 +245,7 @@ void FusionCore::filterDepth(int w, int h){
 
 
 // Transform the Microstrain IMU orientation into the body frame:
-Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaterniond imu_orientation_from_imu){
+Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu){
   Eigen::Isometry3d motion_estimate;
   motion_estimate.setIdentity();
   motion_estimate.translation() << 0,0,0;
@@ -243,9 +255,6 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaternio
   // TODO: do this with rotation matrices for efficiency:
   Eigen::Isometry3d body_pose_from_imu = motion_estimate * body_to_imu_;
   Eigen::Quaterniond body_orientation_from_imu(body_pose_from_imu.rotation());
-  // For debug:
-  //estimator_->publishPose(msg->utime, "POSE_BODY" , motion_estimate_out, Eigen::Vector3d::Identity() , Eigen::Vector3d::Identity());
-  //estimator_->publishPose(msg->utime, "POSE_BODY_ALT" , motion_estimate, Eigen::Vector3d::Identity() , Eigen::Vector3d::Identity());
 
   return body_orientation_from_imu;
 }
@@ -254,11 +263,11 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(Eigen::Quaternio
 
 
 
-void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_imu, int64_t utime){
-
+void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                              int64_t utime)
+{
   if (fcfg_.orientation_fusion_mode==0){ // Ignore any imu or pose orientation measurements
     // Publish the pose
-    estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
   }else{
     if (imu_counter_== fcfg_.correction_frequency){
       // Every X frames: replace the pitch and roll with that from the IMU
@@ -314,15 +323,12 @@ void FusionCore::fuseInterial(Eigen::Quaterniond local_to_body_orientation_from_
     }
     if (imu_counter_ > fcfg_.correction_frequency) { imu_counter_ =0; }
     imu_counter_++;
-
-    // Publish the pose
-    estimator_->publishUpdate(utime_cur_, estimator_->getBodyPose(), fcfg_.output_signal, false);
   }
 
 }
 
 
-void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
+void FusionCore::writePoseToFile(const Eigen::Isometry3d& pose, int64_t utime){
 
   if(!fovision_output_file_.is_open()){
     std::cout << "pose_body_trajectory.txt file not open, opening it\n";
@@ -349,7 +355,10 @@ void FusionCore::writePoseToFile(Eigen::Isometry3d pose, int64_t utime){
 }
 
 
-void FusionCore::setBodyOrientationFromImu(Eigen::Quaterniond local_to_body_orientation_from_imu, Eigen::Vector3d gyro, int64_t imu_utime){
+void FusionCore::setBodyOrientationFromImu(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
+                                           const Eigen::Vector3d& gyro,
+                                           int64_t imu_utime)
+{
   local_to_body_orientation_from_imu_ = local_to_body_orientation_from_imu;
   local_to_body_orientation_from_imu_initialized_ = true;
 
