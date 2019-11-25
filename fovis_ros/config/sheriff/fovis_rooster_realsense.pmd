@@ -18,7 +18,7 @@ group "0b.static_tf" {
 
 group "1.progs" {
     cmd "fovis_ros" {
-        exec = "roslaunch fovis_ros simple_fusion_realsense_rooster.launch";
+        exec = "roslaunch fovis_ros realsense_rooster.launch";
         host = "localhost";
     }
     cmd "traj_server" {

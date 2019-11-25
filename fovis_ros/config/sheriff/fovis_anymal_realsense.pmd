@@ -11,7 +11,7 @@ group "1.progs" {
         host = "localhost";
     }
     cmd "fovis_ros" {
-        exec = "roslaunch fovis_ros simple_fusion_realsense_forward_anymal.launch";
+        exec = "roslaunch fovis_ros realsense_forward_anymal.launch";
         host = "localhost";
     }
     cmd "traj_server" {

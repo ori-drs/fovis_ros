@@ -28,7 +28,7 @@
     <param name="pose_initialization_mode" value="0" />
 
     <param name="extrapolate_when_vo_fails" value="false" />
-    <param name="config_filename" value="$(find fovis_ros)/config/rooster.yaml" />
+    <param name="config_filename" value="$(find fovis_ros)/config/robot/rooster.yaml" />
     <!-- which_vo_options: 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time -->
     <param name="which_vo_options" value="2" />
     <param name="camera_config" value="REALSENSE_FORWARD_CAMERA" />
