@@ -23,8 +23,7 @@ set(FOVIS_EXE simple_fusion)
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${FOVISION_LIBNAME}
                CATKIN_DEPENDS cv_bridge 
-	                      fovis 
-			      # estimate_pose
+                              fovis
 			      image_transport
 			      tf_conversions
 			      eigen_conversions
@@ -41,7 +40,7 @@ target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 
 add_executable(${FOVIS_EXE} src/fovision_apps/fovision_fusion_ros.cpp
                             src/fovision_apps/stereo_odom_ros.cpp)
-target_link_libraries (${FOVIS_EXE} ${catkin_LIBRARIES} ${FOVISION_LIBNAME})
+target_link_libraries(${FOVIS_EXE} ${catkin_LIBRARIES} ${FOVISION_LIBNAME})
 
 install(TARGETS ${FOVISION_LIBNAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

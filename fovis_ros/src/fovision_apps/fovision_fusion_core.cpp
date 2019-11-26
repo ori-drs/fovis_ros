@@ -14,7 +14,7 @@ using namespace cv; // for disparity ops
 std::ofstream fovision_output_file_;
 
 FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
-       fcfg_(fcfg), utime_cur_(0), utime_prev_(0),
+       fcfg_(fcfg), utime_curr_(0), utime_prev_(0),
        ref_utime_(0), changed_ref_frames_(false)
 {
 
@@ -99,13 +99,16 @@ void FusionCore::featureAnalysis(){
 
   /// Incremental Feature Output:
   if (counter % fcfg_.feature_analysis_publish_period == 0 ){
-    features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , utime_cur_);
+    features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , utime_curr_);
     features_->setCurrentImage(left_buf_);
-    features_->setCurrentCameraPose( estimator_->getCameraPose() );
-    if (vo_->getNumMatches()>0)
-      features_->doFeatureProcessing(true, fcfg_.write_feature_output ); // use current features
-    else
-      std::cout << "no matches, will not publish or output\n"; // this happens for first frame
+    features_->setCurrentCameraPose(estimator_->getCameraPose());
+    if (vo_->getNumMatches() > 0)
+      // use current features
+      features_->doFeatureProcessing(true, fcfg_.write_feature_output );
+    else {
+      // this happens for first frame
+      std::cout << "no matches, will not publish or output\n";
+    }
   }
   
   /// Reference Feature Output: ///////////////////////////////////////////////
@@ -114,7 +117,7 @@ void FusionCore::featureAnalysis(){
     if (ref_utime_ > 0){ // skip the first null image
       if(vo_->getNumMatches() > 200){ // if less than 50 features - dont bother writing
       // was:      if(featuresA.size() > 50){ // if less than 50 features - dont bother writing
-        cout << "changed ref frame from " << utime_prev_ << " at " << utime_cur_ <<  " with " <<vo_->getNumMatches()<<" matches\n";
+        cout << "changed ref frame from " << utime_prev_ << " at " << utime_curr_ <<  " with " <<vo_->getNumMatches()<<" matches\n";
         features_->setFeatures(vo_->getMatches(), vo_->getNumMatches() , ref_utime_);
         features_->setReferenceImage(left_buf_ref_);
         features_->setReferenceCameraPose( ref_camera_pose_ );
@@ -125,7 +128,7 @@ void FusionCore::featureAnalysis(){
   }
 
   if (vo_->getChangeReferenceFrames()){ // If we change reference frame, note the change for the next iteration.
-    ref_utime_ = utime_cur_;
+    ref_utime_ = utime_curr_;
     ref_camera_pose_ = estimator_->getCameraPose(); // publish this pose when the 
     // TODO: only copy gray data if its grey
     std::copy( left_buf_ , left_buf_ + 3*image_size_  , left_buf_ref_); // Keep the image buffer to write with the features:
@@ -141,11 +144,11 @@ void FusionCore::updateMotion() {
   Eigen::MatrixXd delta_cov;
   fovis::MotionEstimateStatusCode delta_status;
 
-  vo_->getMotion(delta_camera, delta_cov, delta_status );
+  vo_->getMotion(delta_camera, delta_cov, delta_status);
 
   // Try to catch all NaNs output by Fovis by exiting
   if (std::isnan(delta_camera.translation().x()) ){
-    std::cout << utime_cur_ << ": got nan\n";
+    std::cout << utime_curr_ << ": got nan\n";
     delta_status = fovis::REPROJECTION_ERROR; // not success
     exit(-1);
   }
@@ -154,7 +157,7 @@ void FusionCore::updateMotion() {
   //    otherwise extrapolate the previous rate
   if (delta_status == fovis::SUCCESS){
     // Get the 1st order rates:
-    double dt = (double) ((utime_cur_ - utime_prev_)*1E-6);
+    double dt = (double) ((utime_curr_ - utime_prev_)*1E-6);
     vo_velocity_linear_ = Eigen::Vector3d( delta_camera.translation().x() / dt ,
                                            delta_camera.translation().y() / dt ,
                                            delta_camera.translation().z() / dt);
@@ -171,12 +174,12 @@ void FusionCore::updateMotion() {
     //std::cout << head_velocity_angular.transpose() << " vo angular head\n";
 
   } else if (fcfg_.extrapolate_when_vo_fails){
-    double dt = (double) ((utime_cur_ - utime_prev_)*1E-6);
+    double dt = static_cast<double>((utime_curr_ - utime_prev_) * 1E-6);
     std::cout << "failed VO\n";
     if (fabs(dt) > 0.2){
       delta_camera.setIdentity();
       std::cout << "================ Unexpected jump: " << dt << " sec. Not extrapolating ==========\n";
-    }else{
+    } else {
 
       // This orientation is not mathematically correct:
       std::cout << dt << " sec | "
@@ -205,7 +208,7 @@ void FusionCore::updateMotion() {
   }
 
   // 3. Update the motion estimation:
-  estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
+  estimator_->updatePose(utime_curr_, utime_prev_, delta_camera);
 
 }
 
@@ -243,7 +246,8 @@ void FusionCore::filterDepth(int w, int h){
 
 
 // Transform the Microstrain IMU orientation into the body frame:
-Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu){
+Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(const Eigen::Quaterniond& imu_orientation_from_imu)
+{
   Eigen::Isometry3d motion_estimate;
   motion_estimate.setIdentity();
   motion_estimate.translation() << 0,0,0;
@@ -264,10 +268,11 @@ Eigen::Quaterniond FusionCore::imuOrientationToRobotOrientation(const Eigen::Qua
 void FusionCore::fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu,
                               int64_t utime)
 {
-  if (fcfg_.orientation_fusion_mode==0){ // Ignore any imu or pose orientation measurements
-    // Publish the pose
-  }else{
-    if (imu_counter_== fcfg_.correction_frequency){
+
+  if (fcfg_.orientation_fusion_mode == 0) {
+    // Ignore any imu or pose orientation measurements
+  } else {
+    if(imu_counter_== fcfg_.correction_frequency){
       // Every X frames: replace the pitch and roll with that from the IMU
       // convert the camera pose to head frame
       // extract xyz and yaw from head frame

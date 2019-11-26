@@ -28,7 +28,7 @@ public:
   VoEstimator();
   virtual ~VoEstimator() = default;
 
-  void updatePose(int64_t utime,
+  void updatePose(int64_t utime_curr,
                   int64_t utime_prev,
                   const Eigen::Isometry3d& delta_camera);
 
@@ -41,15 +41,15 @@ public:
   }
 
   inline Eigen::Isometry3d getCameraPose(){
-    return world_to_body_curr_*camera_to_body_.inverse();
+    return world_to_body_curr_ * camera_to_body_.inverse();
   }
 
   inline Eigen::Isometry3d getBodyPose(){
     return world_to_body_curr_;
   }
 
-  void setBodyPose(const Eigen::Isometry3d& local_to_body_in) {
-    world_to_body_curr_ = local_to_body_in;
+  void setBodyPose(const Eigen::Isometry3d& world_to_body) {
+    world_to_body_curr_ = world_to_body;
     pose_initialized_ = true;
   }
 

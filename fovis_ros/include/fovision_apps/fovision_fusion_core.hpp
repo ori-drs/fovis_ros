@@ -31,8 +31,10 @@ struct FusionCoreConfig
 };
 
 
-class FusionCore{
-  public:
+class FusionCore {
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+public:
     FusionCore(const FusionCoreConfig& fcfg);
     
     virtual ~FusionCore();
@@ -42,8 +44,8 @@ class FusionCore{
     }
 
     inline void setCurrentTime(int64_t utime_in) {
-        utime_prev_ = utime_cur_;
-        utime_cur_ = utime_in;
+        utime_prev_ = utime_curr_;
+        utime_curr_ = utime_in;
     }
 
     uint8_t* left_buf_;
@@ -56,15 +58,15 @@ class FusionCore{
 
 
     inline void doOdometryLeftRight() {
-        vo_->doOdometry(left_buf_,right_buf_, utime_cur_);
+        vo_->doOdometry(left_buf_, right_buf_, utime_curr_);
     }
 
     inline void doOdometryLeftDisparity() {
-        vo_->doOdometry(left_buf_,disparity_buf_.data(), utime_cur_);
+        vo_->doOdometry(left_buf_, disparity_buf_.data(), utime_curr_);
     }
 
     inline void doOdometryLeftDepth() {
-        vo_->doOdometryDepthImage(left_buf_,depth_buf_, utime_cur_);
+        vo_->doOdometryDepthImage(left_buf_,depth_buf_, utime_curr_);
     }
 
     inline bool isFilterDisparityEnabled() {
@@ -90,7 +92,7 @@ class FusionCore{
 
       // only use imu after its been initialized
       if (local_to_body_orientation_from_imu_initialized_){
-        fuseInertial(local_to_body_orientation_from_imu_, utime_cur_);
+        fuseInertial(local_to_body_orientation_from_imu_, utime_curr_);
       }
     }
 
@@ -111,7 +113,7 @@ class FusionCore{
     void fuseInertial(const Eigen::Quaterniond& local_to_body_orientation_from_imu, int64_t utime);
 
     inline void updatePosition(const Eigen::Isometry3d& delta_camera) {
-        estimator_->updatePose(utime_cur_, utime_prev_, delta_camera);
+        estimator_->updatePose(utime_curr_, utime_prev_, delta_camera);
     }
 
 
@@ -131,7 +133,14 @@ class FusionCore{
     inline void initializePose(const Eigen::Isometry3d& init_pose) {
         estimator_->setBodyPose(init_pose);
         pose_initialized_ = true;
-        std::cout << "Initialised pose\n";
+        double r,p,y;
+        quat_to_euler(Eigen::Quaterniond(init_pose.rotation()),r,p,y);
+        r *= 180.0 / M_PI;
+        p *= 180.0 / M_PI;
+        y *= 180.0 / M_PI;
+        std::cout << "Initialized pose from Transform"
+                  << "t [m]: " << init_pose.translation().transpose()
+                  << "rpy [deg]: " << r << ", " << p << ", " << y << std::endl;
     }
 
     inline const fovis::VisualOdometry* getVisualOdometry() const {
@@ -142,7 +151,7 @@ class FusionCore{
                                     uint64_t& utime_curr,
                                     Eigen::Isometry3d& relative_pose)
     {
-      estimator_->getBodyRelativePose(utime_prev,utime_curr, relative_pose);
+      estimator_->getBodyRelativePose(utime_prev, utime_curr, relative_pose);
       return utime_prev != 0;
     }
 
@@ -151,14 +160,16 @@ class FusionCore{
     
     int image_size_; // just the resolution of the image
     
-    int64_t utime_cur_, utime_prev_;
+    int64_t utime_prev_;
+    int64_t utime_curr_;
 
     voconfig::FovisYAMLConfigurator* config_;
 
     // Vision and Estimation
     FoVision* vo_;
     VoFeatures* features_;
-    uint8_t* left_buf_ref_; // copies of the reference images - probably can be extracted from fovis directly
+    // copies of the reference images - probably can be extracted from fovis directly
+    uint8_t* left_buf_ref_;
     int64_t ref_utime_;
     Eigen::Isometry3d ref_camera_pose_; // [pose of the camera when the reference frames changed
     bool changed_ref_frames_;

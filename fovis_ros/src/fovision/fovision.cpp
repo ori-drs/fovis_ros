@@ -30,6 +30,7 @@ FoVision::~FoVision()
   delete stereo_depth_;
   delete stereo_disparity_;
   delete depth_image_;
+  delete visualization_;
 }
 
 
@@ -75,25 +76,27 @@ void FoVision::doOdometryDepthImage(uint8_t *left_buf,float *depth_buf, int64_t 
 }
 
 
-fovis::VisualOdometryOptions FoVision::getOptions()
-{
+fovis::VisualOdometryOptions FoVision::getOptions() {
   fovis::VisualOdometryOptions vo_opts = fovis::VisualOdometry::getDefaultOptions();
 
-  if(which_vo_options_ == 0){
+  switch(which_vo_options_){
+  case 0:
     // not commonly used. legacy options
     getOptionsHordur(vo_opts);
-  }else if (which_vo_options_ == 1){
+    break;
+  case 1:
     // setting very commonly used
     getOptionsCommon(vo_opts);
-  }else if (which_vo_options_ == 2){
+    break;
+  case 2:
     // modify some of the common parameters to run Multisense at full framerate
     getOptionsCommon(vo_opts);
     getOptionsFaster(vo_opts);
-  }else{
+    break;
+  default:
     std::cout << "Choose a valid set of VO options e.g. 1 for default options\n";
     exit(-1);
   }
-
   return vo_opts;
 }
 
