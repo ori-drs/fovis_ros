@@ -19,6 +19,7 @@
 ##### works with anymal_2019-05-10-10-38-35.bag
 cameras:
     - {
+      depth_source_type : "stereo",
       image_dimensions: [848,480],
       focal_length:     [424.2955627441406, 424.2955627441406], # default from camera info, David uses different
       focal_point:      [422.3912658691406, 234.9972381591797],

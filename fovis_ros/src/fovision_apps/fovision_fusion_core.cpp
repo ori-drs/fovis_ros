@@ -18,9 +18,8 @@ FusionCore::FusionCore(const FusionCoreConfig& fcfg) :
        ref_utime_(0), changed_ref_frames_(false)
 {
 
-  config_ = new voconfig::KmclConfiguration(fcfg_.config_filename);
-  std::shared_ptr<fovis::StereoCalibration> stereo_calibration_;
-  stereo_calibration_ = std::shared_ptr<fovis::StereoCalibration>(config_->load_stereo_calibration());
+  config_ = new voconfig::FovisYAMLConfigurator(fcfg_.config_filename);
+  std::shared_ptr<fovis::StereoCalibration> stereo_calibration_(config_->loadStereoCalibration());
 
   // Disparity filtering
   //filter_disparity_ = bot_param_get_boolean_or_fail(botparam_, "visual_odometry.filter.enabled");
@@ -143,7 +142,6 @@ void FusionCore::updateMotion() {
   fovis::MotionEstimateStatusCode delta_status;
 
   vo_->getMotion(delta_camera, delta_cov, delta_status );
-  vo_->fovis_stats();
 
   // Try to catch all NaNs output by Fovis by exiting
   if (std::isnan(delta_camera.translation().x()) ){

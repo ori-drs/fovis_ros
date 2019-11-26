@@ -138,10 +138,12 @@ class FusionCore{
       return vo_->getVisualOdometry();
     }
 
-    inline void getBodyRelativePose(uint64_t& utime_prev,
+    inline bool getBodyRelativePose(uint64_t& utime_prev,
                                     uint64_t& utime_curr,
-                                    Eigen::Isometry3d& relative_pose) {
+                                    Eigen::Isometry3d& relative_pose)
+    {
       estimator_->getBodyRelativePose(utime_prev,utime_curr, relative_pose);
+      return utime_prev != 0;
     }
 
   private:
@@ -151,7 +153,7 @@ class FusionCore{
     
     int64_t utime_cur_, utime_prev_;
 
-    voconfig::KmclConfiguration* config_;
+    voconfig::FovisYAMLConfigurator* config_;
 
     // Vision and Estimation
     FoVision* vo_;
