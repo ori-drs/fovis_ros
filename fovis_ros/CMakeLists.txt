@@ -36,7 +36,6 @@ add_library(${FOVISION_LIBNAME} src/voconfig/voconfig.cpp
                                 src/vofeatures/vofeatures.cpp
                                 src/voestimator/voestimator.cpp
                                 src/fovision/fovision.cpp
-                                src/fovision/visualization.cpp
                                 src/fovision_apps/fovision_fusion_core.cpp)
 target_link_libraries(${FOVISION_LIBNAME} ${catkin_LIBRARIES})
 
