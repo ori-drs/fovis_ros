@@ -15,6 +15,11 @@
 
 #include "visualization.hpp"
 
+/**
+ * @brief The FoVision class is a FOVIS wrapper that handles different stereo
+ * solutions (left-right, left-disparity, left-depth) to perform odometry
+ * in camera frame
+ */
 class FoVision
 {
 public:
@@ -28,8 +33,6 @@ public:
     
     
     virtual ~FoVision();
-
-
     
     void writeRawImage(float *float_buf, int width, int height, int64_t utime);
     
@@ -39,12 +42,6 @@ public:
 
     void doOdometryDepthImage(uint8_t *left_buf, float *depth_buf, int64_t utime);
 
-    void send_delta_translation_msg(Eigen::Isometry3d motion_estimate,
-                                    Eigen::MatrixXd motion_cov,
-                                    std::string channel_name);
-    
-    void fovis_stats();
-    
     inline Eigen::Isometry3d getMotionEstimate(){
       return odom_->getMotionEstimate();
     }
