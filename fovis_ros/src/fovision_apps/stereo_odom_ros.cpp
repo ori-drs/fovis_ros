@@ -104,22 +104,23 @@ void StereoOdom::publishDeltaVO() {
   uint64_t prev_timestamp;
   Eigen::Isometry3d relative_pose;
 
-  vo_core_->getBodyRelativePose(curr_timestamp,
-                                prev_timestamp,
-                                relative_pose);
+  // don't publish if the retrieval fails
+  if(!vo_core_->getBodyRelativePose(prev_timestamp,
+                                    curr_timestamp,
+                                    relative_pose))
+  {
+    return;
+  }
 
   delta_vo_msg_.header.stamp = ros::Time::now();
-
-  delta_vo_msg_.curr_timestamp = ros::Time().fromNSec(curr_timestamp * 1e3);
   delta_vo_msg_.prev_timestamp = ros::Time().fromNSec(prev_timestamp * 1e3);
+  delta_vo_msg_.curr_timestamp = ros::Time().fromNSec(curr_timestamp * 1e3);
   delta_vo_msg_.covariance.fill(0);
   geometry_msgs::Transform t;
   tf::transformEigenToMsg(relative_pose,t);
   delta_vo_msg_.relative_transform = t;
   delta_vo_msg_.estimate_status = vo_core_->getVisualOdometry()->getMotionEstimateStatus();
-
   delta_vo_pub_.publish(delta_vo_msg_);
-
 }
 
 
