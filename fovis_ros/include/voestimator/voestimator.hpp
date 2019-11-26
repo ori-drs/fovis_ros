@@ -68,23 +68,25 @@ public:
 
 private:
   // have we received the first pose estimate:?
-  bool pose_initialized_;
-  bool vo_initialized_;
+  bool pose_initialized_ = false;
+  bool vo_initialized_ = false;
 
-  Eigen::Isometry3d camera_to_body_;
-  Eigen::Isometry3d world_to_body_curr_;
+  Eigen::Isometry3d camera_to_body_  = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d world_to_body_curr_ = Eigen::Isometry3d::Identity();
   
-  Eigen::Isometry3d world_to_body_prev_;
-  Eigen::Isometry3d delta_body_prev_;
-  Eigen::Isometry3d delta_body_curr_;
+  Eigen::Isometry3d world_to_body_prev_ = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d delta_body_prev_ = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d delta_body_curr_ = Eigen::Isometry3d::Identity();
 
   uint64_t utime_curr_ = 0;
   uint64_t utime_prev_ = 0;
   
   // Cache of rates: All are stored as RPY
   double alpha = 0.8;
-  Eigen::Vector3d head_rot_rate_, head_lin_rate_;
-  Eigen::Vector3d head_rot_rate_alpha_, head_lin_rate_alpha_;
+  Eigen::Vector3d head_rot_rate_       = Eigen::Vector3d::Zero();
+  Eigen::Vector3d head_lin_rate_       = Eigen::Vector3d::Zero();
+  Eigen::Vector3d head_rot_rate_alpha_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d head_lin_rate_alpha_ = Eigen::Vector3d::Zero();
 };
 
 #endif

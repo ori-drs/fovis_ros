@@ -275,6 +275,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
   // This is where inertial data is fused
   vo_core_->doPostProcessing();
+
   publishDeltaVO();
 
   publishFovisStats(image_a_ros->header.stamp.sec, image_a_ros->header.stamp.nsec);
@@ -370,7 +371,7 @@ void StereoOdom::poseOdomCallback(const geometry_msgs::PoseWithCovarianceStamped
 
 
   if (!vo_core_->isPoseInitialized()){
-    std::cout << "Pose Odom callback: initializing pose using IMU\n";
+    std::cout << "[ poseOdomCallback()] : initializing pose using message" << std::endl;
     Eigen::Isometry3d init_pose = Eigen::Isometry3d::Identity();
     tf::poseMsgToEigen(msg->pose.pose, init_pose);
     vo_core_->initializePose(init_pose);
