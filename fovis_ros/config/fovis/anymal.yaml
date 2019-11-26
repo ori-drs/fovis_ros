@@ -5,8 +5,8 @@ image_b_topic : "/realsense_d435_front_forward/infra2/image_rect_raw"
 image_b_transport : "compressed"
 
 # auxiliary inputs
-input_imu_topic : "/state_estimator/imu"
-input_body_pose_topic : "/state_estimator/pose_in_odom"
+input_imu_topic : "/sensors/imu"
+input_body_pose_topic : "/state_estimator_pronto/pose"
 
 # output
 output_using_imu_time : false
