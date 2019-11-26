@@ -50,7 +50,7 @@ public:
 
     uint8_t* left_buf_;
     uint8_t* right_buf_;
-    mutable std::vector<float> disparity_buf_; // Is mutable necessary?
+    std::vector<float> disparity_buf_;
     uint8_t* rgb_buf_ ;
     uint8_t* decompress_disparity_buf_;    
 
