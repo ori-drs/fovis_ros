@@ -138,8 +138,8 @@ public:
         r *= 180.0 / M_PI;
         p *= 180.0 / M_PI;
         y *= 180.0 / M_PI;
-        std::cout << "Initialized pose from Transform"
-                  << "t [m]: " << init_pose.translation().transpose()
+        std::cout << "Initialized pose from Transform " << std::endl
+                  << "t [m]: " << init_pose.translation().transpose() << std::endl
                   << "rpy [deg]: " << r << ", " << p << ", " << y << std::endl;
     }
 

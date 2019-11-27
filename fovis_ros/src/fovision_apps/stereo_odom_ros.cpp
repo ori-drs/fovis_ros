@@ -359,12 +359,14 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
 void StereoOdom::poseOdomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg)
 {
 
-  Eigen::Quaterniond body_orientation_from_odom(msg->pose.pose.orientation.w,msg->pose.pose.orientation.x,
-                                              msg->pose.pose.orientation.y,msg->pose.pose.orientation.z);
+  Eigen::Quaterniond body_orientation_from_odom(msg->pose.pose.orientation.w,
+                                                msg->pose.pose.orientation.x,
+                                                msg->pose.pose.orientation.y,
+                                                msg->pose.pose.orientation.z);
   Eigen::Vector3d gyro = Eigen::Vector3d(0,0,0); // i have nothing for this yet
   utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
 
-  if ((fcfg_.orientation_fusion_mode==3) ||  (fcfg_.orientation_fusion_mode ==4)  ){
+  if ((fcfg_.orientation_fusion_mode == 3) ||  (fcfg_.orientation_fusion_mode == 4)){
     vo_core_->setBodyOrientationFromImu(body_orientation_from_odom, gyro, utime_imu_);
   }
 
