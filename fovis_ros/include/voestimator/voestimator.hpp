@@ -50,6 +50,7 @@ public:
 
   void setBodyPose(const Eigen::Isometry3d& world_to_body) {
     world_to_body_curr_ = world_to_body;
+    world_to_body_prev_ = world_to_body;
     pose_initialized_ = true;
   }
 
