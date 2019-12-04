@@ -340,7 +340,7 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
   }
 
 
-  if ( (!vo_core_->isPoseInitialized()) &&  (fcfg_.pose_initialization_mode == 1) ){
+  if ( (!vo_core_->isPoseInitialized()) &&  (fcfg_.initial_pose_mode == 1) ){
     std::cout << "IMU callback: initializing pose using IMU (roll and pitch)\n";
     Eigen::Isometry3d init_pose;
     init_pose.setIdentity();

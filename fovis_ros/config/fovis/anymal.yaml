@@ -14,7 +14,11 @@ output_body_pose_topic : "/fovis/pose_in_odom"
 output_tf_frame : "base_fovis"
 
 # 0 cfg file. 1 IMU r & p. 2 using a pose topic
-pose_initialization_mode : 2
+initial_pose_mode : 2
+# if above is 0, then use this position and rpy (degrees) in init
+initial_position : [0,0,0]
+initial_rpy : [0,0,0]
+
 extrapolate_when_vo_fails : false
 
 # 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time
