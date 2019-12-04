@@ -20,8 +20,17 @@ int main(int argc, char **argv){
   nh.getParam("orientation_fusion_mode", fcfg.orientation_fusion_mode);
   cout << fcfg.orientation_fusion_mode << " is orientation_fusion_mode\n";
 
-  nh.getParam("pose_initialization_mode", fcfg.pose_initialization_mode);
-  cout << fcfg.pose_initialization_mode << " is pose_initialization_mode\n";
+  nh.getParam("initial_pose_mode", fcfg.initial_pose_mode);
+  cout << fcfg.initial_pose_mode << " is initial_pose_mode\n";
+
+  std::vector<double> initial_position, initial_rpy;
+  nh.getParam("initial_position", initial_position);
+  nh.getParam("initial_rpy", initial_rpy);
+  Eigen::Isometry3d initial_pose = Eigen::Isometry3d::Identity();
+  initial_pose.translation() << initial_position[0], initial_position[1], initial_position[2];
+  Eigen::Quaterniond initial_quat = euler_to_quat( initial_rpy[0]*M_PI/180.0, initial_rpy[1]*M_PI/180.0, initial_rpy[2]*M_PI/180.0);
+  initial_pose.rotate(initial_quat);
+  fcfg.initial_pose = initial_pose;
 
   nh.getParam("config_filename", fcfg.config_filename);
   cout << fcfg.config_filename << " is config_filename [full path]\n";
