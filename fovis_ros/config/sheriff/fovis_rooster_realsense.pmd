@@ -16,7 +16,7 @@ group "0b.static_tf" {
     }
 }
 
-group "1.progs" {
+group "1.fovis" {
     cmd "fovis_ros" {
         exec = "roslaunch fovis_ros realsense_rooster.launch";
         host = "localhost";
@@ -31,32 +31,13 @@ group "1.progs" {
     }
 }
 
-group "2.time_and_imu_fixing" {
-    cmd "imu_orientation_ouster" {
-        exec = "roslaunch imu_filter_madgwick rooster_ouster.launch";
-        host = "localhost";
-    }
-    cmd "imu_orientation_realsense" {
-        exec = "roslaunch imu_filter_madgwick rooster_realsense.launch";
-        host = "localhost";
-    }
-    cmd "fake_ouster_imu_time" {
-        exec = "rosrun rooster_logging ouster_time_fake_imu.py";
-        host = "localhost";
-    }
-    cmd "fake_ouster_lidar_time" {
-        exec = "rosrun rooster_logging ouster_time_fake_lidar.py";
-        host = "localhost";
-    }
-}
-
-group "3a.aicp_mapping" {
+group "2a.aicp_mapping" {
     cmd "aicp" {
         exec = "roslaunch aicp_ros aicp_mapping_rooster.launch";
         host = "localhost";
     }
     cmd "view_aicp" {
-        exec = "roslaunch aicp_ros view_aicp_simple.launch";
+        exec = "roslaunch aicp_ros view_aicp.launch";
         host = "localhost";
     }
     cmd "loc_man" {
@@ -65,13 +46,13 @@ group "3a.aicp_mapping" {
     }
 }
 
-group "3b.aicp_localization" {
+group "2b.aicp_localization" {
     cmd "aicp_localization" {
         exec = "roslaunch aicp_ros aicp_localization_rooster.launch";
         host = "localhost";
     }
     cmd "view_aicp2" {
-        exec = "roslaunch aicp_ros view_aicp_simple.launch";
+        exec = "roslaunch aicp_ros view_aicp.launch";
         host = "localhost";
     }
     cmd "loc_man2" {
@@ -81,12 +62,12 @@ group "3b.aicp_localization" {
 }
 
 
-group "4.bag" {
+group "3.rosbags" {
     cmd "rosbag" {
         exec = "rosbag play /home/mfallon/logs/rooster/rooster_2019-07-26-16-42-31.bag --pause --clock -s 55 ";
         host = "localhost";
     }
-    cmd "rosbag2" {
+    cmd "rosbag_maths_outside_bad_lidar_time" {
         exec = "rosbag play /home/mfallon/logs/rooster/2019-08-23-around-maths/rooster_2019-08-23-12-04-32.bag --pause --clock -s 265 /tf:=/tf_new  /os1_cloud_node/points_fixed:=/null /os1_cloud_node/points:=/os1_cloud_node/points_wrong_time";
         host = "localhost";
     }
@@ -100,7 +81,7 @@ group "4.bag" {
     }
 }
 
-group "5.sensors" {
+group "4.sensors" {
     cmd "ouster" {
         exec = "roslaunch rooster_logging rooster_os1.launch";
         host = "localhost";
@@ -115,7 +96,7 @@ group "5.sensors" {
     }
 }
 
-group "6.sensor_vis" {
+group "5.sensor_vis" {
     cmd "view_rooster" {
         exec = "roslaunch rooster_logging view_rooster.launch";
         host = "localhost";
@@ -130,7 +111,26 @@ group "6.sensor_vis" {
     }
 }
 
+group "6.fake_ouster_lidar_time_for_early_logs" {
+    cmd "fake_ouster_lidar_time" {
+        exec = "rosrun rooster_logging ouster_time_fake_lidar.py";
+        host = "localhost";
+    }
+}
+
 group "x.misc" {
+    cmd "imu_orientation_ouster" {
+        exec = "roslaunch imu_filter_madgwick rooster_ouster.launch";
+        host = "localhost";
+    }
+    cmd "imu_orientation_realsense" {
+        exec = "roslaunch imu_filter_madgwick rooster_realsense.launch";
+        host = "localhost";
+    }
+    cmd "fake_ouster_imu_time" {
+        exec = "rosrun rooster_logging ouster_time_fake_imu.py";
+        host = "localhost";
+    }
     cmd "plane_fit_map" {
         exec = "rosrun aicp_ros plane_fit_map";
         host = "localhost";
