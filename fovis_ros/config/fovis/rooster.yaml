@@ -23,7 +23,11 @@ orientation_fusion_mode : 0
 # 0 config file
 # 1 IMU roll and pitch
 # 2 using a pose topic
-pose_initialization_mode : 0
+initial_pose_mode : 0
+# if above is 0, then use this position and rpy (degrees) in init
+initial_position : [0,0,0]
+initial_rpy : [0,0,0]
+
 extrapolate_when_vo_fails : false
 
 # 0: older

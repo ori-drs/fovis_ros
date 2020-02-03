@@ -14,7 +14,8 @@ struct FusionCoreConfig
   int orientation_fusion_mode = 0;
 
   // how should we set the initial pose? 0 using the config file, 1 using imu, 2 using a pose source
-  int pose_initialization_mode = 0;
+  int initial_pose_mode = 0;
+  Eigen::Isometry3d initial_pose = Eigen::Isometry3d::Identity();
 
   bool publish_feature_analysis = false;
 
