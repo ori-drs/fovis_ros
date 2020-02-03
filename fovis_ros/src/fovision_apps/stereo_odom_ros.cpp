@@ -100,26 +100,27 @@ void StereoOdom::stereoWithInfoCallback(const sensor_msgs::ImageConstPtr& image_
 }
 
 void StereoOdom::publishDeltaVO() {
-  uint64_t curr_timestamp;
   uint64_t prev_timestamp;
+  uint64_t curr_timestamp;
   Eigen::Isometry3d relative_pose;
 
-  vo_core_->getBodyRelativePose(curr_timestamp,
-                                prev_timestamp,
-                                relative_pose);
+  // don't publish if the retrieval fails
+  if(!vo_core_->getBodyRelativePose(prev_timestamp,
+                                    curr_timestamp,
+                                    relative_pose))
+  {
+    return;
+  }
 
   delta_vo_msg_.header.stamp = ros::Time::now();
-
-  delta_vo_msg_.curr_timestamp = ros::Time().fromNSec(curr_timestamp * 1e3);
   delta_vo_msg_.prev_timestamp = ros::Time().fromNSec(prev_timestamp * 1e3);
+  delta_vo_msg_.curr_timestamp = ros::Time().fromNSec(curr_timestamp * 1e3);
   delta_vo_msg_.covariance.fill(0);
   geometry_msgs::Transform t;
   tf::transformEigenToMsg(relative_pose,t);
   delta_vo_msg_.relative_transform = t;
   delta_vo_msg_.estimate_status = vo_core_->getVisualOdometry()->getMotionEstimateStatus();
-
   delta_vo_pub_.publish(delta_vo_msg_);
-
 }
 
 
@@ -131,13 +132,11 @@ int StereoOdom::convertPixelRGBtoGray (uint8_t *dest,
                                        int sstride)
 {
   int i, j;
-  for (i=0; i<height; i++) {
+  for (i = 0; i < height; i++) {
     uint8_t *drow = dest + i * dstride;
     const uint8_t *srow = src + i * sstride;
-    for (j=0; j<width; j++) {
-      drow[j] = 0.2125 * srow[j*3+0] +
-        0.7154 * srow[j*3+1] +
-        0.0721 * srow[j*3+2];
+    for (j = 0; j < width; j++) {
+      drow[j] = 0.2125 * srow[j*3+0] + 0.7154 * srow[j*3+1] + 0.0721 * srow[j*3+2];
     }
   }
   return 0;
@@ -193,7 +192,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
-    convertPixelRGBtoGray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
+    convertPixelRGBtoGray(vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
 
   } else if (image_a_ros->encoding == "rgb8"){
     ROS_INFO_STREAM_ONCE("image_a ["<< image_a_ros->encoding <<"]");
@@ -201,7 +200,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
     // TODO: use a bgr converter as it uses a different weighting of r and b
     void* left_data = const_cast<void*>(static_cast<const void*>(image_a_ros->data.data()));
     memcpy(vo_core_->rgb_buf_, left_data, h*step_a);
-    convertPixelRGBtoGray(  vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
+    convertPixelRGBtoGray(vo_core_->left_buf_, w, w, h, vo_core_->rgb_buf_, step_a);
 
   } else if (image_a_ros->encoding == "mono8" || image_a_ros->encoding == "8UC1")
   {
@@ -241,7 +240,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
     vo_core_->doOdometryLeftDisparity();
 
-  }else if (image_b_ros->encoding == "16UC1"){
+  } else if (image_b_ros->encoding == "16UC1"){
     unsigned char* depth_data = const_cast<unsigned char*>(static_cast<const unsigned char*>(image_b_ros->data.data()));
     short* depth_short = (short*) depth_data;
 
@@ -276,6 +275,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
 
   // This is where inertial data is fused
   vo_core_->doPostProcessing();
+
   publishDeltaVO();
 
   publishFovisStats(image_a_ros->header.stamp.sec, image_a_ros->header.stamp.nsec);
@@ -286,6 +286,7 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
     A.data = feature_image_;
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", A).toImageMsg();
     features_image_pub_.publish(msg);
+
     pcl::PointCloud<pcl::PointXYZRGB> features_cloud = vo_core_->getFeaturesCloud();
     sensor_msgs::PointCloud2 cloud_msg;
     pcl::toROSMsg(features_cloud, cloud_msg);
@@ -301,16 +302,16 @@ void StereoOdom::stereoCallback(const sensor_msgs::ImageConstPtr& image_a_ros,
   }
 
   tf::Transform transform;
-  tf::poseEigenToTF( vo_core_->getBodyPose(), transform);
+  tf::poseEigenToTF(vo_core_->getBodyPose(), transform);
 
-  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromSec(utime_output * 1E-6), "odom", cfg_.output_tf_frame));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time().fromNSec(utime_output * 1e3), "odom", cfg_.output_tf_frame));
 
 
   geometry_msgs::PoseWithCovarianceStamped body_pose;
   body_pose.header.stamp = image_a_ros->header.stamp;
   body_pose.header.frame_id = "odom";
   geometry_msgs::Pose gpose;
-  tf::poseEigenToMsg ( vo_core_->getBodyPose(), gpose);
+  tf::poseEigenToMsg(vo_core_->getBodyPose(), gpose);
   body_pose.pose.pose = gpose;
   body_pose_pub_.publish(body_pose);
 
@@ -358,19 +359,21 @@ void StereoOdom::imuSensorCallback(const sensor_msgs::ImuConstPtr& msg)
 void StereoOdom::poseOdomCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg)
 {
 
-  Eigen::Quaterniond body_orientation_from_odom(msg->pose.pose.orientation.w,msg->pose.pose.orientation.x,
-                                              msg->pose.pose.orientation.y,msg->pose.pose.orientation.z);
+  Eigen::Quaterniond body_orientation_from_odom(msg->pose.pose.orientation.w,
+                                                msg->pose.pose.orientation.x,
+                                                msg->pose.pose.orientation.y,
+                                                msg->pose.pose.orientation.z);
   Eigen::Vector3d gyro = Eigen::Vector3d(0,0,0); // i have nothing for this yet
   utime_imu_ = (int64_t)floor(msg->header.stamp.toNSec() / 1000);
 
-  if ((fcfg_.orientation_fusion_mode==3) ||  (fcfg_.orientation_fusion_mode ==4)  ){
+  if ((fcfg_.orientation_fusion_mode == 3) ||  (fcfg_.orientation_fusion_mode == 4)){
     vo_core_->setBodyOrientationFromImu(body_orientation_from_odom, gyro, utime_imu_);
   }
 
 
 
   if (!vo_core_->isPoseInitialized()){
-    std::cout << "Pose Odom callback: initializing pose using IMU\n";
+    std::cout << "[ poseOdomCallback()] : initializing pose using message" << std::endl;
     Eigen::Isometry3d init_pose = Eigen::Isometry3d::Identity();
     tf::poseMsgToEigen(msg->pose.pose, init_pose);
     vo_core_->initializePose(init_pose);

@@ -19,6 +19,7 @@
 ##### works with anymal_2019-05-10-10-38-35.bag
 cameras:
     - {
+      depth_source_type : "stereo",
       image_dimensions: [848,480],
       focal_length:     [427.33, 426.79],
       focal_point:      [427.82, 238.32],

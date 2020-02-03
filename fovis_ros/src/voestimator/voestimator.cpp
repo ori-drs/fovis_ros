@@ -9,23 +9,23 @@ VoEstimator::VoEstimator():
 }
 
 
-void VoEstimator::updatePose(int64_t utime,
+void VoEstimator::updatePose(int64_t utime_curr,
                              int64_t utime_prev,
                              const Eigen::Isometry3d& delta_camera)
 {
   // 0. update times
-  utime_curr_ = utime;
+  utime_curr_ = utime_curr;
   utime_prev_ = utime_prev;
 
   // 1. Update the Position of the head frame:
   delta_body_curr_ = camera_to_body_.inverse() * delta_camera * camera_to_body_;
-  world_to_body_curr_ = world_to_body_curr_ * delta_body_curr_;
+  world_to_body_curr_ = world_to_body_prev_ * delta_body_curr_;
 
   // 2. Evaluate Rates:
-  double delta_time = static_cast<double>(utime - utime_prev) / 1e6;
+  double delta_time = static_cast<double>(utime_curr_ - utime_prev_) / 1e6;
 
   if(utime_prev == 0) {
-    std::cout << "utime_prev is zero [at init]\n";
+    std::cout << "utime_prev is zero [at init] " << std::endl;
     vo_initialized_ = false; // reconfirming what is set above
   } else {
     vo_initialized_ = true;

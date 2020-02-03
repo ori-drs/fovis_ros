@@ -22,6 +22,10 @@
 #include <pcl/io/io.h>
 
 
+/**
+ * @brief The VoFeatures class takes matched features from FOVIS and writes
+ * them on images, files, and/or point clouds.
+ */
 class VoFeatures
 {
 public:

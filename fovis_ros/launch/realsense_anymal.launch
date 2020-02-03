@@ -2,9 +2,10 @@
 <launch>
   <!-- don't launch RViz by default -->
   <arg name="rviz" default="false" />
+  <arg name="output" default="screen" />
 
   <!-- launch the fovis ROS node -->
-  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="$(arg output)">
     <rosparam file="$(find fovis_ros)/config/fovis/anymal.yaml" />
     <param name="config_filename" value="$(find fovis_ros)/config/robot/anymal.yaml" />
   </node>

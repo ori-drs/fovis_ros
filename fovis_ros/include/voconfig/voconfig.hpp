@@ -13,53 +13,18 @@
 #include <string>
 #include <memory>
 #include <fovis/fovis.hpp>
+#include <opencv2/core.hpp>
 
+namespace voconfig {
 
-
-
-
-namespace voconfig
-{
-/**
- * An interface for configuration objects.
- */
-class Configuration {
+class FovisYAMLConfigurator {
 public:
-  virtual ~Configuration() {}
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual bool has_key(const std::string & key) = 0;
-  virtual bool get(const std::string & key, bool default_value) = 0;
-  virtual int get(const std::string & key, int default_value) = 0;
-  virtual double get(const std::string & key, double default_value) = 0;
-  virtual std::string get(const std::string & key, const std::string & default_value) = 0;
-
-  typedef std::shared_ptr<Configuration> Ptr;
-  typedef std::shared_ptr<const Configuration> ConstPtr;
-};
-
-/**
- * Implements the configuration interface for a BotParam provider.
- */
-class BotParamConfiguration : public Configuration
-{
 public:
-  BotParamConfiguration(const std::string & key_prefix);
-  virtual ~BotParamConfiguration();
+  using StereoCalibPtr = std::shared_ptr<fovis::StereoCalibration>;
+  using PrimeSenseCalibPtr = std::shared_ptr<fovis::PrimeSenseCalibration>;
 
-  virtual bool has_key(const std::string & key);
-  virtual bool get(const std::string & key, bool default_value);
-  virtual int get(const std::string & key, int default_value);
-  virtual double get(const std::string & key, double default_value);
-  virtual std::string get(const std::string & key, const std::string & default_value);
-
-private:
-  std::string key_prefix_;
-};
-
-/**
- * A configuration class for KMCL
- */
-class KmclConfiguration {
 public:
   enum DepthSourceTypeCode {
     UNKNOWN,
@@ -68,14 +33,9 @@ public:
     OPENNI
   };
 
-  KmclConfiguration(const std::string & config_filename);
+  FovisYAMLConfigurator(const std::string & config_filename);
 
-  ~KmclConfiguration();
-
-  /**
-   * Return a configuration object pointing to a specific section.
-   */
-  Configuration::Ptr get_section(const std::string & key_prefix) const;
+  virtual ~FovisYAMLConfigurator();
 
   /**
    * Creates a StereoCalibration block using the provided configuration source and camera.
@@ -87,7 +47,7 @@ public:
    * @return If successful return a shared pointer to the StereoCalibration object
    *         and nullptr otherwise.
    */
-  std::shared_ptr<fovis::StereoCalibration> load_stereo_calibration() const;
+  StereoCalibPtr loadStereoCalibration() const;
 
   /**
    * Creates a PrimeSenseCalibration block using the provided configuration source and camera.
@@ -99,73 +59,37 @@ public:
    * @return If successful return a shared pointer to the PrimeSenseCalibration object
    *         and nullptr otherwise.
    */
-  std::shared_ptr<fovis::PrimeSenseCalibration> load_primesense_calibration() const;
+  PrimeSenseCalibPtr loadPrimesenseCalibration() const;
 
   /**
    * @return Parameters for fovis::VisualOdometry
    */
-  fovis::VisualOdometryOptions visual_odometry_options() const;
 
-  /**
-   * @return Name of LCM channel where the depth source is published.
-   */
-  std::string depth_source_channel() const { return lcm_channel_; }
+  inline DepthSourceTypeCode getDepthSourceType() const {
+    return depth_source_type_;
+  }
 
-  DepthSourceTypeCode depth_source_type() const { return depth_source_type_; }
-
-  Configuration::Ptr get_camera_section() const
-    { return get_section(key_prefix_); }
-
-  std::string loop_proposal() const { return loop_proposal_; }
-  std::string vocabulary() const { return vocabulary_; }
-  std::string vocabulary_weights() const { return vocabulary_weights_; }
-  std::string vocabulary_descriptor() const { return vocabulary_descriptor_; }
-  std::string alignment_descriptor() const { return alignment_descriptor_; }
-  std::string builder_descriptor() const { return builder_descriptor_; }
-
-  int min_time() { return min_time_; }
-  double min_score() { return min_score_; }
-  int min_inliers() { return min_inliers_; }
-  int max_num_proposals() { return max_num_proposals_; }
-
-  Eigen::Isometry3d B_t_BC() const { return B_t_BC_; }
+  inline Eigen::Isometry3d B_t_BC() const {
+    return B_t_BC_;
+  }
 
 
 private:
-  void init();
+  DepthSourceTypeCode depth_source_type_;
 
-  void set_vo_option_int(fovis::VisualOdometryOptions & vo_opts,
-                         const std::string & option) const;
-  void set_vo_option_double(fovis::VisualOdometryOptions & vo_opts,
-                            const std::string & option) const;
-  void set_vo_option_boolean(fovis::VisualOdometryOptions & vo_opts,
-                             const std::string & option) const;
-			     
+  std::string config_filename_;
+  cv::FileStorage file;
 
   std::string key_prefix_;
-  std::string lcm_channel_;
-
-  std::string loop_proposal_;
-  std::string vocabulary_;
-  std::string vocabulary_weights_;
-
-  std::string vocabulary_descriptor_;
-  std::string alignment_descriptor_;
-  std::string builder_descriptor_;
-
-  int min_time_;
-  double min_score_;
-  int min_inliers_;
-  int max_num_proposals_;
-
-  DepthSourceTypeCode depth_source_type_;
 
   // transformation between base and camera
   // same as rosrun tf tf_echo base camera (in that order)
   Eigen::Isometry3d B_t_BC_;
 
-  std::string config_filename_;
-
+private:
+  Eigen::Vector3d parseVector3d(const cv::FileNode& node);
+  bool parseBoolean(const std::string &str);
+  void parseBodyToCameraTransform();
 };
 
 }

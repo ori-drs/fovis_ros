@@ -6,14 +6,22 @@
 
 using namespace cv;
 
-VoFeatures::VoFeatures(int image_width_, int image_height_, const Eigen::Isometry3d& camera_to_body):
-  image_width_(image_width_), image_height_(image_height_), utime_(0), output_counter_(0), camera_to_body_(camera_to_body)
+VoFeatures::VoFeatures(int image_width_,
+                       int image_height_,
+                       const Eigen::Isometry3d& camera_to_body) :
+  image_width_(image_width_),
+  image_height_(image_height_),
+  utime_(0),
+  output_counter_(0),
+  camera_to_body_(camera_to_body)
 {
 }
 
 
 // TODO: remove fovis dependency entirely:
-void VoFeatures::setFeatures(const fovis::FeatureMatch* matches, int num_matches, int64_t utime){
+void VoFeatures::setFeatures(const fovis::FeatureMatch* matches,
+                             int num_matches, int64_t utime)
+{
   utime_ = utime;
 
 //  ////////////////// Features: ////////////////////////////////////////////
