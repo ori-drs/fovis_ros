@@ -1,0 +1,65 @@
+image_a_topic : "/camera/infra1/image_rect_raw"
+image_a_transport : "raw"
+
+image_b_topic : "/camera/infra2/image_rect_raw"
+image_b_transport : "raw"
+
+# auxiliary inputs
+input_imu_topic : "/os1_cloud_node/imu_fixed_with_orientation"
+input_body_pose_topic : "/state_estimator/pose_in_odom"
+
+# output
+output_using_imu_time : false
+output_body_pose_topic : "/fovis/pose_in_odom"
+#output_tf_frame : "/realsense_fovis"
+output_tf_frame : "/base"
+
+# 0 no fusion
+# 1 rpy from imu
+# 2 roll and pitch only from imu 
+# 3 rpy from body_pose_topic
+# 4 roll & pitch only from body_pose_topic
+orientation_fusion_mode : 2
+
+# 0 config file
+# 1 IMU roll and pitch
+# 2 using a pose topic
+initial_pose_mode : 1
+# if above is 0, then use this position and rpy (degrees) in init
+
+# Corsham:
+#initial_position : [0,0,1.32934]
+#initial_rpy : [0.0,-10,0]
+# 387 also good
+# initially, 120sec
+#initial_rpy : [0.0,-7.5,0]
+
+
+# new college -long? s=178
+#initial_position : [0,0,1.32934]
+#initial_rpy : [-1.743,10.482,0]
+# short - from 70sec
+#initial_position : [0,0,1.32934]
+#initial_rpy : [-4.74285,4.48233,-0.18572]
+
+#1.32934 height
+#-4.74285 roll
+#4.48233 pitch
+#-0.18572 yaw
+
+# corsham ghost
+initial_position : [0,0,0]
+initial_rpy : [0,0,0]
+
+
+extrapolate_when_vo_fails : false
+
+# 0: older
+# 1: well used on MultiSense
+# 2: used on MultiSense, higher fps and real time
+which_vo_options : 2
+
+verbose : false
+publish_feature_analysis : false
+write_pose_to_file : false
+
