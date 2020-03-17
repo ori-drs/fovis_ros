@@ -1,11 +1,11 @@
 image_a_topic : "/camera/infra1/image_rect_raw"
-image_a_transport : "compressed"
+image_a_transport : "raw"
 
 image_b_topic : "/camera/infra2/image_rect_raw"
-image_b_transport : "compressed"
+image_b_transport : "raw"
 
 # auxiliary inputs
-input_imu_topic : "/camera/imu_fixed_with_orientation_in_base"
+input_imu_topic : "/os1_cloud_node/imu_with_orientation"
 input_body_pose_topic : "/state_estimator/pose_in_odom"
 
 # output
@@ -18,12 +18,12 @@ output_tf_frame : "/base"
 # 2 roll and pitch only from imu 
 # 3 rpy from body_pose_topic
 # 4 roll & pitch only from body_pose_topic
-orientation_fusion_mode : 0
+orientation_fusion_mode : 2
 
 # 0 config file
 # 1 IMU roll and pitch
 # 2 using a pose topic
-initial_pose_mode : 0
+initial_pose_mode : 1
 # if above is 0, then use this position and rpy (degrees) in init
 
 # Corsham:

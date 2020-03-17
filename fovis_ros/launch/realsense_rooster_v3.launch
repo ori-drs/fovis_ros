@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+  <node name="simple_fusion" pkg="fovis_ros" type="simple_fusion" output="screen">
+    <rosparam file="$(find fovis_ros)/config/fovis/rooster_v3.yaml" />
+    <param name="config_filename" value="$(find fovis_ros)/config/robot/rooster_v3.yaml" />
+  </node>
+
+  <!-- Which paths should be calculated-->
+  <arg name="draw_path"             default="true"/>
+
+  <group if="$(arg draw_path)">
+    <node name="fovis_trajectory_server" pkg="hector_trajectory_server" type="hector_trajectory_server" output="screen">
+      <remap from="/trajectory"             to="/fovis/trajectory"/>
+      <param name="target_frame_name"       type="string" value="/odom" />
+      <param name="source_frame_name"       type="string" value="/realsense" />
+      <param name="trajectory_update_rate"  type="double" value="2" />
+      <param name="trajectory_publish_rate" type="double" value="2" />
+    </node>
+  </group>
+  
+</launch>
+
