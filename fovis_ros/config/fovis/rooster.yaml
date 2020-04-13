@@ -47,7 +47,7 @@ initial_pose_mode : 0
 #-0.18572 yaw
 
 # corsham ghost
-initial_position : [0,0,0.6]
+initial_position : [0,0,0]
 initial_rpy : [0,-1,0]
 
 

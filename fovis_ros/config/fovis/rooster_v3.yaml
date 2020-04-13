@@ -18,12 +18,12 @@ output_tf_frame : "/base"
 # 2 roll and pitch only from imu 
 # 3 rpy from body_pose_topic
 # 4 roll & pitch only from body_pose_topic
-orientation_fusion_mode : 2
+orientation_fusion_mode : 0
 
 # 0 config file
 # 1 IMU roll and pitch
 # 2 using a pose topic
-initial_pose_mode : 1
+initial_pose_mode : 0
 # if above is 0, then use this position and rpy (degrees) in init
 
 # Corsham:
@@ -47,8 +47,8 @@ initial_pose_mode : 1
 #-0.18572 yaw
 
 # corsham ghost
-initial_position : [0,0,0.6]
-initial_rpy : [0,-1,0]
+initial_position : [0,0,0]
+initial_rpy : [0,0,0]
 
 
 extrapolate_when_vo_fails : false
