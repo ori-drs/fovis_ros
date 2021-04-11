@@ -44,3 +44,29 @@ cameras:
       #B_r_BC: [0.383, 0.015, 0.143], # David's values
       #B_q_BC: [0.546, -0.546, 0.449, -0.449], # David's values
       }
+    - {
+      depth_source_type : "stereo",
+      image_dimensions: [848,480],
+      focal_length:     [424.2955627441406, 424.2955627441406], # default from camera info, David uses different
+      focal_point:      [422.3912658691406, 234.9972381591797],
+      # distortion_s:    0, # used by David but not used here
+      distortion_k1:   0.0,
+      distortion_k2:   0.0,
+      distortion_k3:   0.0, # not used by David
+      distortion_p1:   0.0,
+      distortion_p2:   0.0,
+
+      stereo_baseline: 0.05, # positive, as for David. internally fovis used -0.05
+
+
+      # same configuration tested for VILENS paper (ICRA 2019)
+      B_r_BC: [0.371, 0.018, 0.162],
+      B_q_BC: [-0.5418, 0.5552, -0.4516, 0.4407] 
+      
+      # previous configuration manually found by M. Fallon
+      # B_r_BC: [0.371, 0.018, 0.162]
+      # B_q_BC: [0.549529, -0.445107, 0.445016, -0.549417] # x y z w
+
+      #B_r_BC: [0.383, 0.015, 0.143], # David's values
+      #B_q_BC: [0.546, -0.546, 0.449, -0.449], # David's values
+      }
