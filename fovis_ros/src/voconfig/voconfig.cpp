@@ -97,7 +97,7 @@ StereoCalibPtr FovisYAMLConfigurator::loadStereoCalibration() const {
       params = &(stereo_params.right_parameters);
     }
 
-    std::cout << "Loading stereo configuration" << i << "\n";
+    std::cout << "Loading stereo configuration " << i << "\n";
 
     double focal_length_x = static_cast<double>(file["cameras"][i]["focal_length"][0]);
     std::cout << "Focal_length_x: " << focal_length_x << std::endl;
