@@ -156,7 +156,7 @@ void VoFeatures::drawFeaturesOnImage(uint8_t* img_buf, std::vector<ImageFeature>
   Mat img = Mat::zeros( image_height_, image_width_,CV_8UC1);
   img.data = img_buf;
 
-  CvScalar color_out = CV_RGB(255,255,255);
+  cv::Scalar color_out = CV_RGB(255,255,255);
   for (size_t j=0;j< features.size(); j++){
     if (feature_indices[j]){
       cv::Point p0;

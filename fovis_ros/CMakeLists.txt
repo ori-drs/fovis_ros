@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(fovis_ros)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_utils
 )
 
-find_package(OpenCV 3.0 QUIET)
+find_package(OpenCV 4.0 QUIET)
 
 set(FOVISION_LIBNAME fovision)
 set(FOVIS_EXE simple_fusion)

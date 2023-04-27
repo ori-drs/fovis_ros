@@ -5,7 +5,9 @@
 
 #include "fovision_apps/fovision_fusion_core.hpp"
 
-#include <opencv/cv.h> // for disparity 
+// #include <opencv/cv.h> // for disparity 
+#include <opencv2/opencv.hpp>
+
 
 using namespace std;
 using namespace cv; // for disparity ops
